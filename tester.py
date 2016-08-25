@@ -184,9 +184,29 @@ def run_windows(name, tl, ml):
 		time.sleep(1e-2)
 	time.sleep(1e-2)
 	return ret, t
-	
-def runner_linux(name, que):
-	pro = subprocess.Popen('ulimit -v %d; time -f "%%U" -o timer ./%s' % (ml, name), shell = True, preexec_fn = os.setsid)
+
+def memory2bytes(st):	
+	units = {
+		'B' : 1,
+		'K' : 2 ** 10,
+		'KB' : 2 ** 10,
+		'M' : 2 ** 20,
+		'MB' : 2 ** 20,
+		'G' : 2 ** 30,
+		'GB' : 2 ** 30,
+		'T' : 2 ** 40,
+		'TB' : 2 ** 40
+	}
+	sp = st.split(' ')
+	un = (units[sp[1]] if len(sp) == 2 else 1)
+	return int(sp[0]) * un
+
+def runner_linux(name, que, ml):
+	pro = subprocess.Popen(
+		'ulimit -v %d; time -f "%%U" -o timer ./%s' % (memory2bytes(ml) // 1024, name),
+		shell = True,
+		preexec_fn = os.setsid
+	)
 	que.put(pro.pid)
 	ret = pro.wait()
 	que.put(ret)
