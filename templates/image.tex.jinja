@@ -1,0 +1,20 @@
+{%- if inline -%}
+	{
+{%- else -%}
+	\begin{figure}[H]
+{%- endif -%}
+{%- if align -%}
+	{{ '\\centering' if align == 'middle' else '\\ragged' + align }}
+{%- endif -%}
+\includegraphics
+	{%- if size -%}
+		[scale={{size}}]
+	{%- endif -%}
+{ {{- resouce -}} }
+{%- if inline -%}
+	}
+{%- else -%}
+	\end{figure}
+{%- endif -%}
+
+

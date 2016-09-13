@@ -1,0 +1,35 @@
+\begin{center}
+	\begin{tabular}{@{}
+		{%- for i in range(width) -%}
+			c
+			{%- if not loop.last -%}
+				|
+			{%- endif -%}
+		{%- endfor -%}
+	@{}}
+		\bhline
+		{% for i in range(table.__len__()) %}
+			{% for j in range(table[i].__len__()) %}
+				{% if table[i][j] %}
+					\multirow{ {{- cnt[i][j] -}} }{*}{ {{table[i][j]}} }
+				{% endif %}
+				{% if loop.last %}
+					\tabularnewline
+				{% else %}
+					&
+				{% endif %}
+			{% endfor %}
+			{% if loop.first %}
+				\mhline
+			{% elif loop.last %}
+				\bhline
+			{% else %}
+				{% for j in range(table[i].__len__()) %}
+					{% if table[i + 1][j] %}
+						\cline{ {{- j + 1 -}} - {{- j + 1 -}} }
+					{% endif %}
+				{% endfor %}
+			{% endif %}
+		{% endfor %}
+	\end{tabular}
+\end{center}

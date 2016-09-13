@@ -1,0 +1,213 @@
+\documentclass{noiproblem}
+\DeclareMathOperator{\xor}{xor}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\begin{document}
+
+{% block define_title %}{% endblock %}
+{% block define_day %}{% endblock %}
+
+\thispagestyle{Cover}
+\maketitle
+\begin{center}
+\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+	\hline
+		题目名称
+		{%- for prob in probs -%}
+			& {{ prob['cnname'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		题目类型
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] == 'program' %}
+				传统型
+			{% elif prob['type'] == 'output' %}
+				提交答案型
+			{% else %}
+				交互型
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		目录
+		{%- for prob in probs -%}
+			& {{ prob['name'] }}
+		{%- endfor -%} 
+		\tabularnewline
+	\hline
+		可执行文件名
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		输入文件名
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}.in
+			{% else %}
+				{{ prob['name'] }}*.in
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		输出文件名
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}.out
+			{% else %}
+				{{ prob['name'] }}*.out
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		每个测试点时限
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['time limit'] }}秒
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		内存限制
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['memory limit'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		测试点数目
+		{%- for prob in probs -%}
+			& {{ prob['test cases'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		每个测试点分值
+		{%- for prob in probs -%}
+			& {{ 100 // prob['test cases'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		是否有部分分
+		{%- for prob in probs -%}
+			&
+			{% if prob['partial score'] %}
+				是
+			{% else %}
+				否
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+\end{tabularx}
+\end{center}
+
+提交源程序须加后缀
+
+\begin{center}
+\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+	\hline
+		对于C++\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}.cpp
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		对于C\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}.c
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		对于Pascal\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['name'] }}.pas
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+\end{tabularx}
+\end{center}
+
+编译开关
+\begin{center}
+\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+	\hline
+		对于C++\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['compile']['cpp'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		对于C\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['compile']['c'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		对于Pascal\tabto{5em}语言
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['compile']['pas'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+\end{tabularx}
+\end{center}
+
+{% for i in range(problems.__len__()) %}
+
+	\clearpage
+
+	\begin{center}
+		{\large \section{ {{probs[i]['cnname']}} } }
+	\end{center}
+	
+	{{ problems[i] }}
+
+{% endfor %}
+
+\end{document}

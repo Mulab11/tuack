@@ -17,9 +17,12 @@ from threading import Timer
 import platform
 from common import *
 import common
+import jinja2
+import math
 
 doc_format = re.compile(r'^(.*)\.(doc|docs|ppt|pptx|pdf|tex|md|html|htm|zip|dir)$')
 empty_cpp = 'int main(){}'
+jinja_env = Environment(loader=PackageLoader('renderer', '.'))
 
 def find_doc(path, name):
 	for f in os.listdir(path):
@@ -96,7 +99,7 @@ def prob2uoj_conf(prob):
 	s += 'output_pre %s\n' % prob['name']
 	s += 'output_suf out\n'
 	if 'time limit' in prob:
-		s += 'time_limit %d\n' % int(prob['time limit'])
+		s += 'time_limit %d\n' % math.ceil(prob['time limit'])
 	if 'memory limit' in prob:
 		s += 'memory_limit %d\n' % (common.memory2bytes(prob['memory limit']) // 1024 // 1024)
 	if 'output limit' in prob:
@@ -214,7 +217,7 @@ work_list = {
 	'uoj' : uoj,
 	'release' : release
 }
-			
+
 if __name__ == '__main__':
 	if deal_argv():
 		infom('Packing starts at %s.\n' % str(datetime.datetime.now()))
@@ -227,4 +230,3 @@ if __name__ == '__main__':
 		print('\trelease: Generate what is suitable to publish.')
 		print('\tnoi: Generate output in noi style.')
 		print('\tuoj: Generte output in uoj style.')
-		

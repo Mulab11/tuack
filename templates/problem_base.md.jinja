@@ -1,0 +1,69 @@
+{% extends "problem.md.jinja" %}
+{% block input_file %}
+	{%- if io_style == 'uoj' -%}
+		从标准输入读入数据。
+	{%- elif io_style == 'noi' -%}
+		从文件 *{{ prob['name'] }}.in* 中读入数据。
+	{%- endif -%}
+{% endblock %}
+{% block output_file %}
+	{%- if io_style == 'uoj' -%}
+		输出到标准输出。
+	{%- elif io_style == 'noi' -%}
+		输出到文件 *{{ prob['name'] }}.out* 中。
+	{%- endif -%}
+{% endblock %}
+{%- block user_path -%}
+	{%- if io_style == 'uoj' -%}
+		[下载目录](download.php?type=problem&id={{ prob['uoj_id'] }})
+	{%- elif io_style == 'noi' -%}
+		选手目录
+	{%- else -%}
+		目录
+	{%- endif -%}
+{%- endblock -%}
+{% block sample_text -%}
+{% if io_style == 'uoj' -%}
+## 【样例{{ vars['sample_id'] }}】
+### 输入
+{%- elif io_style == 'noi' -%}
+## 【样例{{ vars['sample_id'] }}输入】
+{%- endif %}
+```
+{{ down_file(prob['name'] + vars['sample_id'].__str__() + '.in') }}
+```
+
+{% if io_style == 'uoj' -%}
+### 输出
+{%- elif io_style == 'noi' -%}
+## 【样例{{ vars['sample_id'] }}输出】
+{%- endif %}
+```
+{{ down_file(prob['name'] + vars['sample_id'].__str__() + '.ans') }}
+```
+{%- endblock %}
+{% block title_sample_description -%}
+	{%- if io_style == 'uoj' -%}
+### 说明
+	{%- elif io_style == 'noi' -%}
+## 【样例{{ vars['sample_id'] }}说明】
+	{%- endif -%}
+{%- endblock %}
+{% block sample_file -%}
+## 【样例{{vars['sample_id']}}】
+
+见{{ self.user_path() }}下的 *{{ file_name(prob['name'] + vars['sample_id'].__str__() + '.in') }}* 与 *{{ file_name(prob['name'] + vars['sample_id'].__str__() + '.ans') }}*。
+{%- endblock %}
+{% block title %}
+	{%- if io_style == 'uoj' -%}
+**时间限制：** {{ tools.ceil(prob['time limit']) }} 秒
+**内存限制：** {{ prob['memory limit'] }}
+**相关文件：** {{ self.user_path() }}
+		{%- if prob['type'] == 'output' -%}
+** 这是一道提交答案题 **
+		{%- elif prob['type'] != 'program' -%}
+** 这是一道提交交互题 **
+		{%- endif -%}
+	{%- elif io_style == 'noi' -%}
+	{%- endif -%}
+{% endblock %}

@@ -22,7 +22,7 @@ windows_stack_size = 536870912
 diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
 elf_suffix = '' if system != 'Windows' else '.exe'
-problem_skip = re.compile(r'^(data|down)$')
+problem_skip = re.compile(r'^(data|down|tables|resources)$')
 user_skip = re.compile(r'^(val|gen|chk|checker|report|.*\.test|.*\.dir)$')
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
@@ -54,7 +54,6 @@ def fatal(info):
 	frep.write('[E]' + info + '\n')
 	frep.close()
 	sys.exit(info)
-	
 
 def memory2bytes(st):	
 	units = {
@@ -78,7 +77,7 @@ def load_problems():
 	for day, names in problem_names.items():
 		problems = []
 		for name in names:
-			problem = json.load(open(os.path.join(day, name, 'prob.json')))
+			problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
 			problem['name'] = name
 			problems.append(problem)
 		probs[day] = problems
@@ -158,11 +157,14 @@ def deal_argv():
 			works += sys.argv[i].split(',')
 		i += 1
 	probs = load_problems()
-	if not day_set:
-		day_set = set(probs.keys())
 	if not prob_set:
 		prob_set = set()
 		for day, info in probs.items():
 			for prob in info:
 				prob_set.add(day + '/' + prob['name'])
+	if not day_set:
+		if not prob_set:
+			day_set = set(probs.keys())
+		else:
+			day_set = {prob.split('/')[0] for prob in prob_set}
 	return True

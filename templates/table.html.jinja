@@ -1,0 +1,28 @@
+<table class="table"><thead>
+	{%- for i in range(table.__len__()) -%}
+		<tr>
+		{%- with first_row = loop.first -%}
+			{%- for j in range(table[i].__len__()) -%}
+				{%- if table[i][j] -%}
+					<
+						{%- if first_row -%}
+							th
+						{%- else -%}
+							td
+						{%- endif -%}
+					rowspan="{{- cnt[i][j] -}}">{{ table[i][j] }}<
+						{%- if first_row -%}
+							/th
+						{%- else -%}
+							/td
+						{%- endif -%}
+					>
+				{%- endif -%}
+			{%- endfor -%}
+		{%- endwith -%}
+		</tr>
+		{%- if loop.first -%}
+			</thead><tbody>
+		{%- endif -%}
+	{%- endfor -%}
+</tbody></table>
