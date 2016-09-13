@@ -211,5 +211,6 @@ def test_progs():
 	
 if __name__ == '__main__':
 	if deal_argv():
+		common.work = 'test'
 		infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
 		test_progs()
