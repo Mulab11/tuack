@@ -1,0 +1,14 @@
+*/down
+*/data
+*/tmp
+*/log
+*/result
+*/discussion
+*/solution
+*.log
+__pycache__
+*.zip
+release
+uoj
+noi
+descriptions

@@ -27,6 +27,17 @@ with open(os.path.join('oi_tools', 'output.tex'), 'wb') as f:
 	f.write(temp.render(day = {'eng_title' : 'CCF-NOI-2016'}, probs = [{},{},{},{}]).encode('GBK'))
 '''
 
+def init():
+	global env
+	env = jinja2.Environment(loader=jinja2.PackageLoader('renderer', os.path.join('..', 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_'])
+	remkdir('descriptions')
+	shutil.rmtree('tmp', ignore_errors = True)
+	time.sleep(0.1)
+	shutil.copytree(os.path.join('oi_tools', 'templates'), 'tmp')
+	
+def final():
+	shutil.rmtree('tmp', ignore_errors = True)
+
 def file_name(io_style, prob, name):
 	if io_style == 'noi':
 		return prob['name'] + '/' + name
@@ -53,29 +64,18 @@ def table(path, name, temp, context):
 				cnt[i][j] += cnt[i + 1][j]
 	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
 	
-def template(temp_name, context):
-	return 
-
-def render_all():
-	remkdir('descriptions')
-	global env
-	shutil.rmtree('tmp', ignore_errors = True)
-	time.sleep(0.1)
-	shutil.copytree(os.path.join('oi_tools', 'templates'), 'tmp')
-	env = jinja2.Environment(loader=jinja2.PackageLoader('renderer', os.path.join('..', 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_'])
+def noi():
+	remkdir(os.path.join('descriptions', 'noi'))
+	io_style = 'noi'
 	shutil.copy(os.path.join('title.tex'), 'tmp')
 	for day_name, probs in common.probs.items():
 		if day_name not in common.day_set:
 			continue
-		remkdir(os.path.join('descriptions', day_name))
 		tex_problems = []
 		for prob in probs:
 			if day_name + '/' + prob['name'] not in common.prob_set:
 				continue
-			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
-				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', day_name, prob['name']))
 			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
-			io_style = 'noi'
 			context = {
 				'prob' : prob,
 				'io_style' : io_style,
@@ -110,9 +110,44 @@ def render_all():
 					table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context)
 				)
 			)
-			io_style = 'uoj'
-			context['io_style'] = io_style
-			context['resource'] = lambda name : prob['name'] + '/' + name
+		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
+		with open(os.path.join('tmp', 'problems.tex'), 'wb') as f:
+			f.write(
+				env.get_template('day_title.tex').render(
+					problems = tex_problems,
+					probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set]
+				).encode(
+					'utf-8' if common.system != 'Windows' else 'GBK'
+				)
+			)
+		os.chdir('tmp')
+		os.system('pdflatex problems.tex')
+		os.system('pdflatex problems.tex ')
+		os.chdir('..')
+		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', 'noi', day_name + '.pdf'))
+		
+def uoj():
+	io_style = 'uoj'
+	remkdir(os.path.join('descriptions', 'uoj'))
+	for day_name, probs in common.probs.items():
+		if day_name not in common.day_set:
+			continue
+		remkdir(os.path.join('descriptions', 'uoj', day_name))
+		tex_problems = []
+		for prob in probs:
+			if day_name + '/' + prob['name'] not in common.prob_set:
+				continue
+			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
+				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', 'uoj', day_name, prob['name']))
+			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
+			context = {
+				'prob' : prob,
+				'io_style' : io_style,
+				'tools' : tools,
+				'file_name' : lambda name : file_name(io_style, prob, name),
+				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
+				'resource' : lambda name : prob['name'] + '/' + name
+			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
 					.render(context)
@@ -126,25 +161,22 @@ def render_all():
 						table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context)
 					).encode('utf-8')
 				)
-			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', day_name))
-		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
-		with open(os.path.join('tmp', 'problems.tex'), 'wb') as f:
-			f.write(
-				env.get_template('day_title.tex').render(
-					problems = tex_problems,
-					probs = probs
-				).encode(
-					'utf-8' if common.system != 'Windows' else 'GBK'
-				)
-			)
-		os.chdir('tmp')
-		os.system('pdflatex problems.tex')
-		os.system('pdflatex problems.tex ')
-		os.chdir('..')
-		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', day_name + '.pdf'))
-	shutil.rmtree('tmp', ignore_errors = True)
+			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
 
+work_list = {
+	'noi' : noi,
+	'uoj' : uoj
+}
+	
 if __name__ == '__main__':
 	if deal_argv():
 		infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
-		render_all()
+		init()
+		for common.work in common.works:
+			work_list[common.work]()
+		final()
+	else:
+		print('Use arguments other than options to run what to output.')
+		print('Enabled output types:')
+		print('\tnoi: Generate problem description in noi style.')
+		print('\tuoj: Generate problem description in uoj style.')

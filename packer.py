@@ -17,12 +17,10 @@ from threading import Timer
 import platform
 from common import *
 import common
-import jinja2
 import math
 
 doc_format = re.compile(r'^(.*)\.(doc|docs|ppt|pptx|pdf|tex|md|html|htm|zip|dir)$')
 empty_cpp = 'int main(){}'
-jinja_env = Environment(loader=PackageLoader('renderer', '.'))
 
 def find_doc(path, name):
 	for f in os.listdir(path):
@@ -210,7 +208,7 @@ def uoj():
 	output_folder = 'uoj'
 	remkdir('uoj')
 	uoj_copy_files()
-			
+
 work_list = {
 	'noi' : noi,
 	'test' : test,
@@ -229,4 +227,4 @@ if __name__ == '__main__':
 		print('\ttest: Generate output for test. Must run this output before tester.py.')
 		print('\trelease: Generate what is suitable to publish.')
 		print('\tnoi: Generate output in noi style.')
-		print('\tuoj: Generte output in uoj style.')
+		print('\tuoj: Generate output in uoj style.')

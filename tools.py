@@ -27,6 +27,9 @@ def comma(num):
 	return comma(num // 1000) + ',' + '%03d' % (num % 1000)
 	
 def hn(num):
+	'''
+	适合阅读的数
+	'''
 	ret = ''
 	l = 0
 	if num == 0:
@@ -52,4 +55,7 @@ def hn(num):
 	return neg + (comma(num) if l >= len(str(num)) * 4 // 3 else ret)
 	
 def js_hn(num):
+	'''
+	适合阅读的数，json版本
+	'''
 	return hn(num).replace('\\', '\\\\')
