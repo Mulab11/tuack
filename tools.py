@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ï»¿# -*- coding: utf-8 -*-
 
 from math import *
 import json
@@ -28,7 +28,7 @@ def comma(num):
 	
 def hn(num):
 	'''
-	ÊÊºÏÔÄ¶ÁµÄÊı
+	é€‚åˆé˜…è¯»çš„æ•°
 	'''
 	ret = ''
 	l = 0
@@ -56,6 +56,6 @@ def hn(num):
 	
 def js_hn(num):
 	'''
-	ÊÊºÏÔÄ¶ÁµÄÊı£¬json°æ±¾
+	é€‚åˆé˜…è¯»çš„æ•°ï¼Œjsonç‰ˆæœ¬
 	'''
 	return hn(num).replace('\\', '\\\\')
