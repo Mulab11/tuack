@@ -111,15 +111,22 @@ def noi():
 				)
 			)
 		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
-		with open(os.path.join('tmp', 'problems.tex'), 'wb') as f:
-			f.write(
-				env.get_template('day_title.tex').render(
-					problems = tex_problems,
-					probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set]
-				).encode(
+		all_problem_description = env.get_template('day_title.tex').render(
+			problems = tex_problems,
+			probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set]
+		)
+		try:
+			open(os.path.join('tmp', 'problems.tex'), 'wb') \
+				.write(all_problem_description.encode(
 					'utf-8' if common.system != 'Windows' else 'GBK'
-				)
-			)
+				))
+		except Exception as e:
+			print('You can find the tex file with utf-8 code in tmp/problems.tmp.json')
+			open(os.path.join('tmp', 'problems.tmp.tex'), 'w') \
+				.write(all_problem_description.encode(
+					'utf-8' if common.system != 'Windows' else 'GBK'
+				))
+			raise e
 		os.chdir('tmp')
 		os.system('pdflatex problems.tex')
 		os.system('pdflatex problems.tex ')

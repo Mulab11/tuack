@@ -70,7 +70,13 @@
 \renewcommand{\headheight}{20pt}
 \renewcommand{\headrulewidth}{0.2pt}
 \renewcommand{\footrulewidth}{0pt}
-\rhead{\parbox{\textwidth}{\raggedleft\textnormal{\footnotesize \theday ~~ \leftmark}}}
+\rhead{\parbox{\textwidth}{\raggedleft\textnormal{
+	\footnotesize
+	\ifdefined \theday
+		\theday ~~
+	\fi
+	\leftmark
+}}}
 \lhead{\parbox{\textwidth}{\textnormal{
 	\footnotesize \thetitle
 	\ifdefined\subtitle
@@ -161,14 +167,15 @@
 		\ifdefined\subtitle
 			{\yihao \hei \subtitle \par} \vskip 1em
 		\fi
-		\ifdefined\subtitle
-			{\yihao \hei \subtitle \par} \vskip 1em
-		\fi
 		\ifdefined\engtitle
 			{\yihao \xiaochu \engtitle \par} \vskip 1em
 		\fi
-		{\kai \xiaoyi \theday \par} \vskip 1em 
-		{\hei \sanhao \time \par}
+		\ifdefined\theday
+			{\kai \xiaoyi \theday \par} \vskip 1em 
+		\fi
+		\ifdefined\time
+			{\hei \sanhao \time \par}
+		\fi
 	\end{center}
 	\vskip 1em
 }
