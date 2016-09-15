@@ -35,6 +35,7 @@
 \usepackage{fancyvrb}
 \usepackage{enumitem}
 \usepackage{tabto}
+\usepackage{microtype}
 
 %% Ò³±ß¾à
 \setlength{\textwidth}{\paperwidth}

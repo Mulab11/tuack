@@ -103,13 +103,15 @@ def noi():
 					.replace('`', '\'')
 					.encode('utf-8')
 			)
-			tex_problems.append(
-				env.get_template('problem.tex.jinja').render(
+			try:
+				res = env.get_template('problem.tex.jinja').render(
 					context,
 					template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
 					table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context)
 				)
-			)
+			except:
+				res = open(os.path.join('tmp', 'problem.tex.jinja'), 'rb').read().decode('utf-8')
+			tex_problems.append(res)
 		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		all_problem_description = env.get_template('day_title.tex').render(
 			problems = tex_problems,
