@@ -68,7 +68,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 以下是 `probs.json` 的格式要求：
 
-```json
+```js
 {
 	"day1" : ["excellent", "grid", "cyclic"],	//每天按照顺序放置题目的英文名称，必须要和目录的名称相同
 	"day2" : ["interval", "drink", "nodes"]
@@ -77,7 +77,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 以下是 `prob.json` 的格式要求：
 
-```json
+```js
 {
 	"type" : "program",			//program传统，output提交答案，alternately交互
 	"cnname" : "优秀的拆分",	//中文名称
@@ -180,7 +180,7 @@ python oi_tools/tester.py -p day1/excellent,day2/drink
 
 其中\*jinja表示经过jinja渲染会变成jinja模板的代码。
 
-jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.html#line-statements)学习。
+jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.html)学习。
 
 所有的模板都存在该工程的templates目录下，有兴趣开发模板或是想修改的话欢迎联系我入坑。
 
@@ -189,15 +189,23 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 这里以NOI2016网格这题为例介绍一下，详细代码见NOI2016的[git工程](http://git.oschina.net/mulab/NOI2016)。
 
 `{% block title %}{% endblock %}` 表示使用名为 `title` 的子块，这个子块在uoj模式下会渲染成时间、空间限制和题目类型（如果不为传统型的话），在noi模式下会留空。
-这些子块定义在 `problem_base.md.jinja` 中，可用的还有样例自动渲染、选手目录渲染等，具体可以阅读代码。
+这些子块定义在 `problem_base.md.jinja` 中，可用的还有：
+* `input_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
+* `output_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
+* `user_path` 选手目录，如果是noi会变成“选手目录”这几个字，uoj会变成下载链接。
+* `sample_text` 样例自动渲染，会自动读入样例文件并添加到题面中，需要下面提到的前置变量。
+* `sample_file` 一个不出现在题面，但是以文件形式提供的样例，同样需要下面提到的前置变量。
+* `title_sample_description` uoj的“样例输入”是拆分成两级名称的，所以蛋疼地需要多一级。
+* `title` 标题，包括时空限制、题目类型等。
 
 一个块只能在代码中直接出现一次，如果需要多次使用，需要写成 `{{ self.块名称() }}` ，例如 `{{ self.title() }}`。
+事实上，可以总是使用这种方式输出一个块，上面那种方式是为了更好地支持继承，因此我们推荐在造题的时候始终使用这种方式引用块。
 
 有的块需要用到前置的变量，例如文字样例自动渲染需要提供样例的编号 `sample_id` 作为变量，具体会写成这样：
 ```
 {% set vars = {} -%}
 {%- do vars.__setitem__('sample_id', 1) -%}
-{% block sample_text -%}{%- endblock %}
+{{ self.sample_text() }}
 ```
 
 ### 外部变量和小工具
@@ -211,10 +219,12 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 获取当前的渲染环境，可以用变量 `io_style`（会被赋值为 `noi` 或 `uoj`）。
 
 如果需要以文本的形式展示某个下发的文件，提供了一个函数 `down_file(file_name)`，例如：
-	## 【样例输出】
-	```
-	{{ down_file('grid1.ans') }}
-	```
+```
+## 【样例输出】
+//这里应该有3个`
+{{ down_file('grid1.ans') }}
+//这里应该有3个`
+```
 
 考虑到不同情况下下发文件存储的位置不同，用函数 `file_name` 根据具体的环境生成具体的路径。
 类似的还有 `resource` 函数，可以根据具体情况获取存储在 resources 文件夹中的资源（图片、模板等）。
@@ -247,7 +257,8 @@ ${{ tools.hn(1000000) }}$
 表格当然可以使用原生的 markdown 或是上文提到的两轮渲染进行，但考虑到题目中表格的特殊性，我们提供一种方式用 json 描述表格。
 具体将 json 的模板放在 `tables` 目录下（同样，不含任何模板语法就是一个json），使用 null 表示和上一行合并单元格。
 因此可以写成类似于下面的格式：
-```json
+```js
+[	
 	["测试点", "$n, m$"]
 	{%- set last = None -%}
 	{% for datum in prob['data'] %}
