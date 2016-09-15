@@ -30,7 +30,7 @@
 ## 【样例{{ vars['sample_id'] }}输入】
 {%- endif %}
 ```
-{{ down_file(prob['name'] + vars['sample_id'].__str__() + '.in') }}
+{{ down_file(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.in') }}
 ```
 
 {% if io_style == 'uoj' -%}
@@ -39,7 +39,7 @@
 ## 【样例{{ vars['sample_id'] }}输出】
 {%- endif %}
 ```
-{{ down_file(prob['name'] + vars['sample_id'].__str__() + '.ans') }}
+{{ down_file(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.ans') }}
 ```
 {%- endblock %}
 {% block title_sample_description -%}
@@ -52,7 +52,7 @@
 {% block sample_file -%}
 ## 【样例{{vars['sample_id']}}】
 
-见{{ self.user_path() }}下的 *{{ file_name(prob['name'] + vars['sample_id'].__str__() + '.in') }}* 与 *{{ file_name(prob['name'] + vars['sample_id'].__str__() + '.ans') }}*。
+见{{ self.user_path() }}下的 *{{ file_name(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.in') }}* 与 *{{ file_name(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.ans') }}*。
 {%- endblock %}
 {% block title %}
 	{%- if io_style == 'uoj' -%}
