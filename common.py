@@ -84,10 +84,16 @@ def load_problems():
 	return probs
 
 def remkdir(name):
-	shutil.rmtree(name, ignore_errors = True)
-	time.sleep(0.1)
-	if not os.path.exists(name):
-		os.makedirs(name)
+	while True:
+		try:
+			shutil.rmtree(name, ignore_errors = True)
+			time.sleep(0.1)
+			if not os.path.exists(name):
+				os.makedirs(name)
+			break
+		except Exception as e:
+			print(e)
+			warning('Can\'t delete %s' % name)
 		
 def copy(source, name, target):
 	full_source = os.path.join(source, name)
