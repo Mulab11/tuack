@@ -15,7 +15,7 @@
 {% endblock %}
 {%- block user_path -%}
 	{%- if io_style == 'uoj' -%}
-		[下载目录](download.php?type=problem&id={{ prob['uoj_id'] }})
+		[下载目录](download.php?type=problem&id={{ prob['uoj id'] }})
 	{%- elif io_style == 'noi' -%}
 		选手目录
 	{%- else -%}
@@ -57,7 +57,9 @@
 {% block title %}
 	{%- if io_style == 'uoj' -%}
 **时间限制：** {{ tools.ceil(prob['time limit']) }} 秒
+
 **内存限制：** {{ prob['memory limit'] }}
+
 **相关文件：** {{ self.user_path() }}
 		{%- if prob['type'] == 'output' -%}
 ** 这是一道提交答案题 **
