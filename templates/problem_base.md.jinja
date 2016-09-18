@@ -15,7 +15,7 @@
 {% endblock %}
 {%- block user_path -%}
 	{%- if io_style == 'uoj' -%}
-		[下载目录](download.php?type=problem&id={{ prob['uoj id'] }})
+		[下载目录](/download.php?type=problem&id={{ prob['uoj id'] }})
 	{%- elif io_style == 'noi' -%}
 		选手目录
 	{%- else -%}
