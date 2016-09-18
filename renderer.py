@@ -149,6 +149,7 @@ def uoj():
 			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
 				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', 'uoj', day_name, prob['name']))
 			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
+			time.sleep(0.1)
 			context = {
 				'prob' : prob,
 				'io_style' : io_style,
