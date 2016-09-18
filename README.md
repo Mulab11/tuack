@@ -106,7 +106,8 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 			"cases" : [20],
 			"args" : [30000, 0]
 		}
-	]
+	],
+	"uoj id" : 3				//如果要使用上传到uoj的功能，需要填写这道题目的uoj题目id
 }
 ```
 
@@ -126,7 +127,9 @@ python oi_tools/packer.py uoj,noi,release
 * `test`：用于 `tester.py` 的数据包；
 * `release`：用于发布的zip包；
 * `noi`：noi风格的数据包；
-* `uoj`：uoj风格的数据包。
+* `uoj`：uoj风格的数据包，并自动上传到uoj。
+
+如果需要上传到uoj，需要配置文件 `uoj.json`，安装svn，并在 `prob.json` 中添加 `uoj id` 参数。
 
 ### 测试
 
@@ -186,14 +189,14 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 
 ### description.md
 
-这里以NOI2016网格这题为例介绍一下，详细代码见NOI2016的[git工程](http://git.oschina.net/mulab/NOI2016)。
+可以参考NOI2016网格这题，下面提到的大部分功能在这个题目中都有使用，详细代码见NOI2016的[git工程](http://git.oschina.net/mulab/NOI2016)。
 
 `{% block title %}{% endblock %}` 表示使用名为 `title` 的子块，这个子块在uoj模式下会渲染成时间、空间限制和题目类型（如果不为传统型的话），在noi模式下会留空。
 这些子块定义在 `problem_base.md.jinja` 中，可用的还有：
 * `input_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `output_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `user_path` 选手目录，如果是noi会变成“选手目录”这几个字，uoj会变成下载链接。
-* `sample_text` 样例自动渲染，会自动读入样例文件并添加到题面中，需要下面提到的前置变量。
+* `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。
 * `sample_file` 一个不出现在题面，但是以文件形式提供的样例，同样需要下面提到的前置变量。
 * `title_sample_description` uoj的“样例输入”是拆分成两级名称的，所以蛋疼地需要多一级。
 * `title` 标题，包括时空限制、题目类型等。
@@ -207,6 +210,20 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 {%- do vars.__setitem__('sample_id', 1) -%}
 {{ self.sample_text() }}
 ```
+
+### 一些约定
+
+题目标题用一级标题 `#`，在题面书写的时候并不需要加上。
+
+每个小节标题，如 `【题目描述】` 用二级标题 `##`，会被渲染成Latex的subsection和html的h2。
+（不要吐槽uoj上字体太大了，这里应该是uoj改css）
+
+小节下的标题用三级标题 `###`，会被渲染成Latex的subsubsection和html的h3。
+对于uoj，`【样例】` 下的 `输入` 会使用比上面第一级的标题，而这个在noi style的题面中会不单列一级标题；为了通用，建议使用上面提到的子块生成样例。
+
+样例使用三个反引号（不知道markdown里面怎么打这几个字符）括起来的pre来装，同样建议用子块而非自己做样例。
+
+公式用 `$` 括起来，单独占行的公式用 `$$` 括起来，例如 `$1 \le a_i \le n$`。
 
 ### 外部变量和小工具
 
