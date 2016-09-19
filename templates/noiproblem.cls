@@ -10,7 +10,8 @@
 \RequirePackage{graphicx,subfigure}
 \RequirePackage{amsmath,amsthm,amsfonts,amssymb,bm}
 \RequirePackage{txfonts}
-\RequirePackage{CJK,ctex}
+\RequirePackage{CJK}
+\RequirePackage[adobefonts]{ctex}
 \RequirePackage{longtable,multirow}
 \RequirePackage{color,xcolor}
 \RequirePackage{courier}
