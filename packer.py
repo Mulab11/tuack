@@ -246,10 +246,17 @@ def uoj():
 	output_folder = 'uoj'
 	if not os.path.exists('uoj'):
 		os.makedirs('uoj')
-	uoj_config = json.loads(open('uoj.json').read())
-	svn_init()
+	if os.path.exists('uoj.json'):
+		flag = False
+		warning('uoj.json not found. Cannot upload to uoj')
+	else:
+		flag = True
+	if flag:
+		uoj_config = json.loads(open('uoj.json').read())
+		svn_init()
 	uoj_copy_files()
-	svn_upload()
+	if flag:
+		svn_upload()
 
 work_list = {
 	'noi' : noi,
