@@ -246,7 +246,7 @@ def uoj():
 	output_folder = 'uoj'
 	if not os.path.exists('uoj'):
 		os.makedirs('uoj')
-	if os.path.exists('uoj.json'):
+	if not os.path.exists('uoj.json'):
 		flag = False
 		warning('uoj.json not found. Cannot upload to uoj')
 	else:
