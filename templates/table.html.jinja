@@ -1,4 +1,4 @@
-<table class="table"><thead>
+<table class="table table-bordered"><thead>
 	{%- for i in range(table.__len__()) -%}
 		<tr>
 		{%- with first_row = loop.first -%}
@@ -9,7 +9,7 @@
 							th
 						{%- else -%}
 							td
-						{%- endif -%}
+						{%- endif %}
 					rowspan="{{- cnt[i][j] -}}">{{ table[i][j] }}<
 						{%- if first_row -%}
 							/th

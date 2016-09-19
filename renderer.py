@@ -60,7 +60,7 @@ def table(path, name, temp, context):
 	for i in range(len(table) - 2, -1, -1):
 		max_len = max(max_len, len(table[i]))
 		for j in range(min(len(table[i]), len(table[i + 1]))):
-			if not table[i + 1][j]:
+			if table[i + 1][j] == None:
 				cnt[i][j] += cnt[i + 1][j]
 	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
 	
