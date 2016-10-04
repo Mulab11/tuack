@@ -18,10 +18,16 @@ import platform
 from common import *
 import common
 	
-def run_windows(name, tl, ml):
+def run_windows(name, tl, ml, input = None, output = None):
 	t = time.clock()
 	try:
-		pro = subprocess.Popen(name, startupinfo = subprocess.SW_HIDE)
+		fin = (open(input) if input else None)
+		fout = (open(output, 'w') if output else None)
+		pro = subprocess.Popen(name, stdin = fin, stdout = fout)
+		if fout:
+			fout.close()
+		if fin:
+			fin.close()
 	except:
 		return 'Can\'t run program.', 0.0
 	while True:
@@ -42,9 +48,14 @@ def run_windows(name, tl, ml):
 	time.sleep(1e-2)
 	return ret, t
 
-def runner_linux(name, que, ml):
+def runner_linux(name, que, ml, input = None, output = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; time -f "%%U" -o timer ./%s' % (common.memory2bytes(ml) // 1024, name),
+		'ulimit -v %d; time -f "%%U" -o timer ./%s %s %s' % (
+			common.memory2bytes(ml) // 1024,
+			name,
+			'< %s' % input if input else '',
+			'> %s' % output if output else '',
+		),
 		shell = True,
 		preexec_fn = os.setsid
 	)
@@ -52,12 +63,12 @@ def runner_linux(name, que, ml):
 	ret = pro.wait()
 	que.put(ret)
 	
-def run_linux(name, tl, ml):
+def run_linux(name, tl, ml, input = None, output = None):
 	'''
 	Memory limit is not considered.
 	'''
 	que = Queue()
-	pro = Process(target = runner_linux, args = (name, que, ml))
+	pro = Process(target = runner_linux, args = (name, que, ml, input, output))
 	pro.start()
 	pro.join(tl * time_multiplier)
 	if que.qsize() == 0:
@@ -110,7 +121,7 @@ def test(prob):
 		shutil.copy(os.path.join(path, prob['name'] + str(i) + '.in'), os.path.join('tmp', prob['name'] + '.in'))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
-			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'])
+			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], prob['name'] + '.in', prob['name'] + '.out')
 			os.chdir('..')
 		else:
 			if os.path.exists(os.path.join('tmp', prob['name'] + str(i) + '.out')):
