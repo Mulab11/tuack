@@ -43,7 +43,7 @@ def file_name(io_style, prob, name):
 		return prob['name'] + '/' + name
 	elif io_style == 'uoj':
 		return name
-	else:
+	else:	#CCPC has no download files
 		return name
 	
 def table(path, name, temp, context):
@@ -64,9 +64,9 @@ def table(path, name, temp, context):
 				cnt[i][j] += cnt[i + 1][j]
 	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
 	
-def noi():
-	remkdir(os.path.join('descriptions', 'noi'))
-	io_style = 'noi'
+def pdf(comp):
+	remkdir(os.path.join('descriptions', comp))
+	io_style = comp
 	shutil.copy(os.path.join('title.tex'), 'tmp')
 	for day_name, probs in common.probs.items():
 		if day_name not in common.day_set:
@@ -100,7 +100,11 @@ def noi():
 					.decode('utf-8')
 					.replace('\\{\\{', '{{')
 					.replace('\\}\\}', '}}')
-					.replace('`', '\'')
+					.replace('\\[', '$$')
+					.replace('\\]', '$$')
+					.replace('\\(', '~\\(')
+					.replace('\\)', '\\)~')
+					.replace('``', 'tHiSiSAMAgicStRING').replace('`', '\'').replace('tHiSiSAMAgicStRING', '``')			## such ugly solution
 					.encode('utf-8')
 			)
 			try:
@@ -115,7 +119,8 @@ def noi():
 		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		all_problem_description = env.get_template('day_title.tex').render(
 			problems = tex_problems,
-			probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set]
+			probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set],
+			tools = tools
 		)
 		try:
 			open(os.path.join('tmp', 'problems.tex'), 'wb') \
@@ -133,7 +138,7 @@ def noi():
 		os.system('pdflatex problems.tex')
 		os.system('pdflatex problems.tex ')
 		os.chdir('..')
-		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', 'noi', day_name + '.pdf'))
+		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
 		
 def uoj():
 	io_style = 'uoj'
@@ -174,7 +179,8 @@ def uoj():
 			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
 
 work_list = {
-	'noi' : noi,
+	'noi' : lambda : pdf('noi'),
+	'ccpc' : lambda : pdf('ccpc'),
 	'uoj' : uoj
 }
 	

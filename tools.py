@@ -3,6 +3,9 @@
 from math import *
 import json
 
+chr = chr
+ord = ord
+
 def int_lg(num):
 	if num == 0:
 		return float('-inf')
@@ -45,7 +48,7 @@ def hn(num):
 			ret += str(num // 10 ** n)
 			l += 1
 		else:
-			tmp = str(num / 10 ** n)
+			tmp = str(float(num) / 10 ** n)
 			ret += tmp
 			l += len(tmp)
 		ret += ' \\times '

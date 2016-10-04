@@ -211,6 +211,14 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 {{ self.sample_text() }}
 ```
 
+如果只有一组样例，应当不设置样例编号，像这样：
+```
+{% set vars = {} -%}
+{{ self.sample_text() }}
+```
+
+但请注意，在 `down` 文件夹中仍然需要以 `1` 标号。
+
 ### 一些约定
 
 题目标题用一级标题 `#`，在题面书写的时候并不需要加上。
@@ -223,7 +231,7 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 
 样例使用三个反引号（不知道markdown里面怎么打这几个字符）括起来的pre来装，同样建议用子块而非自己做样例。
 
-公式用 `$$` 括起来，单独占行的公式用单独占行的 `$$` 括起来，例如 `$$1 \le a_i \le n$$`。
+公式用 `$` 括起来，单独占行的公式用单独占行的 `$$` 括起来，例如 `$1 \le a_i \le n$`。
 
 ### 外部变量和小工具
 
@@ -258,7 +266,7 @@ ${{ tools.hn(1000000) }}$
 
 例如提供了一对简单的图片模板 `image.tex.jinja` 和 `image.html.jinja`，使得可以使用以下语法渲染一张图片
 ```
-{{ '{{' }} template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = false) {{ '}}' }}
+{{ '{{' }} template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False) {{ '}}' }}
 ```
 其中 `{{ '{{' }}` 使得这段文字在被渲染之后会被渲染成一个模板项。
 

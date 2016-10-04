@@ -4,6 +4,7 @@
 		从标准输入读入数据。
 	{%- elif io_style == 'noi' -%}
 		从文件 *{{ prob['name'] }}.in* 中读入数据。
+	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
 {% block output_file %}
@@ -11,6 +12,7 @@
 		输出到标准输出。
 	{%- elif io_style == 'noi' -%}
 		输出到文件 *{{ prob['name'] }}.out* 中。
+	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
 {%- block user_path -%}
@@ -24,35 +26,35 @@
 {%- endblock -%}
 {% block sample_text -%}
 {% if io_style == 'uoj' -%}
-## 【样例{{ vars['sample_id'] }}】
+## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}】
 ### 输入
-{%- elif io_style == 'noi' -%}
-## 【样例{{ vars['sample_id'] }}输入】
+{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
+## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入】
 {%- endif %}
 ```
-{{ down_file(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.in') }}
+{{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
 ```
 
 {% if io_style == 'uoj' -%}
 ### 输出
-{%- elif io_style == 'noi' -%}
-## 【样例{{ vars['sample_id'] }}输出】
+{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
+## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出】
 {%- endif %}
 ```
-{{ down_file(prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.ans') }}
+{{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
 {%- endblock %}
 {% block title_sample_description -%}
 	{%- if io_style == 'uoj' -%}
 ### 说明
-	{%- elif io_style == 'noi' -%}
+	{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] }}说明】
 	{%- endif -%}
 {%- endblock %}
 {% block sample_file -%}
 ## 【样例{{vars['sample_id']}}】
 
-见{{ self.user_path() }}下的 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.in') }}* 与 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if vars['sample_id'] != '' else '1') + '.ans') }}*。
+见{{ self.user_path() }}下的 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
 {% block title %}
 	{%- if io_style == 'uoj' -%}
@@ -64,8 +66,12 @@
 		{%- if prob['type'] == 'output' -%}
 ** 这是一道提交答案题 **
 		{%- elif prob['type'] != 'program' -%}
-** 这是一道提交交互题 **
+** 这是一道交互题 **
 		{%- endif -%}
 	{%- elif io_style == 'noi' -%}
+	{%- elif io_style == 'ccpc' -%}
+时间限制： {{ prob['time limit'] }} 秒
+
+内存限制： {{ prob['memory limit'] }}
 	{%- endif -%}
 {% endblock %}

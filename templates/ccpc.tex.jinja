@@ -1,0 +1,34 @@
+\documentclass{noiproblem}
+\DeclareMathOperator{\xor}{xor}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\begin{document}
+
+\lhead{\parbox{\textwidth}{\textnormal{
+	\footnotesize \thetitle
+	\ifdefined\subtitle
+		~~/~~ \subtitle
+	\fi
+}}}
+
+{% block define_title %}{% endblock %}
+{% block define_day %}{% endblock %}
+
+\thispagestyle{Cover}
+\maketitle
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+{% for i in range(problems.__len__()) %}
+
+	\clearpage
+
+	\begin{center}
+		{\large \section{ {{ tools.chr(tools.ord('A') + i) }} . {{ probs[i]['cnname'] }} ~~/~~ \MakeLowercase{ {{ probs[i]['name'] }} } } }
+	\end{center}
+	
+	{{ problems[i] }}
+
+{% endfor %}
+
+\end{document}
