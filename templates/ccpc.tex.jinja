@@ -14,7 +14,23 @@
 {% block define_day %}{% endblock %}
 
 \thispagestyle{Cover}
-\maketitle
+\begin{figure}[H]
+\includegraphics[scale=0.3]{ccpc.png}
+\end{figure}
+\begin{center}
+		\ifdefined\engtitle
+			{\yihao \xiaochu \engtitle \par} \vskip 1em
+		\fi
+		\ifdefined\subtitle
+			{\yihao \hei \subtitle \par} \vskip 1em
+		\fi
+		\ifdefined\theday
+			{\kai \xiaoyi \theday \par} \vskip 1em 
+		\fi
+		\ifdefined\time
+			{\hei \sanhao \time \par}
+		\fi
+	\end{center}
 
 \setcounter{tocdepth}{1}
 \tableofcontents
