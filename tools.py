@@ -1,10 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 
 from math import *
+from __builtin__ import *
 import json
-
-chr = chr
-ord = ord
 
 def int_lg(num):
 	if num == 0:

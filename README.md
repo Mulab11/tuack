@@ -266,7 +266,7 @@ ${{ tools.hn(1000000) }}$
 
 例如提供了一对简单的图片模板 `image.tex.jinja` 和 `image.html.jinja`，使得可以使用以下语法渲染一张图片
 ```
-{{ '{{' }} template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False) {{ '}}' }}
+{{ render("template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False)") }}
 ```
 其中 `{{ '{{' }}` 使得这段文字在被渲染之后会被渲染成一个模板项。
 

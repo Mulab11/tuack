@@ -77,7 +77,7 @@
 	\ifdefined \theday
 		\theday ~~
 	\fi
-	\leftmark
+	\nouppercase \leftmark
 }}}
 \lhead{\parbox{\textwidth}{\textnormal{
 	\footnotesize \thetitle

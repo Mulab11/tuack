@@ -4,9 +4,9 @@
 \begin{document}
 
 \lhead{\parbox{\textwidth}{\textnormal{
-	\footnotesize \thetitle
+	\footnotesize \title
 	\ifdefined\subtitle
-		~~/~~ \subtitle
+		（\subtitle）
 	\fi
 }}}
 
@@ -14,23 +14,21 @@
 {% block define_day %}{% endblock %}
 
 \thispagestyle{Cover}
-\begin{figure}[H]
-\includegraphics[scale=0.3]{ccpc.png}
-\end{figure}
 \begin{center}
-		\ifdefined\engtitle
-			{\yihao \xiaochu \engtitle \par} \vskip 1em
-		\fi
-		\ifdefined\subtitle
-			{\yihao \hei \subtitle \par} \vskip 1em
-		\fi
-		\ifdefined\theday
-			{\kai \xiaoyi \theday \par} \vskip 1em 
-		\fi
-		\ifdefined\time
-			{\hei \sanhao \time \par}
-		\fi
-	\end{center}
+	{\includegraphics[scale=0.35]{ccpc.png} \par}
+	\ifdefined\engtitle
+		{\yihao \xiaochu \engtitle \par} \vskip 1em
+	\fi
+	\ifdefined\subtitle
+		{\yihao \hei \subtitle \par} \vskip 1em
+	\fi
+	\ifdefined\theday
+		{\kai \xiaoyi \theday \par} \vskip 1em 
+	\fi
+	\ifdefined\time
+		{\hei \sanhao \time \par}
+	\fi
+\end{center}
 
 \setcounter{tocdepth}{1}
 \tableofcontents
@@ -40,7 +38,11 @@
 	\clearpage
 
 	\begin{center}
-		{\large \section{ {{ tools.chr(tools.ord('A') + i) }} . {{ probs[i]['cnname'] }} ~~/~~ \MakeLowercase{ {{ probs[i]['name'] }} } } }
+		{\large \section{ 
+			{{ tools.chr(tools.ord('A') + i) }} . 
+			{{ probs[i]['cnname'] }} ~~/~~ 
+			{{ probs[i]['name'][0].upper() + probs[i]['name'][1:] }}
+		} }
 	\end{center}
 	
 	{{ problems[i] }}

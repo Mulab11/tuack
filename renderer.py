@@ -19,6 +19,7 @@ from common import *
 import common
 import jinja2
 import tools
+import uuid
 
 '''
 jinja_env = jinja2.Environment(loader=jinja2.PackageLoader('renderer', 'templates'))
@@ -26,6 +27,8 @@ temp = jinja_env.get_template('noiproblem.tex')
 with open(os.path.join('oi_tools', 'output.tex'), 'wb') as f:
 	f.write(temp.render(day = {'eng_title' : 'CCF-NOI-2016'}, probs = [{},{},{},{}]).encode('GBK'))
 '''
+
+secondary_dict = {}
 
 def init():
 	global env
@@ -64,6 +67,14 @@ def table(path, name, temp, context):
 				cnt[i][j] += cnt[i + 1][j]
 	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
 	
+def secondary(s, work):
+	if work == 'pdf':
+		id = str(uuid.uuid4())
+		secondary_dict[id] = s
+		return id
+	else:
+		return ' {{ ' + s + ' }} '
+	
 def pdf(comp):
 	remkdir(os.path.join('descriptions', comp))
 	io_style = comp
@@ -83,6 +94,7 @@ def pdf(comp):
 				'file_name' : lambda name : file_name(io_style, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
 				'resource' : lambda name : '../' + day_name + '/' + prob['name'] + '/resources/' + name,
+				'render' : lambda s : secondary(s, 'pdf')
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -94,18 +106,16 @@ def pdf(comp):
 				os.path.join('tmp', 'problem.md'),
 				os.path.join('tmp', 'problem.tex')
 			))
+			tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read() \
+				.decode('utf-8') \
+				.replace('\\[', '$$') \
+				.replace('\\]', '$$') \
+				.replace('\\(', '~\\(') \
+				.replace('\\)', '\\)~')
+			for key, val in secondary_dict.items():
+				tex = tex.replace(key, ' {{ ' + val + ' }} ')
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
-				open(os.path.join('tmp', 'problem.tex'), 'rb')
-					.read()
-					.decode('utf-8')
-					.replace('\\{\\{', '{{')
-					.replace('\\}\\}', '}}')
-					.replace('\\[', '$$')
-					.replace('\\]', '$$')
-					.replace('\\(', '~\\(')
-					.replace('\\)', '\\)~')
-					.replace('``', 'tHiSiSAMAgicStRING').replace('`', '\'').replace('tHiSiSAMAgicStRING', '``')			## such ugly solution
-					.encode('utf-8')
+				tex.encode('utf-8')
 			)
 			try:
 				res = env.get_template('problem.tex.jinja').render(
@@ -128,11 +138,9 @@ def pdf(comp):
 					'utf-8' if common.system != 'Windows' else 'GBK'
 				))
 		except Exception as e:
-			print('You can find the tex file with utf-8 code in tmp/problems.tmp.json')
+			print('You can find the tex file with utf-8 code in tmp/problems.tmp.tex')
 			open(os.path.join('tmp', 'problems.tmp.tex'), 'w') \
-				.write(all_problem_description.encode(
-					'utf-8' if common.system != 'Windows' else 'GBK'
-				))
+				.write(all_problem_description.encode('utf-8'))
 			raise e
 		os.chdir('tmp')
 		os.system('pdflatex problems.tex')
@@ -161,7 +169,8 @@ def uoj():
 				'tools' : tools,
 				'file_name' : lambda name : file_name(io_style, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
-				'resource' : lambda name : prob['name'] + '/' + name
+				'resource' : lambda name : prob['name'] + '/' + name,
+				'render' : lambda s : secondary(s, 'uoj')
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
