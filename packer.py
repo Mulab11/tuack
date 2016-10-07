@@ -84,6 +84,60 @@ def copy_one_day_files(probs, day_name):
 	if os.path.exists('log'):
 		os.remove('log')
 		
+def pc2_copy_one_day_files(probs, day_name):
+	remkdir(os.path.join('pc2', day_name))
+	remkdir(os.path.join('pc2', day_name, 'data'))
+	print('copy data files')
+	for prob in probs:
+		if day_name + '/' + prob['name'] not in common.prob_set:
+			continue
+		# TODO: if test cases is a list of scores instead of an integer
+		remkdir(os.path.join('pc2', day_name, 'data', prob['name']))
+		data_path = os.path.join(day_name, prob['name'], 'data')
+		for i in range(1, prob['test cases'] + 1):
+			for suf in ['.in', '.ans']:
+				copy(data_path, prob['name'] + str(i) + suf, os.path.join('pc2', day_name, 'data', prob['name']))
+		copy(data_path, 'chk', os.path.join('pc2', day_name, prob['name']))
+		for name in os.listdir(data_path):
+			if os.path.join(data_path, name) not in common.copied_data:
+				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
+				copy(data_path, name, os.path.join('pc2', day_name, 'data', prob['name']))
+		if os.system('dos2unix %s 2> log' % os.path.join('pc2', day_name, 'data', prob['name'], '*')) != 0:
+			warning('dos2unix failed.')
+	print('copy down files')
+	remkdir(os.path.join('pc2', day_name, 'down'))
+	for prob in probs:
+		if day_name + '/' + prob['name'] not in common.prob_set:
+			continue
+		# TODO: if test cases is a list of scores instead of an integer
+		data_path = os.path.join(day_name, prob['name'], 'down')
+		target_path = os.path.join('pc2', day_name, 'down', prob['name'])
+		remkdir(target_path)
+		case_no = (prob['test cases'] if prob['type'] == 'output' else prob['sample count'])
+		suffices = (['.in'] if prob['type'] == 'output' else ['.in', '.ans'])
+		for i in range(1, case_no + 1):
+			for suf in suffices:
+				copy(data_path, prob['name'] + str(i) + suf, target_path)
+		copy(data_path, 'checker', target_path)
+		for name in os.listdir(data_path):
+			if os.path.join(data_path, name) not in common.copied_data:
+				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
+				copy(data_path, name, target_path)
+	print('dos2unix down files')
+	for prob in probs:
+		if os.system('dos2unix %s 2> log' % os.path.join('pc2', day_name, 'down', prob['name'], '*')) != 0:
+			warning('dos2unix failed.')
+			break
+	remkdir(os.path.join('pc2', day_name, 'discussion'))
+	for prob in probs:
+		res = find_doc(os.path.join(day_name, prob['name']), 'discussion')
+		if res:
+			copy(os.path.join(day_name, prob['name']), res[0] + res[1], os.path.join('pc2', day_name, 'discussion', prob['name'] + res[1]))
+		else:
+			warning('Can\'t find discussion ppt for problem `%s`.' % prob['name'])
+	if os.path.exists('log'):
+		os.remove('log')
+		
 def prob2uoj_conf(prob):
 	s = ''
 	s += 'use_builtin_judger on\n'
@@ -165,6 +219,12 @@ def copy_files():
 			continue
 		copy_one_day_files(day_data, day_name)
 		
+def pc2_copy_files():
+	for day_name, day_data in common.probs.items():
+		if day_name not in common.day_set:
+			continue
+		pc2_copy_one_day_files(day_data, day_name)
+		
 def uoj_copy_files():
 	for day_name, day_data in common.probs.items():
 		if day_name not in common.day_set:
@@ -198,6 +258,12 @@ def test():
 	common.no_compiling = False
 	output_folder = '.'
 	copy_files()
+	
+def pc2():
+	global output_folder
+	common.no_compiling = True
+	remkdir('pc2')
+	pc2_copy_files()
 
 def release():
 	global output_folder
@@ -262,6 +328,7 @@ work_list = {
 	'noi' : noi,
 	'test' : test,
 	'uoj' : uoj,
+	'pc2' : pc2,
 	'release' : release
 }
 

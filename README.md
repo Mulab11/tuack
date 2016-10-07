@@ -127,6 +127,8 @@ python oi_tools/packer.py uoj,noi,release
 * `test`：用于 `tester.py` 的数据包；
 * `release`：用于发布的zip包；
 * `noi`：noi风格的数据包；
+* `pc2`：$pc^2$风格的数据包；
+
 * `uoj`：uoj风格的数据包，并自动上传到uoj。
 
 如果需要上传到uoj，需要配置文件 `uoj.json`，安装svn，并在 `prob.json` 中添加 `uoj id` 参数。
