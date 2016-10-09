@@ -91,27 +91,30 @@ def pc2_copy_one_day_files(probs, day_name):
 	for prob in probs:
 		if day_name + '/' + prob['name'] not in common.prob_set:
 			continue
+		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
-		remkdir(os.path.join('pc2', day_name, 'data', prob['name']))
-		data_path = os.path.join(day_name, prob['name'], 'data')
+		remkdir(os.path.join('pc2', day_name, 'data', name))
+		data_path = os.path.join(day_name, name, 'data')
+		target_path = os.path.join('pc2', day_name, 'data', name)
 		for i in range(1, prob['test cases'] + 1):
 			for suf in ['.in', '.ans']:
-				copy(data_path, prob['name'] + str(i) + suf, os.path.join('pc2', day_name, 'data', prob['name']))
-		copy(data_path, 'chk', os.path.join('pc2', day_name, prob['name']))
+				copy(data_path, prob['name'] + str(i) + suf, target_path)
+		copy(data_path, 'chk', target_path)
 		for name in os.listdir(data_path):
 			if os.path.join(data_path, name) not in common.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
-				copy(data_path, name, os.path.join('pc2', day_name, 'data', prob['name']))
-		if os.system('dos2unix %s 2> log' % os.path.join('pc2', day_name, 'data', prob['name'], '*')) != 0:
+				copy(data_path, name, target_path)
+		if os.system('dos2unix %s 2> log' % os.path.join(target_path, '*')) != 0:
 			warning('dos2unix failed.')
 	print('copy down files')
 	remkdir(os.path.join('pc2', day_name, 'down'))
 	for prob in probs:
 		if day_name + '/' + prob['name'] not in common.prob_set:
 			continue
+		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'down')
-		target_path = os.path.join('pc2', day_name, 'down', prob['name'])
+		target_path = os.path.join('pc2', day_name, 'down', name)
 		remkdir(target_path)
 		case_no = (prob['test cases'] if prob['type'] == 'output' else prob['sample count'])
 		suffices = (['.in'] if prob['type'] == 'output' else ['.in', '.ans'])
@@ -163,7 +166,7 @@ def prob2uoj_conf(prob):
 	else:
 		s += 'output_limit 64\n'
 	return s
-		
+
 def uoj_copy_one_day_files(probs, day_name):
 	print('copy data files')
 	for prob in probs:

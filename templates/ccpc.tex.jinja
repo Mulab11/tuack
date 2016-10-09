@@ -10,20 +10,26 @@
 	\fi
 }}}
 
+\rhead{\parbox{\textwidth}{\raggedleft\textnormal{
+	\footnotesize
+	\nouppercase \leftmark
+}}}
+
 {% block define_title %}{% endblock %}
 {% block define_day %}{% endblock %}
 
 \thispagestyle{Cover}
 \begin{center}
-	{\includegraphics[scale=0.35]{ccpc.png} \par}
+	{\includegraphics[scale=0.35]{ccpc.png} \par}  \vskip 2em
 	\ifdefined\engtitle
-		{\yihao \xiaochu \engtitle \par} \vskip 1em
+		{\hei \xiaochu \engtitle } 
 	\fi
 	\ifdefined\subtitle
-		{\yihao \hei \subtitle \par} \vskip 1em
+		{\hei \xiaochu \subtitle } 
 	\fi
+	\par 
 	\ifdefined\theday
-		{\kai \xiaoyi \theday \par} \vskip 1em 
+		{\kai \chuhao \theday \par} \vskip 1em 
 	\fi
 	\ifdefined\time
 		{\hei \sanhao \time \par}
@@ -34,14 +40,12 @@
 \tableofcontents
 
 {% for i in range(problems.__len__()) %}
-
 	\clearpage
-
 	\begin{center}
 		{\large \section{ 
 			{{ tools.chr(tools.ord('A') + i) }} . 
 			{{ probs[i]['cnname'] }} ~~/~~ 
-			{{ probs[i]['name'][0].upper() + probs[i]['name'][1:] }}
+			{{ probs[i]['name'].capitalize() }}
 		} }
 	\end{center}
 	

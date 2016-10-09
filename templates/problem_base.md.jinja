@@ -25,8 +25,13 @@
 	{%- endif -%}
 {%- endblock -%}
 {% block sample_text -%}
+{% block title_sample %}
 {% if io_style == 'uoj' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}】
+{%- endif %}
+{% endblock %}
+{% block sample_input_text %}
+{% if io_style == 'uoj' -%}
 ### 输入
 {%- elif io_style == 'noi' or io_style == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入】
@@ -34,7 +39,8 @@
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
 ```
-
+{% endblock %}
+{% block sample_output_text %}
 {% if io_style == 'uoj' -%}
 ### 输出
 {%- elif io_style == 'noi' or io_style == 'ccpc' -%}
@@ -43,6 +49,7 @@
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
+{%- endblock -%}
 {%- endblock %}
 {% block title_sample_description -%}
 	{%- if io_style == 'uoj' -%}

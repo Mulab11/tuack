@@ -28,6 +28,14 @@ with open(os.path.join('oi_tools', 'output.tex'), 'wb') as f:
 	f.write(temp.render(day = {'eng_title' : 'CCF-NOI-2016'}, probs = [{},{},{},{}]).encode('GBK'))
 '''
 
+work_class = {
+	'noi' : {'noi'},
+	'ccpc' : {'ccpc'},
+	'uoj' : {'uoj'},
+	'tex' : {'noi', 'ccpc'},
+	'html' : {'uoj'}
+}
+
 secondary_dict = {}
 
 def init():
@@ -67,15 +75,25 @@ def table(path, name, temp, context):
 				cnt[i][j] += cnt[i + 1][j]
 	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
 	
-def secondary(s, work):
-	if work == 'pdf':
+def secondary(s, sp, work):
+	if sp != None:
+		if type(sp) == str:
+			sp = [sp]
+		in_set = False
+		for i in sp:
+			if i in work_class and common.work in work_class[i]:
+				in_set = True
+				break
+		if not in_set:
+			return ''
+	if work == 'tex':
 		id = str(uuid.uuid4())
 		secondary_dict[id] = s
 		return id
 	else:
 		return ' {{ ' + s + ' }} '
 	
-def pdf(comp):
+def tex(comp):
 	remkdir(os.path.join('descriptions', comp))
 	io_style = comp
 	shutil.copy(os.path.join('title.tex'), 'tmp')
@@ -94,7 +112,7 @@ def pdf(comp):
 				'file_name' : lambda name : file_name(io_style, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
 				'resource' : lambda name : '../' + day_name + '/' + prob['name'] + '/resources/' + name,
-				'render' : lambda s : secondary(s, 'pdf')
+				'render' : lambda s, sp = None : secondary(s, sp, 'tex')
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -170,7 +188,7 @@ def uoj():
 				'file_name' : lambda name : file_name(io_style, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
 				'resource' : lambda name : prob['name'] + '/' + name,
-				'render' : lambda s : secondary(s, 'uoj')
+				'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -188,8 +206,8 @@ def uoj():
 			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
 
 work_list = {
-	'noi' : lambda : pdf('noi'),
-	'ccpc' : lambda : pdf('ccpc'),
+	'noi' : lambda : tex('noi'),
+	'ccpc' : lambda : tex('ccpc'),
 	'uoj' : uoj
 }
 	

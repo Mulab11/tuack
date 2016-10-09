@@ -199,8 +199,12 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 * `output_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `user_path` 选手目录，如果是noi会变成“选手目录”这几个字，uoj会变成下载链接。
 * `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。
+* `title_sample` uoj的“样例输”是拆分成两级名称的，所以蛋疼地需要多一级，这里专指“【样例】”这个标签；其他环境下则会被渲染成空的。
+* `sample_input_text` 样例输入自动渲染。
+* `sample_output_text` 样例输入自动渲染。
+* `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。
 * `sample_file` 一个不出现在题面，但是以文件形式提供的样例，同样需要下面提到的前置变量。
-* `title_sample_description` uoj的“样例输入”是拆分成两级名称的，所以蛋疼地需要多一级。
+* `title_sample_description` uoj的“样例说明”是拆分成两级名称的，所以蛋疼地需要多一级。
 * `title` 标题，包括时空限制、题目类型等。
 
 一个块只能在代码中直接出现一次，如果需要多次使用，需要写成 `{{ self.块名称() }}` ，例如 `{{ self.title() }}`。
@@ -270,14 +274,20 @@ ${{ tools.hn(1000000) }}$
 ```
 {{ render("template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False)") }}
 ```
-其中 `{{ '{{' }}` 使得这段文字在被渲染之后会被渲染成一个模板项。
+其中 `render` 函数中的串会在被渲染成tex或html之后会被渲染成一个模板项，从而进一步被渲染。
 
 如果要写一段自用的tex或html模板（当然你如果只需要嵌入tex或html，只需要再模板中不填入任何模板语法即可），
 你可以在 `resources` 文件夹中写 `名称.tex.jinja` 和 `名称.html.jinja`，然后用下列方式插入：
 ```
-{{ '{{' }} template(resource('image'), 模板参数表...) {{ '}}' }}
+{{ render("template(resource('名称'), 模板参数表...)") }}
 ```
-注意在tex中大括号会被转义，所以参数表不要使用大括号传，而使用变量赋值的方式传入。
+`render` 函数还可以传第二个参数，表示只在特定的环境下渲染，例如
+
+```
+{{ render(''' '<a href="http://uoj.ac">UOJ</a>' ''', 'html') }}
+```
+
+上例表示只在html中渲染一个指向UOJ的超链接。第二个参数支持单个表示类型的字符串或是一个这样的字符串组成的list。其中支持的字符串包括：`html`，`tex`，`noi`，`uoj`，`ccpc`。
 
 ### 表格
 
