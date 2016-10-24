@@ -30,9 +30,10 @@ with open(os.path.join('oi_tools', 'output.tex'), 'wb') as f:
 
 work_class = {
 	'noi' : {'noi'},
+	'noip' : {'noip'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
-	'tex' : {'noi', 'ccpc'},
+	'tex' : {'noi', 'noip', 'ccpc'},
 	'html' : {'uoj'}
 }
 
@@ -135,14 +136,16 @@ def tex(comp):
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
 				tex.encode('utf-8')
 			)
-			try:
-				res = env.get_template('problem.tex.jinja').render(
-					context,
-					template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
-					table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context)
-				)
-			except:
-				res = open(os.path.join('tmp', 'problem.tex.jinja'), 'rb').read().decode('utf-8')
+			#try:
+			res = env.get_template('problem.tex.jinja').render(
+				context,
+				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
+				table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context)
+			)
+			#except Exception as e:
+			#	print('You can find the error tex file with utf-8 code in tmp/problems.tex.jinja')
+			#	res = open(os.path.join('tmp', 'problem.tex.jinja'), 'rb').read().decode('utf-8')
+			#	raise e
 			tex_problems.append(res)
 		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		all_problem_description = env.get_template('day_title.tex').render(
@@ -162,7 +165,7 @@ def tex(comp):
 			raise e
 		os.chdir('tmp')
 		os.system('pdflatex problems.tex')
-		os.system('pdflatex problems.tex ')
+		os.system('pdflatex problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
 		
@@ -208,6 +211,7 @@ def uoj():
 work_list = {
 	'noi' : lambda : tex('noi'),
 	'ccpc' : lambda : tex('ccpc'),
+	'noip' : lambda : tex('noip'),
 	'uoj' : uoj
 }
 	

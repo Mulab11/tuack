@@ -7,26 +7,26 @@
 {% block define_day %}{% endblock %}
 
 \thispagestyle{Cover}
-\renewcommand{\maketitle} {
-	\null
+
+%\renewcommand{\maketitle} {
 	\begin{center}
-		{\yihao \bf \@title \par}
+		{\erhao \bf \thetitle \par}
 		\ifdefined\subtitle
-			{\yihao \hei \subtitle \par} \vskip 1em
+			{\erhao \hei \subtitle \par}
 		\fi
 		\ifdefined\engtitle
-			{\yihao \xiaochu \engtitle \par} \vskip 1em
+			{\xiaoyi \hei \engtitle \par}
 		\fi
 		\ifdefined\theday
-			{\kai \xiaoyi \theday \par} \vskip 1em 
+			{\kai \erhao \theday \par}
 		\fi
 		\ifdefined\time
-			{\hei \sanhao \time \par}
+			{\hei \xiaosan \time \par}
 		\fi
 	\end{center}
-	\vskip 1em
-}
-\maketitle
+%}
+%\maketitle
+	
 \begin{center}
 \begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
 	\hline
@@ -122,22 +122,10 @@
 		{%- endfor -%}
 		\tabularnewline
 	\hline
-		是否有部分分
-		{%- for prob in probs -%}
-			&
-			{% if prob['partial score'] %}
-				是
-			{% else %}
-				否
-			{% endif %}
-		{%- endfor -%}
-		\tabularnewline
-	\hline
 \end{tabularx}
 \end{center}
 
 提交源程序文件名
-
 \begin{center}
 \begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
 	\hline
@@ -177,7 +165,7 @@
 \end{tabularx}
 \end{center}
 
-编译开关
+编译命令（不包含任何优化开关）
 \begin{center}
 \begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
 	\hline
@@ -185,7 +173,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{{ prob['compile']['cpp'] }}
+				g++ {{ prob['name'] }}.cpp -o {{ prob['name'] }} {{ prob['compile']['cpp'] }}
 			{% else %}
 				N/A
 			{% endif %}
@@ -196,7 +184,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{{ prob['compile']['c'] }}
+				gcc {{ prob['name'] }}.c -o {{ prob['name'] }} {{ prob['compile']['c'] }}
 			{% else %}
 				N/A
 			{% endif %}
@@ -207,7 +195,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{{ prob['compile']['pas'] }}
+				fpc {{ prob['name'] }}.pas {{ prob['compile']['pas'] }}
 			{% else %}
 				N/A
 			{% endif %}
@@ -217,12 +205,14 @@
 \end{tabularx}
 \end{center}
 
+\precautions
+
 {% for i in range(problems.__len__()) %}
 
 	\clearpage
 
 	\begin{center}
-		{\large \section{ {{probs[i]['cnname']}} } }
+		\section{ {{probs[i]['cnname']}} }
 	\end{center}
 	
 	{{ problems[i] }}

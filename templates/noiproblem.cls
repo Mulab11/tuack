@@ -28,7 +28,7 @@
 \usepackage{sectsty}
 \usepackage{lipsum}
 \usepackage{mathtools,framed,graphicx,xcolor}
-% \usepackage{titlesec}
+\usepackage{titlesec}
 \usepackage{fixltx2e}
 \usepackage{makecell}
 \usepackage{tabularx}
@@ -63,6 +63,14 @@
 \renewcommand\thesubsection{}
 \renewcommand\thesubsubsection{}
 
+%% title formats %% It doesn't work now QAQ
+% \titleformat{\section}{\Large}{~}{0ex}{}
+% \sectionfont{\fontsize{180bp}{180bp}}
+%\titleformat*{\subsection}{\Large\bfseries}
+%\titleformat*{\subsubsection}{\large\bfseries}
+%\titleformat*{\paragraph}{\large\bfseries}
+%\titleformat*{\subparagraph}{\large\bfseries}
+
 %% 三线表格
 \newcommand{\bhline}{\Xhline{5\arrayrulewidth}}
 \newcommand{\mhline}{\Xhline{3\arrayrulewidth}}
@@ -72,10 +80,13 @@
 \renewcommand{\headheight}{20pt}
 \renewcommand{\headrulewidth}{0.2pt}
 \renewcommand{\footrulewidth}{0pt}
+
+%% \renewcommand{\sectionmark}[1]{\markleft{#1}}
+
 \rhead{\parbox{\textwidth}{\raggedleft\textnormal{
 	\footnotesize
 	\ifdefined \theday
-		\theday ~~
+		\theday
 	\fi
 	\nouppercase \leftmark
 }}}
@@ -141,12 +152,6 @@
 
 %% New page at every chapter %% It doesn't work now QAQ
 % \newcommand{\sectionbreak}{\clearpage}
-% \titleformat*{\section}{\itshape \bfseries}
-\sectionfont{\fontsize{18bp}{18bp}\selectfont}
-%\titleformat*{\subsection}{\Large\bfseries}
-%\titleformat*{\subsubsection}{\large\bfseries}
-%\titleformat*{\paragraph}{\large\bfseries}
-%\titleformat*{\subparagraph}{\large\bfseries}
 
 %% Some styles
 %% \newcommand{\filename}[1]{\bfseries \textit{#1}}
@@ -161,26 +166,6 @@
 \setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 \setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 \setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
-
-\renewcommand{\maketitle} {
-	\null
-	\begin{center}
-		{\yihao \bf \@title \par}
-		\ifdefined\subtitle
-			{\yihao \hei \subtitle \par} \vskip 1em
-		\fi
-		\ifdefined\engtitle
-			{\yihao \xiaochu \engtitle \par} \vskip 1em
-		\fi
-		\ifdefined\theday
-			{\kai \xiaoyi \theday \par} \vskip 1em 
-		\fi
-		\ifdefined\time
-			{\hei \sanhao \time \par}
-		\fi
-	\end{center}
-	\vskip 1em
-}
 
 \renewenvironment{abstract}{
 \section*{摘~~要}
