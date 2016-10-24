@@ -38,6 +38,9 @@
 \usepackage{tabto}
 \usepackage{microtype}
 
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
 %% Ò³±ß¾à
 \setlength{\textwidth}{\paperwidth}
 \setlength{\textheight}{\paperheight}
@@ -157,7 +160,7 @@
 %% \newcommand{\filename}[1]{\bfseries \textit{#1}}
 \renewcommand{\textbf}[1]{{\bfseries \underline{#1}}}
 \renewcommand{\emph}[1]{{\bfseries \textit{#1}}}
-\renewcommand{\texttt}[1]{{\ttfamily \underline{#1}}}
+% \renewcommand{\texttt}[1]{{\ttfamily \underline{#1}}}
 
 %% ´úÂë/ÑùÀı¿é
 \DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=2em}

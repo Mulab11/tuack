@@ -11,11 +11,11 @@
 %\renewcommand{\maketitle} {
 	\begin{center}
 		{\erhao \bf \thetitle \par}
-		\ifdefined\subtitle
-			{\erhao \hei \subtitle \par}
-		\fi
 		\ifdefined\engtitle
 			{\xiaoyi \hei \engtitle \par}
+		\fi
+		\ifdefined\subtitle
+			{\erhao \kai \subtitle \par}
 		\fi
 		\ifdefined\theday
 			{\kai \erhao \theday \par}
@@ -165,7 +165,7 @@
 \end{tabularx}
 \end{center}
 
-编译命令（不包含任何优化开关）
+编译选项（不打开任何优化选项）
 \begin{center}
 \begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
 	\hline
@@ -173,7 +173,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				g++ {{ prob['name'] }}.cpp -o {{ prob['name'] }} {{ prob['compile']['cpp'] }}
+				{{ prob['compile']['cpp'] }}
 			{% else %}
 				N/A
 			{% endif %}
@@ -184,7 +184,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				gcc {{ prob['name'] }}.c -o {{ prob['name'] }} {{ prob['compile']['c'] }}
+				{{ prob['compile']['c'] }}
 			{% else %}
 				N/A
 			{% endif %}
@@ -195,7 +195,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				fpc {{ prob['name'] }}.pas {{ prob['compile']['pas'] }}
+				{{ prob['compile']['pas'] }}
 			{% else %}
 				N/A
 			{% endif %}
