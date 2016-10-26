@@ -58,9 +58,9 @@ def file_name(io_style, prob, name):
 	else:	#CCPC has no download files
 		return name
 	
-def table(path, name, temp, context):
+def table(path, name, temp, context, options):
 	copy(path, name + '.json', os.path.join('tmp', 'table.json'))
-	res = env.get_template('table.json').render(context)
+	res = env.get_template('table.json').render(context, options = options)
 	try:
 		table = json.loads(res)
 	except Exception as e:
@@ -74,7 +74,9 @@ def table(path, name, temp, context):
 		for j in range(min(len(table[i]), len(table[i + 1]))):
 			if table[i + 1][j] == None:
 				cnt[i][j] += cnt[i + 1][j]
-	return env.get_template(temp).render(table = table, cnt = cnt, width = max_len)
+	ret = env.get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
+	os.remove(os.path.join('tmp', 'table.json'))
+	return ret
 	
 def secondary(s, sp, work):
 	if sp != None:
@@ -140,7 +142,7 @@ def tex(comp):
 			res = env.get_template('problem.tex.jinja').render(
 				context,
 				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
-				table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context)
+				table = lambda name, options = {} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			#except Exception as e:
 			#	print('You can find the error tex file with utf-8 code in tmp/problems.tex.jinja')

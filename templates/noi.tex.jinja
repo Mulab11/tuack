@@ -7,10 +7,30 @@
 {% block define_day %}{% endblock %}
 
 \thispagestyle{Cover}
-\renewcommand{\maketitle} {
+
+\ifdefined \precautions		%%For NOIP
+
+	\begin{center}
+		{\erhao \bf \thetitle \par}
+		\ifdefined\engtitle
+			{\xiaoyi \hei \engtitle \par}
+		\fi
+		\ifdefined\subtitle
+			{\erhao \kai \subtitle}
+		\fi
+		\ifdefined\theday
+			{\kai \erhao \theday \par}
+		\fi
+		\ifdefined\time
+			{\hei \xiaosan \time \par}
+		\fi
+	\end{center}
+
+\else						%%For contests other than NOIP
+
 	\null
 	\begin{center}
-		{\yihao \bf \@title \par}
+		{\yihao \bf \thetitle \par}
 		\ifdefined\subtitle
 			{\yihao \hei \subtitle \par} \vskip 1em
 		\fi
@@ -25,10 +45,20 @@
 		\fi
 	\end{center}
 	\vskip 1em
-}
-\maketitle
+
+\fi
+	
 \begin{center}
-\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+\begin{tabularx}{\the \textwidth}{
+		|
+		{%- if probs.__len__() == 4 -%}
+			p{0.20 \textwidth}
+		{%- else -%}
+			X
+		{%- endif -%}
+		|
+		{%- for i in range(probs.__len__()) %}X|{% endfor-%}
+	}
 	\hline
 		题目名称
 		{%- for prob in probs -%}
@@ -122,24 +152,21 @@
 		{%- endfor -%}
 		\tabularnewline
 	\hline
-		是否有部分分
-		{%- for prob in probs -%}
-			&
-			{% if prob['partial score'] %}
-				是
-			{% else %}
-				否
-			{% endif %}
-		{%- endfor -%}
-		\tabularnewline
-	\hline
 \end{tabularx}
 \end{center}
 
 提交源程序文件名
-
 \begin{center}
-\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+\begin{tabularx}{\the \textwidth}{
+		|
+		{%- if probs.__len__() == 4 -%}
+			p{0.20 \textwidth}
+		{%- else -%}
+			X
+		{%- endif -%}
+		|
+		{%- for i in range(probs.__len__()) %}X|{% endfor-%}
+	}
 	\hline
 		对于C++ {% if probs.__len__() < 5 %} \tabto{5em} {% endif %} 语言
 		{%- for prob in probs -%}
@@ -177,9 +204,18 @@
 \end{tabularx}
 \end{center}
 
-编译开关
+编译选项
 \begin{center}
-\begin{tabularx}{\the \textwidth}{|X|{%- for i in range(probs.__len__()) %}X|{% endfor-%}}
+\begin{tabularx}{\the \textwidth}{
+		|
+		{%- if probs.__len__() == 4 -%}
+			p{0.20 \textwidth}
+		{%- else -%}
+			X
+		{%- endif -%}
+		|
+		{%- for i in range(probs.__len__()) %}X|{% endfor-%}
+	}
 	\hline
 		对于C++ {% if probs.__len__() < 5 %} \tabto{5em} {% endif %} 语言
 		{%- for prob in probs -%}
@@ -217,12 +253,16 @@
 \end{tabularx}
 \end{center}
 
+\ifdefined \precautions
+	\precautions
+\fi
+
 {% for i in range(problems.__len__()) %}
 
 	\clearpage
 
 	\begin{center}
-		{\large \section{ {{probs[i]['cnname']}} } }
+		\section{ {{probs[i]['cnname']}} }
 	\end{center}
 	
 	{{ problems[i] }}

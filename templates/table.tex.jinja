@@ -1,7 +1,17 @@
 \begin{center}
-	\begin{tabular}{@{}
+	{%- if 'width' in options and options['width'] -%}
+		{% set sum_width = tools.sum(options['width']) %}
+		\begin{tabularx}{\the \textwidth}
+	{%- else -%}
+		\begin{tabular}
+	{%- endif -%}
+	{@{}
 		{%- for i in range(width) -%}
-			c
+			{%- if 'width' in options and options['width'] -%}
+				>{ \hsize={{ tools.float(options['width'][i]) / sum_width }} \hsize }X
+			{%- else -%}
+				c
+			{%- endif -%}
 			{%- if not loop.last -%}
 				|
 			{%- endif -%}
@@ -9,27 +19,37 @@
 	@{}}
 		\bhline
 		{% for i in range(table.__len__()) %}
-			{% for j in range(table[i].__len__()) %}
-				{% if table[i][j] %}
-					\multirow{ {{- cnt[i][j] -}} }{*}{ {{table[i][j]}} }
-				{% endif %}
-				{% if loop.last %}
+			{% for j in range(table[i].__len__()) -%}
+				{%- if table[i][j] -%}
+					\multirow{ {{- cnt[i][j] -}} }{*}{
+						{%- if 'width' in options and options['width'] -%}
+							\parbox{ \hsize }{ \centering {{table[i][j]}} }
+						{%- else -%}
+							{{table[i][j]}}
+						{%- endif -%}
+					}
+				{%- endif -%}
+				{%- if loop.last -%}
 					\tabularnewline
-				{% else %}
+				{%- else -%}
 					&
-				{% endif %}
-			{% endfor %}
-			{% if loop.first %}
+				{%- endif -%}
+			{%- endfor -%}
+			{%- if loop.first -%}
 				\mhline
-			{% elif loop.last %}
+			{%- elif loop.last -%}
 				\bhline
-			{% else %}
-				{% for j in range(table[i].__len__()) %}
-					{% if table[i + 1][j] %}
+			{%- else -%}
+				{%- for j in range(table[i].__len__()) -%}
+					{%- if table[i + 1][j] -%}
 						\cline{ {{- j + 1 -}} - {{- j + 1 -}} }
-					{% endif %}
-				{% endfor %}
-			{% endif %}
+					{%- endif -%}
+				{%- endfor -%}
+			{%- endif %}
 		{% endfor %}
-	\end{tabular}
+	{%- if 'width' in options and options['width'] -%}
+		\end{tabularx}
+	{%- else -%}
+		\end{tabular}
+	{%- endif -%}
 \end{center}
