@@ -1,7 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 
 from math import *
-from __builtin__ import *
+import sys
+if sys.version_info >= (3, 0): 
+	from builtins import *
+else:
+	from __builtin__ import *
 import json
 
 def int_lg(num):
