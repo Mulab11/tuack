@@ -19,6 +19,9 @@ from common import *
 import common
 	
 def run_windows(name, tl, ml, input = None, output = None):
+	'''
+	On windows, memory limit is not considered.
+	'''
 	t = time.clock()
 	try:
 		fin = (open(input) if input else None)
@@ -64,9 +67,6 @@ def runner_linux(name, que, ml, input = None, output = None):
 	que.put(ret)
 	
 def run_linux(name, tl, ml, input = None, output = None):
-	'''
-	Memory limit is not considered.
-	'''
 	que = Queue()
 	pro = Process(target = runner_linux, args = (name, que, ml, input, output))
 	pro.start()
