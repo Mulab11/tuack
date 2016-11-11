@@ -13,3 +13,9 @@ uoj
 noi
 pc2
 descriptions
+result
+*.swp
+*~
+.vscode
+*/*/*/*/*.exe
+*/tmp

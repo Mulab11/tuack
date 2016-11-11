@@ -177,12 +177,10 @@ def test(prob):
 	return scores, times, reports
 	
 def test_one_day(probs, day_name):
-	if not os.path.exists('result'):
-		os.makedirs('result')
 	for prob in probs:
 		if day_name + '/' + prob['name'] not in common.prob_set:
 			continue
-		with open(os.path.join('result', prob['name'] + '.csv'), 'w') as fres:
+		with open(os.path.join('..', 'result', day_name, prob['name'] + '.csv'), 'w') as fres:
 			fres.write('%s,%s,summary,sample\n' % (prob['name'], ','.join(map(str, range(1, prob['test cases'] + 1)))))
 			for user in os.listdir(prob['name']):
 				if not problem_skip.match(user) and os.path.isdir(os.path.join(prob['name'], user)):
@@ -213,9 +211,13 @@ def test_one_day(probs, day_name):
 								fres.write('%s,%s\n' % (title, ','.join(line)))
 	
 def test_progs():
+	if not os.path.exists('result'):
+		os.makedirs('result')
 	for day_name, day_data in common.probs.items():
 		if day_name not in common.day_set:
 			continue
+		if not os.path.exists(os.path.join('result', day_name)):
+			os.makedirs(os.path.join('result', day_name))
 		os.chdir(day_name)
 		test_one_day(day_data, day_name)
 		os.chdir('..')
