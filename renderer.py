@@ -200,7 +200,7 @@ def uoj():
 					.render(context)
 					.encode('utf-8')
 				)
-			open(os.path.join('tmp', prob['name'] + '.md'), 'wb') \
+			open(os.path.join('descriptions', 'uoj', day_name, prob['name'] + '.md'), 'wb') \
 				.write(env.get_template('problem.md')
 					.render(
 						context,
@@ -208,7 +208,7 @@ def uoj():
 						table = lambda name, options={} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context, options)
 					).encode('utf-8')
 				)
-			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
+			#shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
 
 work_list = {
 	'noi' : lambda : tex('noi'),
