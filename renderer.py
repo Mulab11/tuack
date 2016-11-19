@@ -205,7 +205,7 @@ def uoj():
 					.render(
 						context,
 						template = lambda temp_name, **context : env.get_template(temp_name + '.html.jinja').render(context),
-						table = lambda name : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context)
+						table = lambda name, options={} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context, options)
 					).encode('utf-8')
 				)
 			shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
