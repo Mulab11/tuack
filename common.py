@@ -77,9 +77,13 @@ def load_problems():
 	for day, names in problem_names.items():
 		problems = []
 		for name in names:
-			problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
-			problem['name'] = name
-			problems.append(problem)
+			try:
+				problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
+				problem['name'] = name
+				problems.append(problem)
+			except Exception as e:
+				print('At %s/%s.' % (day, name))
+				raise e
 		probs[day] = problems
 	return probs
 
