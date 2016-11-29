@@ -64,19 +64,24 @@
 见{{ self.user_path() }}下的 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
 {% block title %}
-	{%- if io_style == 'uoj' -%}
+{%- if io_style == 'uoj' -%}
+{%- if prob['type'] != 'output' -%}
 **时间限制：** {{ tools.ceil(prob['time limit']) }} 秒
 
 **内存限制：** {{ prob['memory limit'] }}
 
+{% endif -%}
 **相关文件：** {{ self.user_path() }}
-		{%- if prob['type'] == 'output' -%}
-** 这是一道提交答案题 **
-		{%- elif prob['type'] != 'program' -%}
-** 这是一道交互题 **
-		{%- endif -%}
-	{%- elif io_style == 'noi' -%}
-	{%- elif io_style == 'ccpc' -%}
+
+{% if prob['type'] == 'output' -%}
+**这是一道提交答案题**
+
+{% elif prob['type'] != 'program' -%}
+**这是一道交互题**
+
+{% endif -%}
+{%- elif io_style == 'noi' -%}
+{%- elif io_style == 'ccpc' -%}
 时间限制： {{ tools.float(prob['time limit']) }} 秒
-	{%- endif -%}
+{%- endif -%}
 {% endblock %}
