@@ -162,7 +162,7 @@ def tex(comp):
 				))
 		except Exception as e:
 			print('You can find the tex file with utf-8 code in tmp/problems.tmp.tex')
-			open(os.path.join('tmp', 'problems.tmp.tex'), 'w') \
+			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
 				.write(all_problem_description.encode('utf-8'))
 			raise e
 		os.chdir('tmp')
