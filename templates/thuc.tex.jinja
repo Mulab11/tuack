@@ -1,0 +1,157 @@
+\documentclass{noiproblem}
+\DeclareMathOperator{\xor}{xor}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\begin{document}
+
+{% block define_title %}{% endblock %}
+{% block define_day %}{% endblock %}
+
+\thispagestyle{Cover}
+
+\ifdefined \precautions		%%For NOIP
+
+	\begin{center}
+		{\erhao \bf \thetitle \par}
+		\ifdefined\engtitle
+			{\xiaoyi \hei \engtitle \par}
+		\fi
+		\ifdefined\subtitle
+			{\erhao \kai \subtitle}
+		\fi
+		\ifdefined\theday
+			{\kai \erhao \theday \par}
+		\fi
+		\ifdefined\time
+			{\hei \xiaosan \time \par}
+		\fi
+	\end{center}
+
+\else						%%For contests other than NOIP
+
+	\null
+	\begin{center}
+		{\yihao \bf \thetitle \par}
+		\ifdefined\subtitle
+			{\yihao \hei \subtitle \par} \vskip 1em
+		\fi
+		\ifdefined\engtitle
+			{\yihao \xiaochu \engtitle \par} \vskip 1em
+		\fi
+		\ifdefined\theday
+			{\kai \xiaoyi \theday \par} \vskip 1em 
+		\fi
+		\ifdefined\time
+			{\hei \sanhao \time \par}
+		\fi
+	\end{center}
+	\vskip 1em
+
+\fi
+	
+\begin{center}
+\begin{tabularx}{\the \textwidth}{
+		|
+		{%- if probs.__len__() == 4 -%}
+			p{0.20 \textwidth}
+		{%- else -%}
+			X
+		{%- endif -%}
+		|
+		{%- for i in range(probs.__len__()) %}X|{% endfor-%}
+	}
+	\hline
+		题目名称
+		{%- for prob in probs -%}
+			& {{ prob['cnname'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		题目类型
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] == 'program' %}
+				传统型
+			{% elif prob['type'] == 'output' %}
+				提交答案型
+			{% else %}
+				交互型
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		输入
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				标准输入
+			{% else %}
+				*.in
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		输出
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				标准输出
+			{% else %}
+				*.out
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		每个测试点时限
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['time limit'] }}秒
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		内存限制
+		{%- for prob in probs -%}
+			&
+			{% if prob['type'] != 'output' %}
+				{{ prob['memory limit'] }}
+			{% else %}
+				N/A
+			{% endif %}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		测试点数目
+		{%- for prob in probs -%}
+			& {{ prob['test cases'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+		每个测试点分值
+		{%- for prob in probs -%}
+			& {{ 100 // prob['test cases'] }}
+		{%- endfor -%}
+		\tabularnewline
+	\hline
+\end{tabularx}
+\end{center}
+
+\ifdefined \precautions
+	\precautions
+\fi
+
+{% for i in range(problems.__len__()) %}
+
+	\clearpage
+
+	\begin{center}
+		\section{ {{probs[i]['cnname']}}（{{probs[i]['name']}}） }
+	\end{center}
+	
+	{{ problems[i] }}
+
+{% endfor %}
+
+\end{document}
