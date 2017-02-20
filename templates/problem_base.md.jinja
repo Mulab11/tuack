@@ -1,4 +1,5 @@
 {% extends "problem.md.jinja" %}
+
 {% block input_file %}
 	{%- if io_style == 'uoj' -%}
 		从标准输入读入数据。
@@ -7,6 +8,7 @@
 	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
+
 {% block output_file %}
 	{%- if io_style == 'uoj' -%}
 		输出到标准输出。
@@ -15,6 +17,7 @@
 	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
+
 {%- block user_path -%}
 	{%- if io_style == 'uoj' -%}
 		[下载目录](/download.php?type=problem&id={{ prob['uoj id'] }})
@@ -24,17 +27,22 @@
 		目录
 	{%- endif -%}
 {%- endblock -%}
+
+
 {% block sample_text -%}
 {% block title_sample %}
 {% if io_style == 'uoj' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}】
 {%- endif %}
 {% endblock %}
+
 {% block sample_input_text %}
 {% if io_style == 'uoj' -%}
 ### 输入
 {%- elif io_style == 'noi' or io_style == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入】
+{% elif io_style == 'ccc' %}
+## Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
@@ -45,24 +53,32 @@
 ### 输出
 {%- elif io_style == 'noi' or io_style == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出】
+{% elif io_style == 'ccc' %}
+## Output for Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
 {%- endblock -%}
 {%- endblock %}
+
+
 {% block title_sample_description -%}
 	{%- if io_style == 'uoj' -%}
 ### 说明
 	{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] }}说明】
+	{% elif io_style == 'ccc' %}
+## Explanation of the Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 	{%- endif -%}
 {%- endblock %}
+
 {% block sample_file -%}
 ## 【样例{{vars['sample_id']}}】
 
 见{{ self.user_path() }}下的 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
+
 {% block title %}
 {%- if io_style == 'uoj' -%}
 {%- if prob['type'] != 'output' -%}
@@ -83,5 +99,16 @@
 {%- elif io_style == 'noi' -%}
 {%- elif io_style == 'ccpc' -%}
 时间限制： {{ tools.float(prob['time limit']) }} 秒
+{%- elif io_style == 'ccc' -%}
+{%- if prob['type'] != 'output' -%}
+Time limit: {{ tools.ceil(prob['time limit']) }} s
+
+Memory limit: {{ prob['memory limit'] }}
+
+{% endif -%}
+{% if prob['type'] == 'output' -%}
+This is an output-only problem. You should submit an output file for each given input file instead of source code.
+
+{% endif -%}
 {%- endif -%}
 {% endblock %}

@@ -1,0 +1,69 @@
+% 2016 Canadian Computing Competition: Senior Division
+% Created by Qiao Qian
+% Edited by Wentao Han
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{textcomp}
+% \usepackage{fontspec} % For using the Latin Modern font instead of Computer Modern, which lack the accented characters.
+
+\RequirePackage{enumerate}
+\RequirePackage{graphicx,subfigure}
+\RequirePackage{amsmath,amsthm,amsfonts,amssymb,bm}
+\RequirePackage{txfonts}
+\RequirePackage{CJK}
+\RequirePackage[adobefonts]{ctex}
+\RequirePackage{longtable,multirow}
+\RequirePackage{color,xcolor}
+\RequirePackage{courier}
+\RequirePackage{ifthen}
+\RequirePackage{calc}
+\RequirePackage{ifpdf}
+\RequirePackage{titling}
+\RequirePackage{listings}
+\RequirePackage{fancyhdr}
+\RequirePackage{algorithm,algorithmic}
+\RequirePackage{booktabs}
+\RequirePackage{ulem}
+\usepackage{lastpage}
+\usepackage{sectsty}
+\usepackage{lipsum}
+\usepackage{mathtools,framed,graphicx,xcolor}
+\usepackage{titlesec}
+\usepackage{fixltx2e}
+\usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{CJKfntef}
+\usepackage{fancyvrb}
+\usepackage{enumitem}
+\usepackage{tabto}
+\usepackage{microtype}
+
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
+\renewcommand\thesection{}
+\renewcommand\thesubsection{}
+\renewcommand\thesubsubsection{}
+
+\newcommand{\bhline}{\Xhline{5\arrayrulewidth}}
+\newcommand{\mhline}{\Xhline{3\arrayrulewidth}}
+
+\begin{document}
+
+\title{\bf 2017\\
+       Canadian Computing Competition\\
+       Senior Division}
+\author{Tsinghua University}
+\date{February 23, 2017}
+\maketitle
+\thispagestyle{empty}
+
+{% for i in range(problems.__len__()) %}
+	\clearpage
+	{{ problems[i] }}
+{% endfor %}
+
+\end{document}

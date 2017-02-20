@@ -33,8 +33,11 @@ work_class = {
 	'noip' : {'noip'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
-	'tex' : {'noi', 'noip', 'ccpc'},
-	'html' : {'uoj'}
+	'ccc' : {'ccc-tex', 'ccc-html'},
+	'ccc-tex' : {'ccc-tex'},
+	'ccc-html' : {'ccc-html'},
+	'tex' : {'noi', 'noip', 'ccpc', 'ccc-tex'},
+	'html' : {'uoj', 'ccc-html'}
 }
 
 secondary_dict = {}
@@ -171,8 +174,8 @@ def tex(comp):
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
 		
-def uoj():
-	io_style = 'uoj'
+def html(comp):
+	io_style = comp
 	remkdir(os.path.join('descriptions', 'uoj'))
 	for day_name, probs in common.probs.items():
 		if day_name not in common.day_set:
@@ -214,7 +217,9 @@ work_list = {
 	'noi' : lambda : tex('noi'),
 	'ccpc' : lambda : tex('ccpc'),
 	'noip' : lambda : tex('noip'),
-	'uoj' : uoj
+	'uoj' : lambda : html('uoj'),
+	'ccc-tex' :  lambda : tex('ccc'),
+	'ccc-html' : lambda : html('ccc'),
 }
 	
 if __name__ == '__main__':
