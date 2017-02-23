@@ -137,7 +137,7 @@ def tex(comp):
 				.replace('\\(', '~\\(') \
 				.replace('\\)', '\\)~')
 			for key, val in secondary_dict.items():
-				tex = tex.replace(key, ' {{ ' + val + ' }} ')
+				tex = tex.replace(key, '{{ ' + val + ' }}')
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
 				tex.encode('utf-8')
 			)
@@ -176,17 +176,17 @@ def tex(comp):
 		
 def html(comp):
 	io_style = comp
-	remkdir(os.path.join('descriptions', 'uoj'))
+	remkdir(os.path.join('descriptions', common.work))
 	for day_name, probs in common.probs.items():
 		if day_name not in common.day_set:
 			continue
-		remkdir(os.path.join('descriptions', 'uoj', day_name))
+		remkdir(os.path.join('descriptions', common.work, day_name))
 		tex_problems = []
 		for prob in probs:
 			if day_name + '/' + prob['name'] not in common.prob_set:
 				continue
 			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
-				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', 'uoj', day_name, prob['name']))
+				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', common.work, day_name, prob['name']))
 			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
 			time.sleep(0.1)
 			context = {
@@ -203,7 +203,7 @@ def html(comp):
 					.render(context)
 					.encode('utf-8')
 				)
-			open(os.path.join('descriptions', 'uoj', day_name, prob['name'] + '.md'), 'wb') \
+			open(os.path.join('descriptions', common.work, day_name, prob['name'] + '.md'), 'wb') \
 				.write(env.get_template('problem.md')
 					.render(
 						context,

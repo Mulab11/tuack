@@ -40,6 +40,7 @@
 \usepackage{enumitem}
 \usepackage{tabto}
 \usepackage{microtype}
+\usepackage{fancyvrb}
 
 \usepackage[T1]{fontenc}
 \usepackage{inconsolata}
@@ -63,7 +64,7 @@
 
 {% for i in range(problems.__len__()) %}
 	\clearpage
-\section{ Problem S{{i + 1}}: {{ probs[i].name }} }
+\section{ Problem S{{i + 1}}: {{ probs[i].name.capitalize() }} }
 	{{ problems[i] }}
 {% endfor %}
 

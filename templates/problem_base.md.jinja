@@ -44,9 +44,15 @@
 {% elif io_style == 'ccc' %}
 ## Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
+{% if 'show space' in vars %}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render('"' + down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') + '"') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{% else %}
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
 ```
+{% endif %}
 {% endblock %}
 {% block sample_output_text %}
 {% if io_style == 'uoj' -%}
@@ -56,9 +62,15 @@
 {% elif io_style == 'ccc' %}
 ## Output for Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
+{% if 'show space' in vars %}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render('"' + down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') + '"') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{% else %}
 ```
 {{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
+{% endif %}
 {%- endblock -%}
 {%- endblock %}
 
