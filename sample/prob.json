@@ -1,17 +1,17 @@
 {
-	"type" : "program",			
-	"cnname" : "优秀的拆分",	
-	"time limit" : 1.5,			
-	"memory limit" : "512 MB",	
-	"test cases" : 20,			
-	"partial score" : false,	
-	"compile" : {				
+	"type" : "program",
+	"cnname" : "优秀的拆分",
+	"time limit" : 1.5,
+	"memory limit" : "512 MB",
+	"test cases" : 20,
+	"partial score" : false,
+	"compile" : {
 		"cpp" : "-O2 -lm",
 		"c" : "-O2 -lm",
 		"pas" : "-O2"
 	},
-	"sample count" : 3,			
-	"args" : [10, 30000],		
+	"sample count" : 3,
+	"args" : [10, 30000],
 	"data" : [
 		{"cases" : [1, 2], "args" : [300, 1]},
 		{"cases" : [3, 4], "args" : [200, 1]},
@@ -27,5 +27,5 @@
 		{"cases" : [19], "args" : [2000, 0]},
 		{"cases" : [20], "args" : [30000, 0]}
 	],
-	"uoj id" : 3				
+	"uoj id" : 3
 }
