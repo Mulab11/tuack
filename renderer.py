@@ -116,7 +116,7 @@ def tex(comp):
 				'io_style' : io_style,
 				'tools' : tools,
 				'file_name' : lambda name : file_name(io_style, prob, name),
-				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
+				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().encode('utf-8'),
 				'resource' : lambda name : '../' + day_name + '/' + prob['name'] + '/resources/' + name,
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex')
 			}
@@ -194,7 +194,7 @@ def html(comp):
 				'io_style' : io_style,
 				'tools' : tools,
 				'file_name' : lambda name : file_name(io_style, prob, name),
-				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name)).read(),
+				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : prob['name'] + '/' + name,
 				'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
 			}
