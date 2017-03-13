@@ -1,6 +1,6 @@
-%% ĞÅÏ¢Ñ§°ÂÁÖÆ¥¿ËÖĞ¹ú¹ú¼Ò¶ÓºòÑ¡¶ÓÔ±ÂÛÎÄÄ£°å¡úNOIÌâÃæÄ£°å
-%% Ä£°å×÷Õß£ººúÎ°¶°
-%% Ä£°åĞŞ¸Ä£ºÓàÁÖÔÏ£¬³ÂĞí•F
+%% ä¿¡æ¯å­¦å¥¥æ—åŒ¹å…‹ä¸­å›½å›½å®¶é˜Ÿå€™é€‰é˜Ÿå‘˜è®ºæ–‡æ¨¡æ¿â†’NOIé¢˜é¢æ¨¡æ¿
+%% æ¨¡æ¿ä½œè€…ï¼šèƒ¡ä¼Ÿæ ‹
+%% æ¨¡æ¿ä¿®æ”¹ï¼šä½™æ—éŸµï¼Œé™ˆè®¸æ—»
 %%
 \NeedsTeXFormat{LaTeX2e}[1999/12/01]
 \ProvidesClass{noiproblem}
@@ -10,8 +10,11 @@
 \RequirePackage{graphicx,subfigure}
 \RequirePackage{amsmath,amsthm,amsfonts,amssymb,bm}
 \RequirePackage{txfonts}
-\RequirePackage{CJK}
-\RequirePackage[adobefonts]{ctex}
+\usepackage[BoldFont,SlantFont,CJKchecksingle]{xeCJK}
+\setCJKmainfont[BoldFont=SimHei]{SimSun}
+\setCJKmonofont{SimSun}% è®¾ç½®ç¼ºçœä¸­æ–‡å­—ä½“
+%% \RequirePackage{CJK}
+%% \RequirePackage[adobefonts]{ctex}
 \RequirePackage{longtable,multirow}
 \RequirePackage{color,xcolor}
 \RequirePackage{courier}
@@ -21,7 +24,7 @@
 \RequirePackage{titling}
 \RequirePackage{listings}
 \RequirePackage{fancyhdr}
-\RequirePackage{algorithm,algorithmic}
+%% \RequirePackage{algorithm,algorithmic}
 \RequirePackage{booktabs}
 \RequirePackage{ulem}
 \usepackage{lastpage}
@@ -32,16 +35,29 @@
 \usepackage{fixltx2e}
 \usepackage{makecell}
 \usepackage{tabularx}
-\usepackage{CJKfntef}
+%% \usepackage{CJKfntef}
 \usepackage{fancyvrb}
 \usepackage{enumitem}
 \usepackage{tabto}
-\usepackage{microtype}
+%% \usepackage{microtype}
+
+%\usepackage{fontspec}
+%\usepackage{xunicode}% provides unicode character macros
+%\usepackage{xltxtra} % provides some fixes/extras
+%\usepackage[margin=1.5cm]{geometry}
+%\usepackage{tikz}
+
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
 
 \usepackage[T1]{fontenc}
-\usepackage{inconsolata}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+\renewcommand{\baselinestretch}{1.3}
 
-%% Ò³±ß¾à
+%% \usepackage{inconsolata}
+
+%% é¡µè¾¹è·
 \setlength{\textwidth}{\paperwidth}
 \setlength{\textheight}{\paperheight}
 \setlength\marginparwidth{0cm}
@@ -51,7 +67,7 @@
 \setlength{\voffset}{-0.5cm-20pt}
 % \addtolength{\textwidth}{-6.4cm}
 \addtolength{\textwidth}{-2in}
-\setlength{\headheight}{20pt}
+% \setlength{\headheight}{20pt}
 \setlength{\topskip}{0pt}
 \setlength{\skip\footins}{15pt}
 % \setlength{\topmargin}{2.8cm-1in}
@@ -61,7 +77,7 @@
 % \addtolength{\textheight}{-8.6cm}
 \addtolength{\textheight}{-2in-1.5cm+0.5cm+20pt}
 
-%% ²»ÏÔÊ¾ÕÂ½Ú±êºÅ
+%% ä¸æ˜¾ç¤ºç« èŠ‚æ ‡å·
 \renewcommand\thesection{}
 \renewcommand\thesubsection{}
 \renewcommand\thesubsubsection{}
@@ -74,11 +90,11 @@
 %\titleformat*{\paragraph}{\large\bfseries}
 %\titleformat*{\subparagraph}{\large\bfseries}
 
-%% ÈıÏß±í¸ñ
+%% ä¸‰çº¿è¡¨æ ¼
 \newcommand{\bhline}{\Xhline{5\arrayrulewidth}}
 \newcommand{\mhline}{\Xhline{3\arrayrulewidth}}
 
-%% Ò³Ã¼Ò³½Å
+%% é¡µçœ‰é¡µè„š
 \pagestyle{fancy}
 \renewcommand{\headheight}{20pt}
 \renewcommand{\headrulewidth}{0.2pt}
@@ -101,7 +117,7 @@
 }}}
 \chead{}
 \lfoot{}
-\cfoot{\parbox{\textwidth}{\centering \footnotesize µÚ~ \thepage{} Ò³ ~~~~ ¹²~ \pageref{LastPage} Ò³}}
+\cfoot{\parbox{\textwidth}{\centering \footnotesize ç¬¬~ \thepage{} é¡µ ~~~~ å…±~ \pageref{LastPage} é¡µ}}
 \rfoot{}
 
 \fancypagestyle{Cover}{%
@@ -112,21 +128,66 @@
 	\renewcommand{\footrulewidth}{0pt}
 }
 
-%% ×ÖÌå
-\newcommand{\song}{\CJKfamily{song}}    % ËÎÌå
-\def\songti{\song}
-\newcommand{\fs}{\CJKfamily{fs}}        % ·ÂËÎÌå
-\def\fangsong{\fs}
-\newcommand{\kai}{\CJKfamily{kai}}      % ¿¬Ìå
-\def\kaishu{\kai}
-\newcommand{\hei}{\CJKfamily{hei}}      % ºÚÌå
-\def\heiti{\hei}
-\newcommand{\li}{\CJKfamily{li}}        % Á¥Êé
-\def\lishu{\li}
-\newcommand{\you}{\CJKfamily{you}}      % Ó×Ô²
-\def\youyuan{\you}
+%% å­—ä½“
+\setCJKfamilyfont{song}{SimSun}                             %å®‹ä½“ song  
+\newcommand{\song}{\CJKfamily{song}}                        % å®‹ä½“   (Windowsè‡ªå¸¦simsun.ttf)  
+\setCJKfamilyfont{xs}{NSimSun}                              %æ–°å®‹ä½“ xs  
+\newcommand{\xs}{\CJKfamily{xs}}  
+\setCJKfamilyfont{fs}{FangSong}                      %ä»¿å®‹2312 fs  
+\newcommand{\fs}{\CJKfamily{fs}}                            %ä»¿å®‹ä½“ (Windowsè‡ªå¸¦simfs.ttf)  
+\setCJKfamilyfont{kai}{KaiTi}                        %æ¥·ä½“2312  kai  
+\newcommand{\kai}{\CJKfamily{kai}}                            
+\setCJKfamilyfont{yh}{Microsoft YaHei}                    %å¾®è½¯é›…é»‘ yh  
+\newcommand{\yh}{\CJKfamily{yh}}  
+\setCJKfamilyfont{hei}{SimHei}                                    %é»‘ä½“  hei  
+\newcommand{\hei}{\CJKfamily{hei}}                          % é»‘ä½“   (Windowsè‡ªå¸¦simhei.ttf)  
+\setCJKfamilyfont{msunicode}{Arial Unicode MS}            %Arial Unicode MS: msunicode  
+\newcommand{\msunicode}{\CJKfamily{msunicode}}  
+\setCJKfamilyfont{li}{LiSu}                                            %éš¶ä¹¦  li  
+\newcommand{\li}{\CJKfamily{li}}  
+\setCJKfamilyfont{yy}{YouYuan}                             %å¹¼åœ†  yy  
+\newcommand{\yy}{\CJKfamily{yy}}  
+\setCJKfamilyfont{xm}{MingLiU}                                        %ç»†æ˜ä½“  xm  
+\newcommand{\xm}{\CJKfamily{xm}}  
+\setCJKfamilyfont{xxm}{PMingLiU}                             %æ–°ç»†æ˜ä½“  xxm  
+\newcommand{\xxm}{\CJKfamily{xxm}}  
+  
+\setCJKfamilyfont{hwsong}{STSong}                            %åæ–‡å®‹ä½“  hwsong  
+\newcommand{\hwsong}{\CJKfamily{hwsong}}  
+\setCJKfamilyfont{hwzs}{STZhongsong}                        %åæ–‡ä¸­å®‹  hwzs  
+\newcommand{\hwzs}{\CJKfamily{hwzs}}  
+\setCJKfamilyfont{hwfs}{STFangsong}                            %åæ–‡ä»¿å®‹  hwfs  
+\newcommand{\hwfs}{\CJKfamily{hwfs}}  
+\setCJKfamilyfont{hwxh}{STXihei}                                %åæ–‡ç»†é»‘  hwxh  
+\newcommand{\hwxh}{\CJKfamily{hwxh}}  
+\setCJKfamilyfont{hwl}{STLiti}                                        %åæ–‡éš¶ä¹¦  hwl  
+\newcommand{\hwl}{\CJKfamily{hwl}}  
+\setCJKfamilyfont{hwxw}{STXinwei}                                %åæ–‡æ–°é­  hwxw  
+\newcommand{\hwxw}{\CJKfamily{hwxw}}  
+\setCJKfamilyfont{hwk}{STKaiti}                                    %åæ–‡æ¥·ä½“  hwk  
+\newcommand{\hwk}{\CJKfamily{hwk}}  
+\setCJKfamilyfont{hwxk}{STXingkai}                            %åæ–‡è¡Œæ¥·  hwxk  
+\newcommand{\hwxk}{\CJKfamily{hwxk}}  
+\setCJKfamilyfont{hwcy}{STCaiyun}                                 %åæ–‡å½©äº‘ hwcy  
+\newcommand{\hwcy}{\CJKfamily{hwcy}}  
+\setCJKfamilyfont{hwhp}{STHupo}                                 %åæ–‡ç¥ç€   hwhp  
+\newcommand{\hwhp}{\CJKfamily{hwhp}}  
+  
+\setCJKfamilyfont{fzsong}{Simsun (Founder Extended)}     %æ–¹æ­£å®‹ä½“è¶…å¤§å­—ç¬¦é›†   fzsong  
+\newcommand{\fzsong}{\CJKfamily{fzsong}}  
+\setCJKfamilyfont{fzyao}{FZYaoTi}                                    %æ–¹æ­£å§šä½“  fzy  
+\newcommand{\fzyao}{\CJKfamily{fzyao}}  
+\setCJKfamilyfont{fzshu}{FZShuTi}                                    %æ–¹æ­£èˆ’ä½“ fzshu  
+\newcommand{\fzshu}{\CJKfamily{fzshu}}  
+  
+\setCJKfamilyfont{asong}{Adobe Song Std}                        %Adobe å®‹ä½“  asong  
+\newcommand{\asong}{\CJKfamily{asong}}  
+\setCJKfamilyfont{ahei}{Adobe Heiti Std}                            %Adobe é»‘ä½“  ahei  
+\newcommand{\ahei}{\CJKfamily{ahei}}  
+\setCJKfamilyfont{akai}{Adobe Kaiti Std}                            %Adobe æ¥·ä½“  akai  
+\newcommand{\akai}{\CJKfamily{akai}}  
 
-%% ×ÖºÅ
+%% å­—å·
 \newlength\noilinespace
 \newcommand{\noiChooseFont}[2]{
    \setlength{\noilinespace}{#2*\real{#1}}
@@ -162,21 +223,21 @@
 \renewcommand{\emph}[1]{{\bfseries \textit{#1}}}
 % \renewcommand{\texttt}[1]{{\ttfamily \underline{#1}}}
 
-%% ´úÂë/ÑùÀı¿é
+%% ä»£ç /æ ·ä¾‹å—
 \DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=2em}
 
-%% Ã¶¾ÙÀàĞÍ¼ä¾à
+%% æšä¸¾ç±»å‹é—´è·
 \setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 \setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 \setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 
 \renewenvironment{abstract}{
-\section*{Õª~~Òª}
+\section*{æ‘˜~~è¦}
 \kai
 }{}
 
 \renewcommand\tableofcontents{%
-  \section*{Ä¿~~Â¼}
+  \section*{ç›®~~å½•}
   \@starttoc{toc}\normalsize}
 
 \renewcommand\section{\@startsection{section}{1}{\z@}%
@@ -191,6 +252,9 @@
                            {-16bp \@plus -1ex \@minus -.2ex}%
                            {6bp \@plus .2ex}%
                            {\hei \xiaosi[1.667]}}
+
+\newcommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \if 0
 

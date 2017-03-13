@@ -21,13 +21,6 @@ import jinja2
 import tools
 import uuid
 
-'''
-jinja_env = jinja2.Environment(loader=jinja2.PackageLoader('renderer', 'templates'))
-temp = jinja_env.get_template('noiproblem.tex')
-with open(os.path.join('oi_tools', 'output.tex'), 'wb') as f:
-	f.write(temp.render(day = {'eng_title' : 'CCF-NOI-2016'}, probs = [{},{},{},{}]).encode('GBK'))
-'''
-
 work_class = {
 	'noi' : {'noi'},
 	'noip' : {'noip'},
@@ -130,27 +123,17 @@ def tex(comp):
 				os.path.join('tmp', 'problem.md'),
 				os.path.join('tmp', 'problem.tex')
 			))
-			tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read() \
-				.decode('utf-8') \
-				.replace('\\[', '$$') \
-				.replace('\\]', '$$') \
-				.replace('\\(', '~\\(') \
-				.replace('\\)', '\\)~')
+			tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
 			for key, val in secondary_dict.items():
 				tex = tex.replace(key, '{{ ' + val + ' }}')
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
 				tex.encode('utf-8')
 			)
-			#try:
 			res = env.get_template('problem.tex.jinja').render(
 				context,
 				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
 				table = lambda name, options = {} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
-			#except Exception as e:
-			#	print('You can find the error tex file with utf-8 code in tmp/problems.tex.jinja')
-			#	res = open(os.path.join('tmp', 'problem.tex.jinja'), 'rb').read().decode('utf-8')
-			#	raise e
 			tex_problems.append(res)
 		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		all_problem_description = env.get_template('day_title.tex').render(
@@ -160,17 +143,15 @@ def tex(comp):
 		)
 		try:
 			open(os.path.join('tmp', 'problems.tex'), 'wb') \
-				.write(all_problem_description.encode(
-					'utf-8' if common.system != 'Windows' else 'GBK'
-				))
+				.write(all_problem_description.encode('utf-8'))
 		except Exception as e:
 			print('You can find the tex file with utf-8 code in tmp/problems.tmp.tex')
 			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
 				.write(all_problem_description.encode('utf-8'))
 			raise e
 		os.chdir('tmp')
-		os.system('pdflatex problems.tex')
-		os.system('pdflatex problems.tex')
+		os.system('xelatex problems.tex')
+		os.system('xelatex problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
 		
@@ -211,7 +192,6 @@ def html(comp):
 						table = lambda name, options={} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context, options)
 					).encode('utf-8')
 				)
-			#shutil.copy(os.path.join('tmp', prob['name'] + '.md'), os.path.join('descriptions', 'uoj', day_name))
 
 work_list = {
 	'noi' : lambda : tex('noi'),

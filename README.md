@@ -161,18 +161,26 @@ python oi_tools/tester.py
 可以在根目录下运行下列命令生成对应的题面：
 
 ```bash
-python oi_tools/renderer.py uoj,noi
+python oi_tools/renderer.py noi,uoj
 ```
 
 表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。
 
-生成题面时，python必须安装 `jinja2` 包。
+生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`）。
 
-目前支持输出下列种类的数据包：
-* `noi`：noi风格的题面，必须能使用 `pandoc` 和 `pdflatex` 命令；
-* `uoj`：uoj风格的题面。
+目前支持两类题面：
+* `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`，其中 `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
+* `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`uoj`，`ccc-html`。
 
 题面的书写后文将有详细说明。
+
+### 安装XeLaTeX
+
+Windows下可以安装MiKTeX，在首次运行的时候会再提示安装后续文件。
+
+Ubuntu下先 `sudo apt install texlive-xetex`。然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+
+MacOS下待研究。
 
 ### 只对特定的题目进行操作
 
@@ -190,11 +198,11 @@ python oi_tools/tester.py -p day1/excellent,day2/drink
 如果你不使用任何的特性，你可以用纯 markdown 书写题面，并将以 `description.md` 命名保存在试题目录下。
 此外还提供了少量的工具以扩展 markdown 不支持的功能。
 
-注意：markdown原生支持嵌入html，但如果要渲染成tex，就不能直接使用任何原生html语法，具体可以参考后文。
+注意：markdown原生支持嵌入html，但如果要渲染成tex，就不能直接使用任何原生html语法，例如表格、带格式的图片等都需要特殊处理，具体可以参考后文。
 
 目前两种输出类型渲染的步骤为：
-* `noi`：md+jinja+\*jinja → md+jinja → tex+jinja → tex → pdf；
-* `uoj`：md+jinja+\*jinja → md+jinja → md+html。
+* `tex`：md+jinja+\*jinja → md+jinja → tex+jinja → tex → pdf；
+* `html`：md+jinja+\*jinja → md+jinja → md+html。
 
 其中\*jinja表示经过jinja渲染会变成jinja模板的代码。
 
@@ -260,7 +268,7 @@ jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.ht
 {{ prob.cnname }}
 ```
 
-获取当前的渲染环境，可以用变量 `io_style`（会被赋值为 `noi` 或 `uoj`）。
+获取当前的渲染环境，可以用变量 `io_style`（会被赋值为 `noi`、`uoj` 等值）。
 
 如果需要以文本的形式展示某个下发的文件，提供了一个函数 `down_file(file_name)`，例如：
 ```
