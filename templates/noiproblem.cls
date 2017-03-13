@@ -13,6 +13,7 @@
 \usepackage[BoldFont,SlantFont,CJKchecksingle]{xeCJK}
 \setCJKmainfont[BoldFont=SimHei]{SimSun}
 \setCJKmonofont{SimSun}% 设置缺省中文字体
+\setmonofont{Consolas}
 %% \RequirePackage{CJK}
 %% \RequirePackage[adobefonts]{ctex}
 \RequirePackage{longtable,multirow}
@@ -35,7 +36,6 @@
 \usepackage{fixltx2e}
 \usepackage{makecell}
 \usepackage{tabularx}
-%% \usepackage{CJKfntef}
 \usepackage{fancyvrb}
 \usepackage{enumitem}
 \usepackage{tabto}
@@ -217,11 +217,12 @@
 %% New page at every chapter %% It doesn't work now QAQ
 % \newcommand{\sectionbreak}{\clearpage}
 
+\usepackage{ulem}
 %% Some styles
 %% \newcommand{\filename}[1]{\bfseries \textit{#1}}
-\renewcommand{\textbf}[1]{{\bfseries \underline{#1}}}
+\renewcommand{\textbf}[1]{{\bfseries \CJKunderdot{#1}}}
 \renewcommand{\emph}[1]{{\bfseries \textit{#1}}}
-% \renewcommand{\texttt}[1]{{\ttfamily \underline{#1}}}
+\renewcommand{\texttt}[1]{{\ttfamily \uline{#1}}}
 
 %% 代码/样例块
 \DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=2em}
