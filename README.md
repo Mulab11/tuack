@@ -1,5 +1,18 @@
 #oi_tools
 
+oi_tools已经被加到某个工程的submodule，那么你可以用下面的方式把这个工程也clone下来
+
+```
+git clone --recusive 父工程的仓库地址
+```
+
+如果已经clone下来了父工程，发现这个子工程是空的，可以用这个方式clone子工程
+
+```
+cd oi_tools
+git submodule update --init
+```
+
 ## 文件的存放和定义
 
 ### 造题存储原则
