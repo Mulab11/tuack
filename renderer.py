@@ -37,7 +37,9 @@ secondary_dict = {}
 
 def init():
 	global env
-	env = jinja2.Environment(loader=jinja2.PackageLoader('renderer', os.path.join('..', 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_'])
+	env = jinja2.Environment(
+		loader = jinja2.PackageLoader('renderer', os.path.join(os.getcwd(), 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_']
+	)
 	remkdir('descriptions')
 	shutil.rmtree('tmp', ignore_errors = True)
 	time.sleep(0.1)
