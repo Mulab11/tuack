@@ -43,7 +43,7 @@ def init():
 	remkdir('descriptions')
 	shutil.rmtree('tmp', ignore_errors = True)
 	time.sleep(0.1)
-	shutil.copytree(os.path.join('oi_tools', 'templates'), 'tmp')
+	shutil.copytree(os.path.join(path, 'templates'), 'tmp')
 	
 def final():
 	shutil.rmtree('tmp', ignore_errors = True)

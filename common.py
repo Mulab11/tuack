@@ -40,6 +40,7 @@ macros = {
 frep = open('tester.log', 'a')
 copied_data = set()
 no_compiling = False
+path = os.path.dirname(os.path.realpath(__file__))
 
 def infom(info):
 	frep.write('[I]' + info + '\n')
