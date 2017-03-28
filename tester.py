@@ -200,15 +200,15 @@ def test_one_day(probs, day_name):
 							scores = scores[:tc] + [sum(scores[:tc])] + scores[tc:]
 							times = times[:tc] + [sum(times[:tc])] + times[tc:]
 							reports = reports[:tc] + [''] + reports[tc:]
-							'''fres.write('%s:,' % user)
-							for i in range(prob['test cases']):
-								fres.write('%.1f,%.3f,' % (scores[i], times[i]))
-							fres.write('\n')
-							fres.write('%s:,%s\n' % (algo, ',,'.join(reports)))'''
 							scores = map(lambda i : '%.1f' % i, scores)
 							times = map(lambda i : '%.3f' % i, times)
 							for title, line in [(user, scores), (algo, times), ('', reports)]:
 								fres.write('%s,%s\n' % (title, ','.join(line)))
+		if common.start_file:
+			if common.system == 'Windows':
+				os.startfile(os.path.join('..', 'result', day_name, prob['name'] + '.csv'))
+			else:
+				subprocess.call(["xdg-open", os.path.join('..', 'result', day_name, prob['name'] + '.csv')])
 	
 def test_progs():
 	if not os.path.exists('result'):
