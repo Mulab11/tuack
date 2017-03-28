@@ -156,6 +156,11 @@ def tex(comp):
 		os.system('xelatex problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
+		if common.start_file:
+			if common.system == 'Windows':
+				os.startfile(os.path.join('descriptions', comp, day_name + '.pdf'))
+			else:
+				subprocess.call(["xdg-open", os.path.join('descriptions', comp, day_name + '.pdf')])
 		
 def html(comp):
 	io_style = comp
@@ -194,6 +199,11 @@ def html(comp):
 						table = lambda name, options={} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context, options)
 					).encode('utf-8')
 				)
+			if common.start_file:
+				if common.system == 'Windows':
+					os.startfile(os.path.join('descriptions', common.work, day_name, prob['name'] + '.md'))
+				else:
+					subprocess.call(["xdg-open", os.path.join('descriptions', common.work, day_name, prob['name'] + '.md')])
 
 work_list = {
 	'noi' : lambda : tex('noi'),
