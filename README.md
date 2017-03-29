@@ -1,5 +1,11 @@
 #oi_tools
 
+我们推荐将oi_tools的路径加到PYTHONPATH环境变量中。
+
+也可以把oi_tools的父路径加到PYTHONPATH中，这样可以防止污染名称。相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python -m oi_tools.tester`。
+
+还可以用下列方式使用oi_tools：
+
 oi_tools已经被加到某个工程的submodule，那么你可以用下面的方式把这个工程也clone下来
 
 ```
@@ -12,6 +18,8 @@ git clone --recusive 父工程的仓库地址
 cd oi_tools
 git submodule update --init
 ```
+
+相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python oi_tools/tester.py`。
 
 ## 文件的存放和定义
 
@@ -143,7 +151,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 }
 ```
 
-关于`args`和`data`的说明：这两个参数全部是出题人自己定义的，这意味着`args`下的数据结构可以由你自己定义。原理上你可以根本不定义这些参数，但为了达到后文的文件存储原则，我们建议或要求这么做。
+关于 `args` 和 `data` 的说明：这两个参数全部是出题人自己定义的，这意味着 `args` 下的数据结构可以由你自己定义。原理上你可以根本不定义这些参数，但为了达到后文的文件存储原则，我们建议或要求这么做。
 
 但是我们推荐将所有数据的参数全部放在这里，题面的书写工具提供了获取这些参数的方法，你的数据生成器一般也有方法读取这个json文件（虽然C++也有相关的轮子，但如果不会的话你可以用python读了传给C++），未来我们还会将这些参数传给val。
 
@@ -151,7 +159,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 ### 文件样例
 
-我们提供了一些文件的样例，放在`sample`文件夹下，其中：
+我们提供了一些文件的样例，放在 `sample` 文件夹下，其中：
 
 * `.gitignore`：复制到根目录下使用，防止把多余的文件存到git仓库中。
 * `probs.json`：复制到根目录下使用，描述同一次比赛中多场比赛的题目。
@@ -163,7 +171,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 可以在根目录下运行下列命令生成对应的数据包：
 
 ```bash
-python oi_tools/packer.py uoj,noi,release
+python -m packer uoj,noi,release
 ```
 
 表示生成uoj、noi和发布使用的数据包，生成多种包之间用逗号隔开。
@@ -183,25 +191,25 @@ python oi_tools/packer.py uoj,noi,release
 可以在根目录下运行下列命令进行测试：
 
 ```bash
-python oi_tools/tester.py
+python -m tester
 ```
 
-其中结果将输出到对应天目录下的 `result` 目录下。
+其中结果将输出到对应天目录下的 `result` 目录下，并会自动打开。要想不自动打开则在后面加上 `-s`。
 
 ### 题面生成
 
 可以在根目录下运行下列命令生成对应的题面：
 
 ```bash
-python oi_tools/renderer.py noi,uoj
+python -m renderer noi,uoj
 ```
 
-表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。
+表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
 
 生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`）。
 
 目前支持两类题面：
-* `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`，其中 `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
+* `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
 * `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`uoj`，`ccc-html`。
 
 题面的书写后文将有详细说明。
@@ -219,8 +227,8 @@ MacOS下待研究。
 前面几个工具都可以使用类似于 `-d day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。例如：
 
 ```bash
-python oi_tools/packer.py noi,release,test -d day1,day2
-python oi_tools/tester.py -p day1/excellent,day2/drink
+python -m packer noi,release,test -d day1,day2
+python -m tester -p day1/excellent,day2/drink
 ```
 
 不要同时使用 `-d` 和 `-p`，`packer.py` 生成 `release` 时不能使用 `-p`。
@@ -240,7 +248,7 @@ python oi_tools/tester.py -p day1/excellent,day2/drink
 
 其中\*jinja表示经过jinja渲染会变成jinja模板的代码。
 
-jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.html)学习。
+jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http://docs.jinkan.org/docs/jinja2/templates.html)学习。
 
 所有的模板都存在该工程的templates目录下，有兴趣开发模板或是想修改的话欢迎联系我入坑。
 
