@@ -180,12 +180,14 @@ def test_one_day(probs, day_name):
 	for prob in probs:
 		if day_name + '/' + prob['name'] not in common.prob_set:
 			continue
+		not_empty = False
 		with open(os.path.join('..', 'result', day_name, prob['name'] + '.csv'), 'w') as fres:
 			fres.write('%s,%s,summary,sample\n' % (prob['name'], ','.join(map(str, range(1, prob['test cases'] + 1)))))
 			for user in os.listdir(prob['name']):
-				if not problem_skip.match(user) and os.path.isdir(os.path.join(prob['name'], user)):
+				if not problem_skip.match(user) and os.path.isdir(os.path.join(prob['name'], user)) and (not common.user_set or day_name + '/' + prob['name'] + '/' + user in common.user_set):
 					for algo in os.listdir(os.path.join(prob['name'], user)):
-						if not user_skip.match(algo) and os.path.isdir(os.path.join(prob['name'], user, algo)):
+						if not user_skip.match(algo) and os.path.isdir(os.path.join(prob['name'], user, algo)) and (not common.algo_set or day_name + '/' + prob['name'] + '/' + user + '/' + algo in common.algo_set):
+							not_empty = True
 							if os.path.exists('tmp'):
 								shutil.rmtree('tmp')
 							shutil.copytree(os.path.join(prob['name'], user, algo), 'tmp')
@@ -204,7 +206,7 @@ def test_one_day(probs, day_name):
 							times = map(lambda i : '%.3f' % i, times)
 							for title, line in [(user, scores), (algo, times), ('', reports)]:
 								fres.write('%s,%s\n' % (title, ','.join(line)))
-		if common.start_file:
+		if common.start_file and not_empty:
 			if common.system == 'Windows':
 				os.startfile(os.path.join('..', 'result', day_name, prob['name'] + '.csv'))
 			else:

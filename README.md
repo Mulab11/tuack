@@ -226,14 +226,16 @@ MacOS下待研究。
 
 ### 只对特定的题目进行操作
 
-前面几个工具都可以使用类似于 `-d day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。例如：
+前面几个工具都可以使用类似于 `-d day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
 
 ```bash
 python -m packer noi,release,test -d day1,day2
 python -m tester -p day1/excellent,day2/drink
+python -m tester -u day1/excellent/saffah
+python -m tester -a day1/excellent/saffah/std
 ```
 
-不要同时使用 `-d` 和 `-p`，`packer.py` 生成 `release` 时不能使用 `-p`。
+不要同时使用 `-d` 和 `-p`，`packer` 生成 `release` 时不能使用 `-p`。
 
 ## 题面的书写
 
