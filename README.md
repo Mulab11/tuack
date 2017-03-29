@@ -44,6 +44,8 @@ git submodule update --init
 
 **所有基于文本的文件如果含有中文，必须用UTF-8编码。**
 
+**所有数据文件，必须用大文件系统 `git lfs` 管理。**一般地，如果你只在下文规定的地方存放数据文件，那么你可以将 `samples/.gitattributes` 复制到工程的根目录下，git会自动帮你进行管理。第一次使用参考[这里](https://github.com/git-lfs/git-lfs/wiki/Installation)安装。
+
 ```
 probs.json	//必须有一个文件说明每场比赛题目的顺序，具体格式见后文
 title.tex	//如果要输出NOI风格的pdf，需要在这里定义比赛的名字，否则不需要这个文件
