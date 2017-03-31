@@ -141,13 +141,14 @@ def compile(prob):
 	return None
 	
 def deal_argv():
-	global do_copy_files, do_test_progs, do_release, day_set, prob_set, probs, works, start_file, user_set, algo_set
+	global do_copy_files, do_test_progs, do_release, day_set, prob_set, probs, works, start_file, user_set, algo_set, do_pack
 	works = []
 	day_set = None
 	prob_set = None
 	user_set = None
 	algo_set = None
 	start_file = True
+	do_pack = True
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -168,15 +169,15 @@ def deal_argv():
 			algo_set = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-s':
 			start_file = False
+		elif sys.argv[i] == '-k':
+			do_pack = False
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
 			print('Options:')
 			print('\t-i PATH: Specify a path to work. Otherwise, use current path.')
+			print('\t-s: Do not open result files when finished.')
 			print('\t-d day0,day2: Only do those work for day0 and day2.')
 			print('\t-p day0/sleep,day2/nodes: Only do those work for day0/sleep and day2/nodes.')
-			print('\t-u day2/nodes/saffah,day0/sleep/zhx: Only do those work for saffah and zhx.')
-			print('\t-a day2/nodes/saffah/std,day0/sleep/zhx/segtree: Only do those work for saffah/std and zhx/segtree.')
-			print('\tDo not use any two of -d, -p, -u and -a together.')
-			print('\t-s Do not open result files when finished.')
+			print('\tDo not use -d and -p together.')
 			return False
 		else:
 			works += sys.argv[i].split(',')

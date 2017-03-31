@@ -74,7 +74,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 	if que.qsize() == 0:
 		fatal('Runner broken.')
 	elif que.qsize() == 1:
-		ret = 'time out.'
+		ret = 'Time out.'
 		pid = que.get()
 		#print('pid = %d' % pid)
 		os.killpg(os.getpgid(pid), signal.SIGTERM)
@@ -157,9 +157,14 @@ def test(prob):
 				if ret == 0:
 					score = 1.0
 					report = 'ok'
+					if time > prob['time limit']:
+						score = 0.0
+						report += '(but time out)'
 				else:
 					score = 0.0
 					report = 'wa'
+					if time > prob['time limit']:
+						report += '(and time out)'
 		else:
 			score = 0.0
 			report = ret
@@ -168,8 +173,8 @@ def test(prob):
 				os.remove(os.path.join('tmp', prob['name'] + '.out'))
 			except:
 				pass
-		if score == 0.0:
-			time = 0.0
+		#if score == 0.0:
+		#	time = 0.0
 		# TODO: different scores for different cases
 		scores.append(score / prob['test cases'] * 100)
 		times.append(time)
@@ -200,7 +205,7 @@ def test_one_day(probs, day_name):
 									pass
 							tc = prob['test cases']
 							scores = scores[:tc] + [sum(scores[:tc])] + scores[tc:]
-							times = times[:tc] + [sum(times[:tc])] + times[tc:]
+							times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
 							reports = reports[:tc] + [''] + reports[tc:]
 							scores = map(lambda i : '%.1f' % i, scores)
 							times = map(lambda i : '%.3f' % i, times)
@@ -227,5 +232,13 @@ def test_progs():
 if __name__ == '__main__':
 	if deal_argv():
 		common.work = 'test'
+		if common.do_pack:
+			import packer
+			packer.test()
 		infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
 		test_progs()
+	else:
+		print('\t-u day2/nodes/saffah,day0/sleep/zhx: Only do those work for saffah and zhx.')
+		print('\t-a day2/nodes/saffah/std,day0/sleep/zhx/segtree: Only do those work for saffah/std and zhx/segtree.')
+		print('\tDo not use any two of -d, -p, -u and -a together.')
+		print('\t-k: Do not pack(compile chk and dos2unix) before test.')
