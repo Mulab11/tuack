@@ -72,6 +72,26 @@ def memory2bytes(st):
 	un = (units[sp[1]] if len(sp) == 2 else 1)
 	return int(sp[0]) * un
 
+def set_default(prob, name):
+	if 'name' not in prob:
+		prob['name'] = name
+	if 'test cases' not in prob:
+		prob['test cases'] = sum((len(datum['cases']) for datum in prob['data']))
+	if 'packed' in prob and prob['packed']:
+		num_unscored = 0
+		total_score = 0.0
+		for datum in prob['data']:
+			if 'score' in datum:
+				total_score += datum['score']
+			else:
+				num_unscored += 1
+		if num_unscored == 0:
+			return
+		item_score = (100. - total_score) / num_unscored
+		for datum in prob['data']:
+			if 'score' not in datum:
+				datum['score'] = item_score
+	
 def load_problems():
 	problem_names = json.load(open('probs.json'))
 	probs = {}
@@ -80,7 +100,7 @@ def load_problems():
 		for name in names:
 			try:
 				problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
-				problem['name'] = name
+				set_default(problem, name)
 				problems.append(problem)
 			except Exception as e:
 				print('At %s/%s.' % (day, name))

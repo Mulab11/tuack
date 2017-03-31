@@ -138,16 +138,22 @@ def test(prob):
 				score = 0.0
 			elif os.path.exists(os.path.join('data', prob['name'] + '_e')):
 				shutil.copy(os.path.join('data', prob['name'] + '_e'), os.path.join('tmp', 'chk' + elf_suffix))
-				os.system('%s %s %s %s' % (
+				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
 					os.path.join('tmp', 'chk' + elf_suffix),
 					os.path.join(path, prob['name'] + str(i) + '.in'),
 					os.path.join('tmp', prob['name'] + '.out'),
 					os.path.join(path, prob['name'] + str(i) + '.ans')
 				))
-				f = open(('/' if system != 'Windows' else '') + 'tmp/_eval.score')
-				report = f.readline().strip()
-				score = float(f.readline()) * 0.1
-				f.close()
+				arbiter_out = ('/' if system != 'Windows' else '') + 'tmp/_eval.score'
+				f = open(arbiter_out)
+				if f:	#try to handle both tuoj and arbiter spj
+					report = f.readline().strip()
+					score = float(f.readline()) * 0.1
+					f.close()
+					shutil.remove(arbiter_out)
+				else:
+					report = open('tmp/info').read().strip()
+					score = float(open('tmp/score').readline()) * .001
 			else:
 				ret = os.system('%s %s %s > log' % (
 					diff_tool,
@@ -173,13 +179,23 @@ def test(prob):
 				os.remove(os.path.join('tmp', prob['name'] + '.out'))
 			except:
 				pass
-		#if score == 0.0:
-		#	time = 0.0
-		# TODO: different scores for different cases
-		scores.append(score / prob['test cases'] * 100)
+		scores.append(score)
 		times.append(time)
 		reports.append(report)
 	return scores, times, reports
+
+def packed_score(scores, times, reports, prob):
+	pscore = []
+	ptime = []
+	preport = []
+	for datum in prob['data']:		
+		pscore.append(datum['score'] * min((scores[i - 1] for i in datum['cases'])))
+		ptime.append(sum((times[i - 1] for i in datum['cases'] if scores[i - 1] > 0)))
+		preport.append('Total %.1f' % datum['score'])
+	pscore.append(sum(pscore))
+	ptime.append(sum(ptime))
+	preport.append('')
+	return (pscore, ptime, preport)
 	
 def test_one_day(probs, day_name):
 	for prob in probs:
@@ -187,7 +203,11 @@ def test_one_day(probs, day_name):
 			continue
 		not_empty = False
 		with open(os.path.join('..', 'result', day_name, prob['name'] + '.csv'), 'w') as fres:
-			fres.write('%s,%s,summary,sample\n' % (prob['name'], ','.join(map(str, range(1, prob['test cases'] + 1)))))
+			fres.write('%s,%s%s,summary,sample\n' % (
+				prob['name'],
+				','.join(map(str, range(1, prob['test cases'] + 1))),
+				',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob['data'])) if 'packed' in prob and prob['packed'] else ''
+			))
 			for user in os.listdir(prob['name']):
 				if not problem_skip.match(user) and os.path.isdir(os.path.join(prob['name'], user)) and (not common.user_set or day_name + '/' + prob['name'] + '/' + user in common.user_set):
 					for algo in os.listdir(os.path.join(prob['name'], user)):
@@ -204,9 +224,16 @@ def test_one_day(probs, day_name):
 								except:
 									pass
 							tc = prob['test cases']
-							scores = scores[:tc] + [sum(scores[:tc])] + scores[tc:]
-							times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
-							reports = reports[:tc] + [''] + reports[tc:]
+							if 'packed' in prob and prob['packed']:
+								packed = packed_score(scores[:tc], times[:tc], reports[:tc], prob)
+								scores = scores[:tc] + packed[0] + scores[tc:]
+								times = times[:tc] + packed[1] + times[tc:]
+								reports = reports[:tc] + packed[2] + reports[tc:]
+							else:
+								ratio = 100. / prob['test cases']
+								scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
+								times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
+								reports = reports[:tc] + [''] + reports[tc:]
 							scores = map(lambda i : '%.1f' % i, scores)
 							times = map(lambda i : '%.3f' % i, times)
 							for title, line in [(user, scores), (algo, times), ('', reports)]:
