@@ -70,12 +70,12 @@ def init():
 def final():
 	shutil.rmtree('tmp', ignore_errors = True)
 
-def file_name(io_style, prob, name):
-	if io_style == 'noi':
+def file_name(comp, prob, name):
+	if comp == 'noi':
 		return prob['name'] + '/' + name
-	elif io_style == 'uoj':
+	elif comp == 'uoj':
 		return name
-	else:	#CCPC has no download files
+	else:
 		return name
 	
 def table(path, name, temp, context, options):
@@ -128,13 +128,13 @@ def tex(comp):
 		for prob in probs:
 			try:
 				common.copy(
-					os.path.join(day_name, prob['name'], 'statement'),
+					os.path.join(prob['path'], 'statement'),
 					'zh-cn.md',
 					os.path.join('tmp', 'problem.md.jinja')
 				)
 			except:
 				common.copy(
-					os.path.join(day_name, prob['name']),
+					prob['path'],
 					'description.md',
 					os.path.join('tmp', 'problem.md.jinja')
 				)
@@ -146,7 +146,7 @@ def tex(comp):
 				'comp' : comp,
 				'tools' : tools,
 				'file_name' : lambda name : file_name(comp, prob, name),
-				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().decode('utf-8'),
+				'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
 				'precautions' : prec
@@ -232,47 +232,78 @@ def tex(comp):
 		raise Exception("Unknown folder type `%s`." % common.conf['folder'])
 		
 def html(comp):
-	io_style = comp
-	remkdir(os.path.join('statements', common.work))
-	for day_name, probs in common.probs.items():
-		if day_name not in common.day_set:
-			continue
-		remkdir(os.path.join('statements', common.work, day_name))
-		tex_problems = []
-		for prob in probs:
-			if day_name + '/' + prob['name'] not in common.prob_set:
-				continue
-			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
-				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('statements', common.work, day_name, prob['name']))
-			copy(os.path.join(day_name, prob['name']), 'statement.md', os.path.join('tmp', 'problem.md.jinja'))
-			time.sleep(0.1)
-			context = {
-				'prob' : prob,
-				'io_style' : io_style,
-				'tools' : tools,
-				'file_name' : lambda name : file_name(io_style, prob, name),
-				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().decode('utf-8'),
-				'resource' : lambda name : prob['name'] + '/' + name,
-				'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
-			}
-			open(os.path.join('tmp', 'problem.md'), 'wb') \
-				.write(env.get_template('problem_base.md.jinja')
-					.render(context)
-					.encode('utf-8')
-				)
-			open(os.path.join('statements', common.work, day_name, prob['name'] + '.md'), 'wb') \
-				.write(env.get_template('problem.md')
-					.render(
-						context,
-						template = lambda temp_name, **context : env.get_template(temp_name + '.html.jinja').render(context),
-						table = lambda name, options={} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.html.jinja', context, options)
-					).encode('utf-8')
-				)
-			if common.start_file:
-				if common.system == 'Windows':
-					os.startfile(os.path.join('statements', common.work, day_name, prob['name'] + '.md'))
+	def render(prob, day, contest, path):
+		if os.path.exists(os.path.join(prob['path'], 'resources')):
+			shutil.copytree(os.path.join(prob['path'], 'resources'), path)
+		try:
+			common.copy(
+				os.path.join(prob['path'], 'statement'),
+				'zh-cn.md',
+				os.path.join('tmp', 'problem.md.jinja')
+			)
+		except:
+			common.copy(
+				prob['path'],
+				'description.md',
+				os.path.join('tmp', 'problem.md.jinja')
+			)
+		time.sleep(0.1)
+		context = {
+			'prob' : prob,
+			'io_style' : io_style,
+			'tools' : tools,
+			'file_name' : lambda name : file_name(comp, prob, name),
+			'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
+			'resource' : lambda name : prob['name'] + '/' + name,
+			'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
+		}
+		open(os.path.join('tmp', 'problem.md'), 'wb') \
+			.write(env.get_template('problem_base.md.jinja')
+				.render(context)
+				.encode('utf-8')
+			)
+		open(path + '.md', 'wb') \
+			.write(env.get_template('problem.md')
+				.render(
+					context,
+					template = lambda temp_name, **context : env.get_template(temp_name + '.html.jinja').render(context),
+					table = lambda name, options={} : table(os.path.join(prob['path'], 'tables'), name, 'table.html.jinja', context, options)
+				).encode('utf-8')
+			)
+		if common.start_file:
+			if common.system == 'Windows':
+				os.startfile(path + '.md')
+			else:
+				subprocess.call(["xdg-open", path + '.md'])
+
+	def render_day(day, contest, path, prefix):
+		for prob in day['sub']:
+			if common.prob_set:
+				if not day_name:
+					if prob['name'] not in common.prob_set:
+						continue
 				else:
-					subprocess.call(["xdg-open", os.path.join('statements', common.work, day_name, prob['name'] + '.md')])
+					if prefix + '/' + prob['name'] not in common.prob_set:
+						continue
+			render(prob, day, contest, os.path.join(path, prob['name']))
+						
+	common.mkdir(os.path.join('statements', comp))
+	io_style = io_styles[comp]
+	base_template = base_templates[comp]
+	if common.conf['folder'] == 'contest':
+		for day in common.conf['sub']:
+			if not common.day_set or day['name'] in common.day_set:
+				result_path = os.path.join('statements', comp, day['name'])
+				common.mkdir(result_path)
+				render_day(day, common.conf, result_path, day['name'])
+	elif common.conf['folder'] == 'day':
+		result_path = os.path.join('statements', comp)
+		render_day(common.conf, None, result_path, None)
+	elif common.conf['folder'] == 'problem':
+		result_path = os.path.join('statements', comp, conf['name'])
+		render(common.conf, None, None, result_path)
+	else:
+		raise Exception("Unknown folder type `%s`." % common.conf['folder'])
 	
 if __name__ == '__main__':
 	if common.init():

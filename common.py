@@ -172,7 +172,7 @@ def load_json(path = '.'):
 				if conf['folder'] == 'extend':
 					base_conf = load_json(os.path.join(path, conf['base path']))
 					conf = extend_merge(base_conf, conf)
-					print(conf)
+					#print(conf)
 					path = base_conf['path']
 				else:
 					conf['path'] = path
