@@ -22,25 +22,38 @@ import uuid
 
 work_class = {
 	'noi' : {'noi'},
-	'noip' : {'noip'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
-	'tuoj' : {'tuoj'},
+	'tuoj' : {'tuoj-tex', 'tuoj-html'},
 	'ccc' : {'ccc-tex', 'ccc-html'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-html' : {'ccc-html'},
-	'tex' : {'noi', 'noip', 'ccpc', 'ccc-tex'},
-	'html' : {'uoj', 'tuoj', 'ccc-html'}
+	'tex' : {'noi', 'ccpc', 'tuoj-tex', 'ccc-tex'},
+	'html' : {'uoj', 'tuoj-html', 'ccc-html'}
 }
 io_styles = {
 	'noi' : 'fio',
-	'noip' : 'fio',
 	'ccpc' : 'stdio',
 	'uoj' : 'stdio',
 	'tuoj' : 'stdio',
-	'ccc-tex' : 'stdio',
-	'ccc-html' : 'stdio'
+	'ccc' : 'stdio'
 }
+base_templates = {
+	'noi' : 'tuack',
+	'tuoj' : 'tuack',
+	'ccpc' : 'ccpc',
+	'ccc' : 'ccc'
+}
+work_list = {
+	'noi' : lambda : tex('noi'),
+	'ccpc' : lambda : tex('ccpc'),
+	'uoj' : lambda : html('uoj'),
+	'tuoj-tex' : lambda : tex('tuoj'),
+	'tuoj-html' : lambda : html('tuoj'),
+	'ccc-tex' :  lambda : tex('ccc'),
+	'ccc-html' : lambda : html('ccc')
+}
+
 
 secondary_dict = {}
 
@@ -135,7 +148,8 @@ def tex(comp):
 				'file_name' : lambda name : file_name(comp, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
-				'render' : lambda s, sp = None : secondary(s, sp, 'tex')
+				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
+				'precautions' : prec
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -170,7 +184,7 @@ def tex(comp):
 			context.pop('render')
 			context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
 			context['problems'] = tex_problems
-			all_problem_statement = env.get_template('%s.tex.jinja' % comp).render(context)
+			all_problem_statement = env.get_template('%s.tex.jinja' % base_template).render(context)
 		else:
 			all_problem_statement = tex_problems[0]
 		try:
@@ -194,6 +208,14 @@ def tex(comp):
 
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
+	base_template = base_templates[comp]
+	if os.path.exists(os.path.join('precautions', 'zh-cn.md')):
+		common.copy('precautions', 'zh-cn.md', 'tmp')
+		os.system('pandoc %s -t latex -o %s' % (
+			os.path.join('tmp', 'zh-cn.md'),
+			os.path.join('tmp', 'precautions.tex')
+		))
+		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 	#shutil.copy(os.path.join('title.tex'), 'tmp')
 	if common.conf['folder'] == 'contest':
 		for day in common.conf['sub']:
@@ -251,15 +273,6 @@ def html(comp):
 					os.startfile(os.path.join('statements', common.work, day_name, prob['name'] + '.md'))
 				else:
 					subprocess.call(["xdg-open", os.path.join('statements', common.work, day_name, prob['name'] + '.md')])
-
-work_list = {
-	'noi' : lambda : tex('noi'),
-	'ccpc' : lambda : tex('ccpc'),
-	'noip' : lambda : tex('noip'),
-	'uoj' : lambda : html('uoj'),
-	'ccc-tex' :  lambda : tex('ccc'),
-	'ccc-html' : lambda : html('ccc')
-}
 	
 if __name__ == '__main__':
 	if common.init():

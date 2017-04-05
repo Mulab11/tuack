@@ -1,0 +1,70 @@
+\documentclass{tuack}
+
+{% block base %}{% endblock %}
+
+\begin{document}
+
+{% if contest and 'title' in contest and 'zh-cn' in contest.title %}
+	\title{ {{contest.title['zh-cn']}} }
+	\def\mytitle{ {{contest.title['zh-cn']}} }
+{% else %}
+	\title{ 预览输出 }
+	\def\mytitle{ 预览输出 }
+{% endif %}
+
+{% if contest and 'subtitle' in contest and 'zh-cn' in contest.subtitle %}
+	\def\subtitle{ {{contest.subtitle['zh-cn']}} }
+{% endif %}
+
+{% if contest and 'short title' in contest and 'zh-cn' in contest['short title'] %}
+	\def\engtitle{ {{contest['short title']['zh-cn']}} }
+{% endif %}
+
+{% if day and 'title' in day and 'zh-cn' in day.title %}
+	\def\theday{ {{day.title['zh-cn']}} }
+{% endif %}
+
+{% if day and 'start time' in day and 'end time' in day %}
+	\def\time{
+		{% if comp == 'noi' or comp == 'ccpc' %}比赛{% else %}测试{% endif %}时间：
+		{{ tools.time_range(day['start time'], day['end time'], '年', '月', '日').replace('~', '$\\sim$').replace(' ', '~') }}
+	}
+{% endif %}
+
+{% if contest and 'place' in context %}
+	\def\place{ {{context.place['en']}} }
+{% endif %}
+
+{% if precautions %}
+	\def \precautions{
+		{{ precautions }}
+	}
+{% endif %}
+
+{% block header %}
+
+\rhead{\parbox{\textwidth}{\raggedleft\textnormal{
+	\footnotesize
+	\ifdefined \theday
+		\theday ~
+	\fi
+	\nouppercase \rightmark
+}}}
+\lhead{\parbox{\textwidth}{\textnormal{
+	\footnotesize \mytitle
+	\ifdefined\subtitle
+		\subtitle
+	\fi
+}}}
+\chead{}
+\lfoot{}
+\cfoot{\parbox{\textwidth}{\centering \footnotesize 第~ \thepage{} 页 ~~~~ 共~ \pageref{LastPage} 页}}
+\rfoot{}
+
+{% endblock %}
+
+{% block cover %}{% endblock %}
+
+{% block statements %}{% endblock %}
+
+\end{document}

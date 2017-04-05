@@ -1,10 +1,9 @@
-\documentclass{noiproblem}
-\DeclareMathOperator{\xor}{xor}
-\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
-\begin{document}
+{% extends 'template_base.tex.jinja' %}
+
+{% block header %}
 
 \lhead{\parbox{\textwidth}{\textnormal{
-	\footnotesize \title
+	\footnotesize \mytitle
 	\ifdefined\subtitle
 		（\subtitle）
 	\fi
@@ -14,9 +13,14 @@
 	\footnotesize
 	\nouppercase \leftmark
 }}}
+\chead{}
+\lfoot{}
+\cfoot{\parbox{\textwidth}{\centering \footnotesize 第~ \thepage{} 页 ~~~~ 共~ \pageref{LastPage} 页}}
+\rfoot{}
 
-{% block define_title %}{% endblock %}
-{% block define_day %}{% endblock %}
+{% endblock %}
+
+{% block cover %}
 
 \thispagestyle{Cover}
 \begin{center}
@@ -37,7 +41,12 @@
 \end{center}
 
 \setcounter{tocdepth}{1}
+
 \tableofcontents
+
+{% endblock %}
+
+{% block statements %}
 
 {% for i in range(problems.__len__()) %}
 	\clearpage
@@ -52,5 +61,7 @@
 	{{ problems[i] }}
 
 {% endfor %}
+
+{% endblock %}
 
 \end{document}

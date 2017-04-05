@@ -65,11 +65,11 @@ def js_hn(num):
 	适合阅读的数，json版本
 	'''
 	return hn(num).replace('\\', '\\\\')
+
+def to_time(dttm):
+	return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S%z')
 	
 def time_range(start, end, year = '-', month = '-', day = ''):
-	#year = year.decode('utf-8')
-	#month = month.decode('utf-8')
-	#day = day.decode('utf-8')
 	st = datetime.strptime(start, '%Y-%m-%d %H:%M:%S%z')
 	ed = datetime.strptime(end, '%Y-%m-%d %H:%M:%S%z')
 	ret = st.strftime('%Y%%sQAQ%m%%sQAQ%d%%s %H:%M').replace('QAQ0', '').replace('QAQ', '') % (year, month, day)

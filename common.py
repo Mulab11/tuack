@@ -95,6 +95,8 @@ def set_default(prob, name):
 '''
 
 def set_default_problem(conf, path = None):
+	if 'title' not in conf and 'cnname' in conf:
+		conf['title'] = {'zh-cn' : conf['cnname']}
 	if 'test cases' in conf and type(conf['test cases']) == int:
 		conf['test cases'] = list(range(1, conf['test cases'] + 1))
 	else:
