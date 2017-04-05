@@ -336,7 +336,7 @@ work_list = {
 }
 
 if __name__ == '__main__':
-	if deal_argv():
+	if common.init():
 		infom('Packing starts at %s.\n' % str(datetime.datetime.now()))
 		for common.work in common.works:
 			work_list[common.work]()

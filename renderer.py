@@ -15,7 +15,6 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from common import *
 import common
 import jinja2
 import tools
@@ -26,24 +25,34 @@ work_class = {
 	'noip' : {'noip'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
+	'tuoj' : {'tuoj'},
 	'ccc' : {'ccc-tex', 'ccc-html'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-html' : {'ccc-html'},
 	'tex' : {'noi', 'noip', 'ccpc', 'ccc-tex'},
-	'html' : {'uoj', 'ccc-html'}
+	'html' : {'uoj', 'tuoj', 'ccc-html'}
+}
+io_styles = {
+	'noi' : 'fio',
+	'noip' : 'fio',
+	'ccpc' : 'stdio',
+	'uoj' : 'stdio',
+	'tuoj' : 'stdio',
+	'ccc-tex' : 'stdio',
+	'ccc-html' : 'stdio'
 }
 
 secondary_dict = {}
 
 def init():
 	global env
-	remkdir('descriptions')
+	common.mkdir('statements')
 	shutil.rmtree('tmp', ignore_errors = True)
 	env = jinja2.Environment(
 		loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_']
 	)
 	time.sleep(0.1)
-	shutil.copytree(os.path.join(path, 'templates'), 'tmp')
+	shutil.copytree(os.path.join(common.path, 'templates'), 'tmp')
 	
 def final():
 	shutil.rmtree('tmp', ignore_errors = True)
@@ -57,7 +66,7 @@ def file_name(io_style, prob, name):
 		return name
 	
 def table(path, name, temp, context, options):
-	copy(path, name + '.json', os.path.join('tmp', 'table.json'))
+	common.copy(path, name + '.json', os.path.join('tmp', 'table.json'))
 	res = env.get_template('table.json').render(context, options = options)
 	try:
 		table = json.loads(res)
@@ -95,24 +104,37 @@ def secondary(s, sp, work):
 		return ' {{ ' + s + ' }} '
 	
 def tex(comp):
-	remkdir(os.path.join('descriptions', comp))
-	io_style = comp
-	shutil.copy(os.path.join('title.tex'), 'tmp')
-	for day_name, probs in common.probs.items():
-		if day_name not in common.day_set:
-			continue
+	def render(conf, contest, path):
 		tex_problems = []
+		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
+		day_name = conf['name'] if conf['folder'] == 'day' else None
+		probs = [
+			prob for prob in probs \
+			if not common.prob_set or not day_name or day_name + '/' + prob['name'] in common.prob_set
+		]
 		for prob in probs:
-			if day_name + '/' + prob['name'] not in common.prob_set:
-				continue
-			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
+			try:
+				common.copy(
+					os.path.join(day_name, prob['name'], 'statement'),
+					'zh-cn.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
+			except:
+				common.copy(
+					os.path.join(day_name, prob['name']),
+					'description.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
 			context = {
 				'prob' : prob,
+				'day' : conf if conf['folder'] == 'day' else None,
+				'contest' : contest,
 				'io_style' : io_style,
+				'comp' : comp,
 				'tools' : tools,
-				'file_name' : lambda name : file_name(io_style, prob, name),
+				'file_name' : lambda name : file_name(comp, prob, name),
 				'down_file' : lambda name : open(os.path.join(day_name, prob['name'], 'down', name), 'rb').read().decode('utf-8'),
-				'resource' : lambda name : '../' + day_name + '/' + prob['name'] + '/resources/' + name,
+				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex')
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
@@ -134,48 +156,73 @@ def tex(comp):
 			res = env.get_template('problem.tex.jinja').render(
 				context,
 				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
-				table = lambda name, options = {} : table(os.path.join(day_name, prob['name'], 'tables'), name, 'table.tex.jinja', context, options)
+				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
-		shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
-		all_problem_description = env.get_template('day_title.tex').render(
-			problems = tex_problems,
-			probs = [prob for prob in probs if day_name + '/' + prob['name'] in common.prob_set],
-			tools = tools
-		)
+		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
+		#all_problem_statement = env.get_template('day_title.tex').render(
+		
+		if day_name:
+			context.pop('prob')
+			context.pop('file_name')
+			context.pop('down_file')
+			context.pop('resource')
+			context.pop('render')
+			context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
+			context['problems'] = tex_problems
+			all_problem_statement = env.get_template('%s.tex.jinja' % comp).render(context)
+		else:
+			all_problem_statement = tex_problems[0]
 		try:
 			open(os.path.join('tmp', 'problems.tex'), 'wb') \
-				.write(all_problem_description.encode('utf-8'))
+				.write(all_problem_statement.encode('utf-8'))
 		except Exception as e:
 			print('You can find the tex file with utf-8 code in tmp/problems.tmp.tex')
 			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
-				.write(all_problem_description.encode('utf-8'))
+				.write(all_problem_statement.encode('utf-8'))
 			raise e
 		os.chdir('tmp')
 		os.system('xelatex problems.tex')
 		os.system('xelatex problems.tex')
 		os.chdir('..')
-		shutil.copy(os.path.join('tmp', 'problems.pdf'), os.path.join('descriptions', comp, day_name + '.pdf'))
+		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
 		if common.start_file:
 			if common.system == 'Windows':
-				os.startfile(os.path.join('descriptions', comp, day_name + '.pdf'))
+				os.startfile(path)
 			else:
-				subprocess.call(["xdg-open", os.path.join('descriptions', comp, day_name + '.pdf')])
+				subprocess.call(["xdg-open", path])
+
+	common.mkdir(os.path.join('statements', comp))
+	io_style = io_styles[comp]
+	#shutil.copy(os.path.join('title.tex'), 'tmp')
+	if common.conf['folder'] == 'contest':
+		for day in common.conf['sub']:
+			if not common.day_set or day['name'] in common.day_set:
+				result_path = os.path.join('statements', comp, day['name'] + '.pdf')
+				render(day, common.conf, result_path)
+	elif common.conf['folder'] == 'day':
+		result_path = os.path.join('statements', comp, conf['name'] + '.pdf')
+		render(common.conf, None, result_path)
+	elif common.conf['folder'] == 'problem':
+		result_path = os.path.join('statements', comp, conf['name'] + '.pdf')
+		render(common.conf, None, result_path)
+	else:
+		raise Exception("Unknown folder type `%s`." % common.conf['folder'])
 		
 def html(comp):
 	io_style = comp
-	remkdir(os.path.join('descriptions', common.work))
+	remkdir(os.path.join('statements', common.work))
 	for day_name, probs in common.probs.items():
 		if day_name not in common.day_set:
 			continue
-		remkdir(os.path.join('descriptions', common.work, day_name))
+		remkdir(os.path.join('statements', common.work, day_name))
 		tex_problems = []
 		for prob in probs:
 			if day_name + '/' + prob['name'] not in common.prob_set:
 				continue
 			if os.path.exists(os.path.join(day_name, prob['name'], 'resources')):
-				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('descriptions', common.work, day_name, prob['name']))
-			copy(os.path.join(day_name, prob['name']), 'description.md', os.path.join('tmp', 'problem.md.jinja'))
+				shutil.copytree(os.path.join(day_name, prob['name'], 'resources'), os.path.join('statements', common.work, day_name, prob['name']))
+			copy(os.path.join(day_name, prob['name']), 'statement.md', os.path.join('tmp', 'problem.md.jinja'))
 			time.sleep(0.1)
 			context = {
 				'prob' : prob,
@@ -191,7 +238,7 @@ def html(comp):
 					.render(context)
 					.encode('utf-8')
 				)
-			open(os.path.join('descriptions', common.work, day_name, prob['name'] + '.md'), 'wb') \
+			open(os.path.join('statements', common.work, day_name, prob['name'] + '.md'), 'wb') \
 				.write(env.get_template('problem.md')
 					.render(
 						context,
@@ -201,9 +248,9 @@ def html(comp):
 				)
 			if common.start_file:
 				if common.system == 'Windows':
-					os.startfile(os.path.join('descriptions', common.work, day_name, prob['name'] + '.md'))
+					os.startfile(os.path.join('statements', common.work, day_name, prob['name'] + '.md'))
 				else:
-					subprocess.call(["xdg-open", os.path.join('descriptions', common.work, day_name, prob['name'] + '.md')])
+					subprocess.call(["xdg-open", os.path.join('statements', common.work, day_name, prob['name'] + '.md')])
 
 work_list = {
 	'noi' : lambda : tex('noi'),
@@ -211,18 +258,17 @@ work_list = {
 	'noip' : lambda : tex('noip'),
 	'uoj' : lambda : html('uoj'),
 	'ccc-tex' :  lambda : tex('ccc'),
-	'ccc-html' : lambda : html('ccc'),
+	'ccc-html' : lambda : html('ccc')
 }
 	
 if __name__ == '__main__':
-	if deal_argv():
-		infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
+	if common.init():
+		common.infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
 		init()
 		for common.work in common.works:
 			work_list[common.work]()
 		final()
 	else:
+		#print('\t-l zh-cn,en: Output in multiple languages.')
 		print('Use arguments other than options to run what to output.')
-		print('Enabled output types:')
-		print('\tnoi: Generate problem description in noi style.')
-		print('\tuoj: Generate problem description in uoj style.')
+		print('Enabled output types: noi, noip, uoj, tuoj, ccc-tex, ccc-html, ccpc.')

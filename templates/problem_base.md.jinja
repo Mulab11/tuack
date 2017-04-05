@@ -1,27 +1,25 @@
 {% extends "problem.md.jinja" %}
 
 {% block input_file %}
-	{%- if io_style == 'uoj' -%}
+	{%- if io_style == 'stdio' -%}
 		从标准输入读入数据。
-	{%- elif io_style == 'noi' -%}
+	{%- elif io_style == 'fio' -%}
 		从文件 *{{ prob['name'] }}.in* 中读入数据。
-	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
 
 {% block output_file %}
-	{%- if io_style == 'uoj' -%}
+	{%- if io_style == 'stdio' -%}
 		输出到标准输出。
-	{%- elif io_style == 'noi' -%}
+	{%- elif io_style == 'fio' -%}
 		输出到文件 *{{ prob['name'] }}.out* 中。
-	{%- elif io_style == 'ccpc' -%}
 	{%- endif -%}
 {% endblock %}
 
 {%- block user_path -%}
-	{%- if io_style == 'uoj' -%}
+	{%- if comp == 'uoj' -%}
 		[下载目录](/download.php?type=problem&id={{ prob['uoj id'] }})
-	{%- elif io_style == 'noi' -%}
+	{%- elif comp == 'noi' -%}
 		选手目录
 	{%- else -%}
 		目录
@@ -31,17 +29,17 @@
 
 {% block sample_text -%}
 {% block title_sample %}
-{% if io_style == 'uoj' -%}
+{% if comp == 'uoj' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}】
 {%- endif %}
 {% endblock %}
 
 {% block sample_input_text %}
-{% if io_style == 'uoj' -%}
+{% if comp == 'uoj' -%}
 ### 输入
-{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
+{%- elif comp == 'noi' or comp == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入】
-{% elif io_style == 'ccc' %}
+{% elif comp == 'ccc' %}
 ## Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% if 'show space' in vars %}
@@ -55,11 +53,11 @@
 {% endif %}
 {% endblock %}
 {% block sample_output_text %}
-{% if io_style == 'uoj' -%}
+{% if comp == 'uoj' -%}
 ### 输出
-{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
+{%- elif comp == 'noi' or comp == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出】
-{% elif io_style == 'ccc' %}
+{% elif comp == 'ccc' %}
 ## Output for Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% if 'show space' in vars %}
@@ -76,11 +74,11 @@
 
 
 {% block title_sample_description -%}
-	{%- if io_style == 'uoj' -%}
+	{%- if comp == 'uoj' -%}
 ### 说明
-	{%- elif io_style == 'noi' or io_style == 'ccpc' -%}
+	{%- elif comp == 'noi' or comp == 'ccpc' -%}
 ## 【样例{{ vars['sample_id'] }}说明】
-	{% elif io_style == 'ccc' %}
+	{% elif comp == 'ccc' %}
 ## Explanation of the Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 	{%- endif -%}
 {%- endblock %}
@@ -88,12 +86,12 @@
 {% block sample_file -%}
 ## 【样例{{vars['sample_id']}}】
 
-见{{ self.user_path() }}下的 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if io_style == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
+见{{ self.user_path() }}下的 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
 
 {% block title %}
 
-{%- if io_style == 'uoj' -%}
+{%- if comp == 'uoj' -%}
 {%- if prob['type'] != 'output' -%}
 **时间限制：** {{ tools.ceil(prob['time limit']) }} 秒
 
@@ -109,10 +107,10 @@
 **这是一道交互题**
 
 {% endif -%}
-{%- elif io_style == 'noi' -%}
-{%- elif io_style == 'ccpc' -%}
+{%- elif comp == 'noi' -%}
+{%- elif comp == 'ccpc' -%}
 时间限制： {{ tools.float(prob['time limit']) }} 秒
-{%- elif io_style == 'ccc' -%}
+{%- elif comp == 'ccc' -%}
 {%- if prob['type'] != 'output' -%}
 Time limit: {{ tools.ceil(prob['time limit']) }} s
 

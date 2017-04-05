@@ -1,5 +1,6 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
+from datetime import *
 from math import *
 import sys
 if sys.version_info >= (3, 0): 
@@ -64,3 +65,28 @@ def js_hn(num):
 	适合阅读的数，json版本
 	'''
 	return hn(num).replace('\\', '\\\\')
+	
+def time_range(start, end, year = '-', month = '-', day = ''):
+	#year = year.decode('utf-8')
+	#month = month.decode('utf-8')
+	#day = day.decode('utf-8')
+	st = datetime.strptime(start, '%Y-%m-%d %H:%M:%S%z')
+	ed = datetime.strptime(end, '%Y-%m-%d %H:%M:%S%z')
+	ret = st.strftime('%Y%%sQAQ%m%%sQAQ%d%%s %H:%M').replace('QAQ0', '').replace('QAQ', '') % (year, month, day)
+	if st.second:
+		ret += ':%02d' % st.second
+	ret += ' ~ '
+	flag = False
+	if flag or ed.year != st.year:
+		flag = True
+		ret += '%04d%s' % (ed.year, year)
+	if flag or ed.month != st.month:
+		flag = True
+		ret += '%d%s' % (ed.month, month)
+	if flag or ed.day != st.day:
+		flag = True
+		ret += '%d%s' % (ed.day, day)
+	ret += ' %02d:%02d' % (ed.hour, ed.minute)
+	if ed.second:
+		ret += ':%02d' % ed.second
+	return ret

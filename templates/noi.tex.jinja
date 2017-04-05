@@ -3,8 +3,30 @@
 \DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
 \begin{document}
 
-{% block define_title %}{% endblock %}
-{% block define_day %}{% endblock %}
+{% if contest and 'title' in contest and 'zh-cn' in contest.title %}
+	\title{ {{contest.title['zh-cn']}} }
+{% else %}
+	\title{ 预览输出 }
+{% endif %}
+
+{% if contest and 'subtitle' in contest and 'zh-cn' in contest.subtitle %}
+	\def\subtitle{ {{contest.subtitle['zh-cn']}} }
+{% endif %}
+
+{% if contest and 'short title' in contest and 'zh-cn' in contest['short title'] %}
+	\def\engtitle{ {{contest['short title']['zh-cn']}} }
+{% endif %}
+
+{% if day and 'title' in day and 'zh-cn' in day.title %}
+	\def\theday{ {{day.title['zh-cn']}} }
+{% endif %}
+
+{% if day and 'start time' in day and 'end time' in day %}
+	\def\time{
+		比赛时间：
+		{{ tools.time_range(day['start time'], day['end time'], '年', '月', '日').replace('~', '$\\sim$').replace(' ', '~') }}
+	}
+{% endif %}
 
 \thispagestyle{Cover}
 
@@ -142,13 +164,13 @@
 	\hline
 		测试点数目
 		{%- for prob in probs -%}
-			& {{ prob['test cases'] }}
+			& {{ prob['test cases'].__len__() }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
 		每个测试点分值
 		{%- for prob in probs -%}
-			& {{ 100 // prob['test cases'] }}
+			& {{ 100 // prob['test cases'].__len__() }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
@@ -262,7 +284,7 @@
 	\clearpage
 
 	\begin{center}
-		\section{ {{probs[i]['cnname']}}（{{probs[i]['name']}}） }
+		\section{ {{probs[i].title['zh-cn']}}（{{probs[i]['name']}}） }
 	\end{center}
 	
 	{{ problems[i] }}

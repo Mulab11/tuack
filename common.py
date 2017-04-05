@@ -71,7 +71,8 @@ def memory2bytes(st):
 	sp = st.split(' ')
 	un = (units[sp[1]] if len(sp) == 2 else 1)
 	return int(sp[0]) * un
-
+	
+'''
 def set_default(prob, name):
 	if 'name' not in prob:
 		prob['name'] = name
@@ -91,7 +92,40 @@ def set_default(prob, name):
 		for datum in prob['data']:
 			if 'score' not in datum:
 				datum['score'] = item_score
+'''
+
+def set_default_problem(conf, path = None):
+	if 'test cases' in conf and type(conf['test cases']) == int:
+		conf['test cases'] = list(range(1, conf['test cases'] + 1))
+	else:
+		tc = set()
+		for datum in conf['data']:
+			tc |= set(datum['cases'])
+		conf['test cases'] = sorted(list(tc))
+	if 'name' not in conf:
+		conf['name'] = path
+	if 'packed' in conf and conf['packed']:
+		num_unscored = 0
+		total_score = 0.0
+		for datum in conf['data']:
+			if 'score' in datum:
+				total_score += datum['score']
+			else:
+				num_unscored += 1
+		if num_unscored != 0:
+			item_score = (100. - total_score) / num_unscored
+			for datum in conf['data']:
+				if 'score' not in datum:
+					datum['score'] = item_score
+	return conf
 	
+def set_default_day(conf, path = None):
+	return conf
+
+def set_default_contest(conf, path = None):
+	return conf
+	
+'''
 def load_problems():
 	problem_names = json.load(open('probs.json'))
 	probs = {}
@@ -107,7 +141,53 @@ def load_problems():
 				raise e
 		probs[day] = problems
 	return probs
+'''
 
+def extend_merge(base, ext):
+	for key, val in ext.items():
+		if key == 'path' or key == 'folder':
+			continue
+		elif key.endswith('+'):
+			k = key[:-1]
+			if type(base[k]) == type(val) == dict:
+				base[k] = extend_merge(base[k], val)
+			elif type(base[k]) == type(val) == list:
+				base[k] += val
+			else:
+				raise Exception('extend error %s' % key)
+		else:
+			base[key] = val
+	return base
+	
+def load_json(path = '.'):
+	for name in ['conf.json', 'prob.json']:
+		try:
+			full_path = os.path.join(path, name)
+			if os.path.exists(full_path):
+				conf = json.loads(open(full_path, 'rb').read().decode('utf-8'))
+				if 'folder' not in conf:
+					conf['folder'] = 'problem'
+				if conf['folder'] == 'extend':
+					base_conf = load_json(os.path.join(path, conf['base path']))
+					conf = extend_merge(base_conf, conf)
+					print(conf)
+					path = base_conf['path']
+				else:
+					conf['path'] = path
+				if 'subdir' in conf:
+					conf['sub'] = [load_json(os.path.join(path, sub)) for sub in conf['subdir']]
+				conf = eval('set_default_' + conf['folder'])(conf, os.path.basename(path))
+				return conf
+		except Exception as e:
+			print('Error at json configure file `%s`.' % os.path.join(path, name))
+			raise e
+	else:
+		raise Exception('Can\'t find configure json file at `%s`.' % path)
+
+def mkdir(name):
+	if not os.path.exists(name):
+		os.makedirs(name)
+		
 def remkdir(name):
 	while True:
 		try:
@@ -123,7 +203,7 @@ def remkdir(name):
 def copy(source, name, target):
 	full_source = os.path.join(source, name)
 	if not os.path.exists(full_source):
-		return False
+		raise Exception('No such file or path `%s`.' % full_source)
 	copied_data.add(full_source)
 	if os.path.isdir(full_source):
 		if full_source.endswith('.dir') or no_compiling:
@@ -160,9 +240,10 @@ def compile(prob):
 		return 'Can\'t find source file.'
 	return None
 	
-def deal_argv():
-	global do_copy_files, do_test_progs, do_release, day_set, prob_set, probs, works, start_file, user_set, algo_set, do_pack
+def deal_args():
+	global do_copy_files, do_test_progs, do_release, day_set, prob_set, probs, works, start_file, user_set, algo_set, do_pack, langs
 	works = []
+	langs = ['zh-cn']
 	day_set = None
 	prob_set = None
 	user_set = None
@@ -191,6 +272,9 @@ def deal_argv():
 			start_file = False
 		elif sys.argv[i] == '-k':
 			do_pack = False
+		elif sys.argv[i] == '-l':
+			i += 1
+			langs = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
 			print('Options:')
 			print('\t-i PATH: Specify a path to work. Otherwise, use current path.')
@@ -202,7 +286,8 @@ def deal_argv():
 		else:
 			works += sys.argv[i].split(',')
 		i += 1
-	probs = load_problems()
+	# if -p or -d is not set, use all of the problems or days
+	'''
 	if not prob_set:
 		prob_set = set()
 		for day, info in probs.items():
@@ -213,4 +298,13 @@ def deal_argv():
 			day_set = set(probs.keys())
 		else:
 			day_set = {prob.split('/')[0] for prob in prob_set}
+	'''
+	return True
+	
+def init():
+	global conf
+	if not deal_args():
+		return False
+	conf = load_json()
+	#print(json.dumps(conf))
 	return True

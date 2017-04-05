@@ -257,7 +257,7 @@ def test_progs():
 		os.chdir('..')
 	
 if __name__ == '__main__':
-	if deal_argv():
+	if common.init():
 		common.work = 'test'
 		if common.do_pack:
 			import packer

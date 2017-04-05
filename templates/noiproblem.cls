@@ -29,7 +29,7 @@
 \RequirePackage{booktabs}
 \RequirePackage{ulem}
 \usepackage{lastpage}
-\usepackage{sectsty}
+%\usepackage{sectsty}
 \usepackage{lipsum}
 \usepackage{mathtools,framed,graphicx,xcolor}
 \usepackage{titlesec}
@@ -100,14 +100,14 @@
 \renewcommand{\headrulewidth}{0.2pt}
 \renewcommand{\footrulewidth}{0pt}
 
-%% \renewcommand{\sectionmark}[1]{\markleft{#1}}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
 
 \rhead{\parbox{\textwidth}{\raggedleft\textnormal{
 	\footnotesize
 	\ifdefined \theday
-		\theday
+		\theday ~
 	\fi
-	\nouppercase \leftmark
+	\nouppercase \rightmark
 }}}
 \lhead{\parbox{\textwidth}{\textnormal{
 	\footnotesize \thetitle
