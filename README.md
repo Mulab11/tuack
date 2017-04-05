@@ -127,7 +127,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 	"memory limit" : "512 MB",	//空间限制，必须加上单位
 								//测试点数量不再使用
 	"partial score" : false,	//是否有部分分，默认没有，只用于显示在题面上
-	"packed" : false,			//是否有部分分，默认没有，只用于显示在题面上
+	"packed" : false,			//是否是打包评测，默认不是
 	"compile" : {				//各个语言的编译开关
 		"cpp" : "-O2 -lm",
 		"c" : "-O2 -lm",
