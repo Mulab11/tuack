@@ -76,17 +76,19 @@
 		\tabularnewline
 	\hline
 {% if comp == 'noi' %}
+	{% if common.out_system != 'Windows' %}
 		目录
 		{%- for prob in probs -%}
 			& {{ prob['name'] }}
 		{%- endfor -%} 
 		\tabularnewline
 	\hline
+	{%endif%}
 		可执行文件名
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{{ prob['name'] }}
+				{{ prob['name'] + ('.exe' if common.out_system == 'Windows' else '') }}
 			{% else %}
 				N/A
 			{% endif %}

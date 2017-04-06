@@ -18,6 +18,7 @@ import platform
 
 work = None
 system = platform.system()
+out_system = system
 windows_stack_size = 536870912
 diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
@@ -95,6 +96,8 @@ def set_default(prob, name):
 '''
 
 def set_default_problem(conf, path = None):
+	if 'all' not in conf:
+		conf['all'] = True
 	if 'title' not in conf and 'cnname' in conf:
 		conf['title'] = {'zh-cn' : conf['cnname']}
 	if 'test cases' in conf and type(conf['test cases']) == int:
@@ -122,9 +125,17 @@ def set_default_problem(conf, path = None):
 	return conf
 	
 def set_default_day(conf, path = None):
+	if 'all' not in conf:
+		conf['all'] = True
+	if 'name' not in conf:
+		conf['name'] = path
 	return conf
 
 def set_default_contest(conf, path = None):
+	if 'all' not in conf:
+		conf['all'] = True
+	if 'name' not in conf:
+		conf['name'] = path
 	return conf
 	
 '''
@@ -161,7 +172,7 @@ def extend_merge(base, ext):
 			base[key] = val
 	return base
 	
-def load_json(path = '.'):
+def load_json(path = '.', route = None):
 	for name in ['conf.json', 'prob.json']:
 		try:
 			full_path = os.path.join(path, name)
@@ -176,15 +187,53 @@ def load_json(path = '.'):
 					path = base_conf['path']
 				else:
 					conf['path'] = path
-				if 'subdir' in conf:
-					conf['sub'] = [load_json(os.path.join(path, sub)) for sub in conf['subdir']]
 				conf = eval('set_default_' + conf['folder'])(conf, os.path.basename(path))
+				conf['route'] = '' if route == None else ((route + '/' if route else '') + conf['name'])
+				if 'subdir' in conf:
+					conf['sub'] = [
+						load_json(os.path.join(path, sub), conf['route']) \
+						for sub in conf['subdir']
+					]
 				return conf
 		except Exception as e:
 			print('Error at json configure file `%s`.' % os.path.join(path, name))
 			raise e
 	else:
 		raise Exception('Can\'t find configure json file at `%s`.' % path)
+
+def any_prefix(pre):
+	for s in sub_set:
+		if s.startswith(pre):
+			return True
+	return False
+		
+def probs(item = None, pick = False):
+	if not item:
+		item = conf
+	pick |= not sub_set or item['route'] in sub_set
+	if item['folder'] == 'problem':
+		if pick or any_prefix(item['route'], sub_set):
+			item['all'] = pick
+			yield item
+	else:
+		for sub in item['sub']:
+			for prob in probs(sub, pick):
+				yield prob
+				
+def days(item = None, pick = False):
+	if not item:
+		item = conf
+	pick |= not sub_set or item['route'] in sub_set
+	if item['folder'] == 'problem':
+		return
+	if item['folder'] == 'day':
+		if pick or any_prefix(item['route'], sub_set):
+			item['all'] = pick
+			yield item
+	else:
+		for sub in item['sub']:
+			for day in days(sub, pick):
+				yield day
 
 def mkdir(name):
 	if not os.path.exists(name):
@@ -230,26 +279,12 @@ def copy(source, name, target):
 	else:
 		shutil.copy(full_source, target)
 	return True
-
-def compile(prob):
-	for lang, args in prob['compile'].items():
-		if os.path.exists(os.path.join('tmp', prob['name'] + '.' + lang)):
-			os.chdir('tmp')
-			ret = subprocess.call(compilers[lang](prob['name'], args, macros[work]), shell = True, stdout = open('log', 'w'), stderr = subprocess.STDOUT)
-			os.chdir('..')
-			return '`' + prob['name'] + '.' + lang + '` compile failed.' if ret != 0 else None
-	else:
-		return 'Can\'t find source file.'
-	return None
 	
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, day_set, prob_set, probs, works, start_file, user_set, algo_set, do_pack, langs
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system
 	works = []
 	langs = ['zh-cn']
-	day_set = None
-	prob_set = None
-	user_set = None
-	algo_set = None
+	sub_set = None
 	start_file = True
 	do_pack = True
 	l = len(sys.argv)
@@ -258,18 +293,12 @@ def deal_args():
 		if sys.argv[i] == '-i':
 			i += 1
 			os.chdir(sys.argv[i])
-		elif sys.argv[i] == '-d':
-			i += 1
-			day_set = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-p':
 			i += 1
-			prob_set = set(sys.argv[i].split(','))
-		elif sys.argv[i] == '-u':
+			sub_set = set(sys.argv[i].split(','))
+		elif sys.argv[i] == '-o':
 			i += 1
-			user_set = set(sys.argv[i].split(','))
-		elif sys.argv[i] == '-a':
-			i += 1
-			algo_set = set(sys.argv[i].split(','))
+			out_system = sys.argv[i]
 		elif sys.argv[i] == '-s':
 			start_file = False
 		elif sys.argv[i] == '-k':
@@ -281,9 +310,7 @@ def deal_args():
 			print('Options:')
 			print('\t-i PATH: Specify a path to work. Otherwise, use current path.')
 			print('\t-s: Do not open result files when finished.')
-			print('\t-d day0,day2: Only do those work for day0 and day2.')
-			print('\t-p day0/sleep,day2/nodes: Only do those work for day0/sleep and day2/nodes.')
-			print('\tDo not use -d and -p together.')
+			print('\t-p day0/sleep,day2: Only do those work for day0/sleep and day2.')
 			return False
 		else:
 			works += sys.argv[i].split(',')

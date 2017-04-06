@@ -29,6 +29,14 @@ def find_doc(path, name):
 			return name, '.' + m.group(2)
 	return None
 
+def test_copy_problem_files(prob):
+	data_path = os.path.join(prob['path'], 'data')
+	try:
+		copy(data_path, 'chk', os.path.join(output_folder, prob['route']))
+		prob['chk'] = True
+	except Exception as e:
+		prob['chk'] = False
+	
 def copy_one_day_files(probs, day_name):
 	remkdir(os.path.join(output_folder, day_name, 'data'))
 	print('copy data files')
@@ -215,24 +223,12 @@ def uoj_copy_one_day_files(probs, day_name):
 			warning('dos2unix failed.')
 	if os.path.exists('log'):
 		os.remove('log')
-	
-def copy_files():
-	for day_name, day_data in common.probs.items():
-		if day_name not in common.day_set:
-			continue
-		copy_one_day_files(day_data, day_name)
-		
-def pc2_copy_files():
-	for day_name, day_data in common.probs.items():
-		if day_name not in common.day_set:
-			continue
-		pc2_copy_one_day_files(day_data, day_name)
-		
-def uoj_copy_files():
-	for day_name, day_data in common.probs.items():
-		if day_name not in common.day_set:
-			continue
-		uoj_copy_one_day_files(day_data, day_name)
+
+def copy_files(suffix = ''):
+	for day in common.days():
+		common.mkdir(os.path.join(output_folder, day['route']))
+	for prob in common.probs():
+		eval(suffix + 'copy_problem_files')(prob)
 
 def zip_tree(z, path):
 	for name in os.listdir(path):
@@ -259,14 +255,15 @@ def noi():
 def test():
 	global output_folder
 	common.no_compiling = False
-	output_folder = '.'
-	copy_files()
+	output_folder = 'bin'
+	remkdir('bin')
+	copy_files('test_')
 	
 def pc2():
 	global output_folder
 	common.no_compiling = True
 	remkdir('pc2')
-	pc2_copy_files()
+	copy_files('pc2_')
 
 def release():
 	global output_folder
@@ -323,7 +320,7 @@ def uoj():
 	if flag:
 		uoj_config = json.loads(open('uoj.json').read())
 		svn_init()
-	uoj_copy_files()
+	copy_files('uoj_')
 	if flag:
 		svn_upload()
 

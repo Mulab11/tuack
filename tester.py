@@ -99,6 +99,22 @@ if system == 'Linux':
 elif system == 'Windows':
 	run = run_windows
 	
+def compile(prob):
+	for lang, args in prob['compile'].items():
+		if os.path.exists(os.path.join('tmp', prob['name'] + '.' + lang)):
+			os.chdir('tmp')
+			ret = subprocess.call(
+				common.compilers[lang](prob['name'], args, macros[common.work]),
+				shell = True,
+				stdout = open('log', 'w'),
+				stderr = subprocess.STDOUT
+			)
+			os.chdir('..')
+			return '`' + prob['name'] + '.' + lang + '` compile failed.' if ret != 0 else None
+	else:
+		return 'Can\'t find source file.'
+	return None
+	
 def test(prob):
 	scores = []
 	times = []
@@ -106,59 +122,63 @@ def test(prob):
 	if prob['type'] == 'program':
 		res = compile(prob)
 		if res:
-			for i in range(prob['test cases'] + prob['sample count']):
+			for i in range(len(prob['test cases']) + prob['sample count']):
 				scores.append(0.0)
 				times.append(0.0)
 				reports.append(res)
 			return scores, times, reports
 	all_cases = [
-		('data', i) for i in range(1, prob['test cases'] + 1)
+		('data', i) for i in prob['test cases']
 	] + [
-		(os.path.join('down', prob['name']), i) for i in range(1, prob['sample count'] + 1)
+		('down', i) for i in range(1, prob['sample count'] + 1)
 	]
 	for path, i in all_cases:
-		print('Case %s:%d' % (path, i), end = '\r')
-		shutil.copy(os.path.join(path, prob['name'] + str(i) + '.in'), os.path.join('tmp', prob['name'] + '.in'))
+		print('Case %s:%s' % (path, str(i)), end = '\r')
+		shutil.copy(os.path.join(prob['path'], path, str(i) + '.in'), os.path.join('tmp', 'in'))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
-			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], prob['name'] + '.in', prob['name'] + '.out')
+			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
 			os.chdir('..')
 		else:
-			if os.path.exists(os.path.join('tmp', prob['name'] + str(i) + '.out')):
-				shutil.copy(os.path.join('tmp', prob['name'] + str(i) + '.out'), os.path.join('tmp', prob['name'] + '.out'))
+			if os.path.exists(os.path.join('tmp', str(i) + '.out')):
+				shutil.copy(os.path.join('tmp', str(i) + '.out'), os.path.join('tmp', 'out'))
 				ret = None
 				time = 0.0
 			else:
 				ret = 'Output file does not exist.'
 				time = 0.0
 		if not ret:
-			if not os.path.exists(os.path.join('tmp', prob['name'] + '.out')):
+			if not os.path.exists(os.path.join('tmp', 'out')):
 				ret = 'Output file does not exist.'
 				time = 0.0
 				score = 0.0
-			elif os.path.exists(os.path.join('data', prob['name'] + '_e')):
-				shutil.copy(os.path.join('data', prob['name'] + '_e'), os.path.join('tmp', 'chk' + elf_suffix))
+			elif 'chk' in prob and prob['chk']:
+				shutil.copy(os.path.join('bin', prob['route']), os.path.join('tmp', 'chk' + elf_suffix))
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
 					os.path.join('tmp', 'chk' + elf_suffix),
-					os.path.join(path, prob['name'] + str(i) + '.in'),
-					os.path.join('tmp', prob['name'] + '.out'),
-					os.path.join(path, prob['name'] + str(i) + '.ans')
+					os.path.join(prob['path'], path, str(i) + '.in'),
+					os.path.join('tmp', 'out'),
+					os.path.join(prob['path'], path, str(i) + '.ans')
 				))
-				arbiter_out = ('/' if system != 'Windows' else '') + 'tmp/_eval.score'
-				f = open(arbiter_out)
-				if f:	#try to handle both tuoj and arbiter spj
+				
+				try:
+					arbiter_out = ('/' if system != 'Windows' else '') + 'tmp/_eval.score'
+					f = open(arbiter_out)
 					report = f.readline().strip()
 					score = float(f.readline()) * 0.1
 					f.close()
 					shutil.remove(arbiter_out)
-				else:
-					report = open('tmp/info').read().strip()
-					score = float(open('tmp/score').readline()) * .001
+				except FileNotFoundError as e:
+					try:
+						report = open('tmp/info').read().strip()
+					except FileNotFoundError as e:
+						report = ''
+					score = float(open('tmp/score').readline()) * .01
 			else:
 				ret = os.system('%s %s %s > log' % (
 					diff_tool,
-					os.path.join(path, prob['name'] + str(i) + '.ans'),
-					os.path.join('tmp', prob['name'] + '.out')
+					os.path.join(prob['path'], path, str(i) + '.ans'),
+					os.path.join('tmp', 'out')
 				))
 				if ret == 0:
 					score = 1.0
@@ -184,13 +204,13 @@ def test(prob):
 		reports.append(report)
 	return scores, times, reports
 
-def packed_score(scores, times, reports, prob):
+def packed_score(scores, times, reports, score_map, prob):
 	pscore = []
 	ptime = []
 	preport = []
 	for datum in prob['data']:		
-		pscore.append(datum['score'] * min((scores[i - 1] for i in datum['cases'])))
-		ptime.append(sum((times[i - 1] for i in datum['cases'] if scores[i - 1] > 0)))
+		pscore.append(datum['score'] * min((scores[score_map[i]] for i in datum['cases'])))
+		ptime.append(sum((times[score_map[i]] for i in datum['cases'] if scores[score_map[i]] > 0)))
 		preport.append('Total %.1f' % datum['score'])
 	pscore.append(sum(pscore))
 	ptime.append(sum(ptime))
@@ -243,18 +263,70 @@ def test_one_day(probs, day_name):
 				os.startfile(os.path.join('..', 'result', day_name, prob['name'] + '.csv'))
 			else:
 				subprocess.call(["xdg-open", os.path.join('..', 'result', day_name, prob['name'] + '.csv')])
-	
+
+def test_problem(prob):
+	if 'users' not in prob:
+		common.error('No `users` in conf.json of problem `%s`, try to use `python -m load users`.')
+		return
+	with open(os.path.join('result', prob['route'] + '.csv'), 'w') as fres:
+		fres.write('%s,%s%s,summary,sample\n' % (
+			prob['name'],
+			','.join(map(str, prob['test cases'])),
+			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob['data'])) \
+				if 'packed' in prob and prob['packed'] else ''
+		))
+		for user, algos in prob['users'].items():
+			if (not prob['all'] and not common.any_prefix(prob['route'] + '/' + user)):
+				continue
+			for algo, path in algos.items():
+				if (not prob['all'] and not common.any_prefix(prob['route'] + '/' + user + '/' + algo)):
+					continue
+				if os.path.exists('tmp'):
+					shutil.rmtree('tmp')
+				if prob['type'] == 'program':
+					os.makedirs('tmp')
+					shutil.copy(os.path.join(prob['path'], path), os.path.join('tmp', prob['name'] + '.' + path.split('.')[-1]))
+				else:
+					shutil.copytree(os.path.join(prob['name'], user, algo), 'tmp')
+				print('Now testing %s:%s:%s' % (prob['name'], user, algo))
+				scores, times, reports = test(prob)
+				while os.path.exists('tmp'):
+					try:
+						shutil.rmtree('tmp')
+					except:
+						pass
+				tc = len(prob['test cases'])
+				if 'packed' in prob and prob['packed']:
+					score_map = {prob['test cases'][i] : i for i in range(tc)}
+					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
+					scores = scores[:tc] + packed[0] + scores[tc:]
+					times = times[:tc] + packed[1] + times[tc:]
+					reports = reports[:tc] + packed[2] + reports[tc:]
+				else:
+					ratio = 100. / tc
+					scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
+					times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
+					reports = reports[:tc] + [''] + reports[tc:]
+				scores = map(lambda i : '%.1f' % i, scores)
+				times = map(lambda i : '%.3f' % i, times)
+				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
+				for title, line in [(user, scores), (algo, times), ('', reports)]:
+					fres.write('%s,%s\n' % (title, ','.join(line)))
+	if common.start_file:
+		if common.system == 'Windows':
+			os.startfile(os.path.join('result', prob['route'] + '.csv'))
+		else:
+			subprocess.call(["xdg-open", os.path.join('result', prob['route'] + '.csv')])
+				
 def test_progs():
 	if not os.path.exists('result'):
 		os.makedirs('result')
-	for day_name, day_data in common.probs.items():
-		if day_name not in common.day_set:
-			continue
-		if not os.path.exists(os.path.join('result', day_name)):
-			os.makedirs(os.path.join('result', day_name))
-		os.chdir(day_name)
-		test_one_day(day_data, day_name)
-		os.chdir('..')
+	for day in common.days():
+		path = os.path.join('result', day['route'])
+		if not os.path.exists(path):
+			os.makedirs(path)
+	for prob in common.probs():
+		test_problem(prob)
 	
 if __name__ == '__main__':
 	if common.init():

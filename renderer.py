@@ -119,13 +119,8 @@ def secondary(s, sp, work):
 def tex(comp):
 	def render(conf, contest, path):
 		tex_problems = []
-		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
 		day_name = conf['name'] if conf['folder'] == 'day' else None
-		probs = [
-			prob for prob in probs \
-			if not common.prob_set or not day_name or day_name + '/' + prob['name'] in common.prob_set
-		]
-		for prob in probs:
+		for prob in common.probs():
 			try:
 				common.copy(
 					os.path.join(prob['path'], 'statement'),
@@ -145,6 +140,7 @@ def tex(comp):
 				'io_style' : io_style,
 				'comp' : comp,
 				'tools' : tools,
+				'common' : common,
 				'file_name' : lambda name : file_name(comp, prob, name),
 				'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
@@ -209,6 +205,7 @@ def tex(comp):
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
+	prec = None
 	if os.path.exists(os.path.join('precautions', 'zh-cn.md')):
 		common.copy('precautions', 'zh-cn.md', 'tmp')
 		os.system('pandoc %s -t latex -o %s' % (
@@ -217,23 +214,20 @@ def tex(comp):
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 	#shutil.copy(os.path.join('title.tex'), 'tmp')
-	if common.conf['folder'] == 'contest':
-		for day in common.conf['sub']:
-			if not common.day_set or day['name'] in common.day_set:
-				result_path = os.path.join('statements', comp, day['name'] + '.pdf')
-				render(day, common.conf, result_path)
-	elif common.conf['folder'] == 'day':
-		result_path = os.path.join('statements', comp, conf['name'] + '.pdf')
-		render(common.conf, None, result_path)
-	elif common.conf['folder'] == 'problem':
-		result_path = os.path.join('statements', comp, conf['name'] + '.pdf')
-		render(common.conf, None, result_path)
+	if common.conf['folder'] != 'problem':
+		for day in common.days():
+			result_path = os.path.join('statements', comp, day['name'] + '.pdf')
+			render(day, common.conf if common.conf['folder'] == 'contest' else None, result_path)
 	else:
-		raise Exception("Unknown folder type `%s`." % common.conf['folder'])
+		result_path = os.path.join('statements', comp, common.conf['name'] + '.pdf')
+		render(common.conf, None, result_path)
 		
 def html(comp):
-	def render(prob, day, contest, path):
+	def render(prob):
+		path = os.path.join('statements', comp, prob['route'])
 		if os.path.exists(os.path.join(prob['path'], 'resources')):
+			shutil.rmtree(path, ignore_errors = True)
+			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob['path'], 'resources'), path)
 		try:
 			common.copy(
@@ -252,6 +246,7 @@ def html(comp):
 			'prob' : prob,
 			'io_style' : io_style,
 			'tools' : tools,
+			'common' : common,
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
@@ -275,35 +270,12 @@ def html(comp):
 				os.startfile(path + '.md')
 			else:
 				subprocess.call(["xdg-open", path + '.md'])
-
-	def render_day(day, contest, path, prefix):
-		for prob in day['sub']:
-			if common.prob_set:
-				if not day_name:
-					if prob['name'] not in common.prob_set:
-						continue
-				else:
-					if prefix + '/' + prob['name'] not in common.prob_set:
-						continue
-			render(prob, day, contest, os.path.join(path, prob['name']))
 						
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
-	if common.conf['folder'] == 'contest':
-		for day in common.conf['sub']:
-			if not common.day_set or day['name'] in common.day_set:
-				result_path = os.path.join('statements', comp, day['name'])
-				common.mkdir(result_path)
-				render_day(day, common.conf, result_path, day['name'])
-	elif common.conf['folder'] == 'day':
-		result_path = os.path.join('statements', comp)
-		render_day(common.conf, None, result_path, None)
-	elif common.conf['folder'] == 'problem':
-		result_path = os.path.join('statements', comp, conf['name'])
-		render(common.conf, None, None, result_path)
-	else:
-		raise Exception("Unknown folder type `%s`." % common.conf['folder'])
+	for prob in common.probs():
+		render(prob)
 	
 if __name__ == '__main__':
 	if common.init():

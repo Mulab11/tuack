@@ -87,7 +87,7 @@ day2		//这层目录下可以有没有用的目录
 			data.test		//如果你不是出题人但是出了数据
 			chk.test		//如果你写了checker的测试，装在这个文件夹下
 			checker.test	//同理，不要问我同名怎么办
-			n_log_n		//每个模拟选手的测试用一个文件夹装
+			n_log_n		//每个模拟选手的测试用一个文件夹装，现在因为要配置，因此不严格要求这么存
 				nodes.cpp或nodes1.ans	//这就是一个模拟选手，用标准IO
 			Dinic	//另一个模拟选手，名称随意，不要匹配到上文和下文的名称就行
 				nodes1.ans
@@ -182,6 +182,15 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 			"args" : [30000, 0]
 		}
 	],
+	"users" : {					//验题人
+		"vfk" : {				//一个验题人写了多个算法
+			"std" : "vfk/std.cpp"//算法的名称和路径，非传统题必须是文件夹路径，传统题是文件名
+		},
+		"picks" : {
+			"n_log_n" : "picks/n_log_n/excellent.cpp",
+			"Dinic" : "picks/Dinic/hehe.cpp"
+		}
+    },
 	"uoj id" : 3				//如果要使用上传到uoj的功能，需要填写这道题目的uoj题目id
 }
 ```
@@ -276,16 +285,30 @@ MacOS下待研究。
 
 ### 只对特定的题目进行操作
 
-前面几个工具都可以使用类似于 `-d day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
+前面几个工具都可以使用类似于 `-p day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
 
 ```bash
-python -m packer noi,release,test -d day1,day2
+python -m packer noi,release,test -p day1,day2
 python -m tester -p day1/excellent,day2/drink
-python -m tester -u day1/excellent/saffah
-python -m tester -a day1/excellent/saffah/std
+python -m tester -p day1/excellent/saffah
+python -m tester -p day1/excellent/saffah/std
 ```
 
-不要同时使用 `-d` 和 `-p`，`packer` 生成 `release` 时不能使用 `-p`。
+注意所有指定的命令全部都改成了 `-p`，而且现在三种类型的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
+
+```
+python -m tester -p excellent/saffah
+```
+
+需要注意的是，这里的路径不是**绝对或相对路径**，而是**题目的组织层次**，即就算你不按照规定的层次存储文件夹（主要是为了继承），你也需要写成上文中的这种层次。
+
+### 指定操作系统
+
+这几个工具都可以指定操作系统，使用命令如 `-o Windows` 。其中操作系统的名称与python的 `platform.system()` 调用结果一致；目前只判断了Windows和非Windows。默认是当前操作系统。
+
+对于  `packer`，将会把所有数据转成指定操作系统的换行符；对于 `renderer`，会按指定的操作系统习惯输出题面。
+
+注意：编译的chk等只跟运行环境的操作系统有关，不能指定操作系统。
 
 ## 题面的书写
 
