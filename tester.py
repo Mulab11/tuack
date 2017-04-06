@@ -15,7 +15,6 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from common import *
 import common
 	
 def run_windows(name, tl, ml, input = None, output = None):
@@ -42,7 +41,7 @@ def run_windows(name, tl, ml, input = None, output = None):
 			else:
 				ret = 'Runtime error %d.' % ret
 			break
-		if (time.clock() - t) >= tl * time_multiplier:
+		if (time.clock() - t) >= tl * common.time_multiplier:
 			pro.kill()
 			t = 0.0
 			ret = 'Time out.'
@@ -94,17 +93,17 @@ def run_linux(name, tl, ml, input = None, output = None):
 			t = 0.
 	return ret, t
 
-if system == 'Linux':
+if common.system == 'Linux':
 	run = run_linux
-elif system == 'Windows':
+elif common.system == 'Windows':
 	run = run_windows
 	
 def compile(prob):
 	for lang, args in prob['compile'].items():
-		if os.path.exists(os.path.join('tmp', prob['name'] + '.' + lang)):
+		if os.path.exists(common.pjoin('tmp', prob['name'] + '.' + lang)):
 			os.chdir('tmp')
 			ret = subprocess.call(
-				common.compilers[lang](prob['name'], args, macros[common.work]),
+				common.compilers[lang](prob['name'], args, common.macros[common.work]),
 				shell = True,
 				stdout = open('log', 'w'),
 				stderr = subprocess.STDOUT
@@ -130,39 +129,38 @@ def test(prob):
 	all_cases = [
 		('data', i) for i in prob['test cases']
 	] + [
-		('down', i) for i in range(1, prob['sample count'] + 1)
+		('down', i) for i in prob['sample cases']
 	]
 	for path, i in all_cases:
 		print('Case %s:%s' % (path, str(i)), end = '\r')
-		shutil.copy(os.path.join(prob['path'], path, str(i) + '.in'), os.path.join('tmp', 'in'))
+		shutil.copy(common.pjoin(prob['path'], path, str(i) + '.in'), common.pjoin('tmp', 'in'))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
 			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
 			os.chdir('..')
 		else:
-			if os.path.exists(os.path.join('tmp', str(i) + '.out')):
-				shutil.copy(os.path.join('tmp', str(i) + '.out'), os.path.join('tmp', 'out'))
+			if os.path.exists(common.pjoin('tmp', str(i) + '.out')):
+				shutil.copy(common.pjoin('tmp', str(i) + '.out'), common.pjoin('tmp', 'out'))
 				ret = None
 				time = 0.0
 			else:
 				ret = 'Output file does not exist.'
 				time = 0.0
 		if not ret:
-			if not os.path.exists(os.path.join('tmp', 'out')):
+			if not os.path.exists(common.pjoin('tmp', 'out')):
 				ret = 'Output file does not exist.'
 				time = 0.0
 				score = 0.0
 			elif 'chk' in prob and prob['chk']:
-				shutil.copy(os.path.join('bin', prob['route']), os.path.join('tmp', 'chk' + elf_suffix))
+				shutil.copy(common.pjoin('bin', prob['route']), common.pjoin('tmp', 'chk' + common.elf_suffix))
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
-					os.path.join('tmp', 'chk' + elf_suffix),
-					os.path.join(prob['path'], path, str(i) + '.in'),
-					os.path.join('tmp', 'out'),
-					os.path.join(prob['path'], path, str(i) + '.ans')
+					common.pjoin('tmp', 'chk' + common.elf_suffix),
+					common.pjoin(prob['path'], path, str(i) + '.in'),
+					common.pjoin('tmp', 'out'),
+					common.pjoin(prob['path'], path, str(i) + '.ans')
 				))
-				
 				try:
-					arbiter_out = ('/' if system != 'Windows' else '') + 'tmp/_eval.score'
+					arbiter_out = ('/' if common.system != 'Windows' else '') + 'tmp/_eval.score'
 					f = open(arbiter_out)
 					report = f.readline().strip()
 					score = float(f.readline()) * 0.1
@@ -176,9 +174,9 @@ def test(prob):
 					score = float(open('tmp/score').readline()) * .01
 			else:
 				ret = os.system('%s %s %s > log' % (
-					diff_tool,
-					os.path.join(prob['path'], path, str(i) + '.ans'),
-					os.path.join('tmp', 'out')
+					common.diff_tool,
+					common.pjoin(prob['path'], path, str(i) + '.ans'),
+					common.pjoin('tmp', 'out')
 				))
 				if ret == 0:
 					score = 1.0
@@ -194,9 +192,9 @@ def test(prob):
 		else:
 			score = 0.0
 			report = ret
-		while os.path.exists(os.path.join('tmp', prob['name'] + '.out')):
+		while os.path.exists(common.pjoin('tmp', prob['name'] + '.out')):
 			try:
-				os.remove(os.path.join('tmp', prob['name'] + '.out'))
+				os.remove(common.pjoin('tmp', prob['name'] + '.out'))
 			except:
 				pass
 		scores.append(score)
@@ -217,58 +215,11 @@ def packed_score(scores, times, reports, score_map, prob):
 	preport.append('')
 	return (pscore, ptime, preport)
 	
-def test_one_day(probs, day_name):
-	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
-			continue
-		not_empty = False
-		with open(os.path.join('..', 'result', day_name, prob['name'] + '.csv'), 'w') as fres:
-			fres.write('%s,%s%s,summary,sample\n' % (
-				prob['name'],
-				','.join(map(str, range(1, prob['test cases'] + 1))),
-				',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob['data'])) if 'packed' in prob and prob['packed'] else ''
-			))
-			for user in os.listdir(prob['name']):
-				if not problem_skip.match(user) and os.path.isdir(os.path.join(prob['name'], user)) and (not common.user_set or day_name + '/' + prob['name'] + '/' + user in common.user_set):
-					for algo in os.listdir(os.path.join(prob['name'], user)):
-						if not user_skip.match(algo) and os.path.isdir(os.path.join(prob['name'], user, algo)) and (not common.algo_set or day_name + '/' + prob['name'] + '/' + user + '/' + algo in common.algo_set):
-							not_empty = True
-							if os.path.exists('tmp'):
-								shutil.rmtree('tmp')
-							shutil.copytree(os.path.join(prob['name'], user, algo), 'tmp')
-							print('Now testing %s:%s:%s' % (prob['name'], user, algo))
-							scores, times, reports = test(prob)
-							while os.path.exists('tmp'):
-								try:
-									shutil.rmtree('tmp')
-								except:
-									pass
-							tc = prob['test cases']
-							if 'packed' in prob and prob['packed']:
-								packed = packed_score(scores[:tc], times[:tc], reports[:tc], prob)
-								scores = scores[:tc] + packed[0] + scores[tc:]
-								times = times[:tc] + packed[1] + times[tc:]
-								reports = reports[:tc] + packed[2] + reports[tc:]
-							else:
-								ratio = 100. / prob['test cases']
-								scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
-								times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
-								reports = reports[:tc] + [''] + reports[tc:]
-							scores = map(lambda i : '%.1f' % i, scores)
-							times = map(lambda i : '%.3f' % i, times)
-							for title, line in [(user, scores), (algo, times), ('', reports)]:
-								fres.write('%s,%s\n' % (title, ','.join(line)))
-		if common.start_file and not_empty:
-			if common.system == 'Windows':
-				os.startfile(os.path.join('..', 'result', day_name, prob['name'] + '.csv'))
-			else:
-				subprocess.call(["xdg-open", os.path.join('..', 'result', day_name, prob['name'] + '.csv')])
-
 def test_problem(prob):
 	if 'users' not in prob:
 		common.error('No `users` in conf.json of problem `%s`, try to use `python -m load users`.')
 		return
-	with open(os.path.join('result', prob['route'] + '.csv'), 'w') as fres:
+	with open(common.pjoin('result', prob['route']) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample\n' % (
 			prob['name'],
 			','.join(map(str, prob['test cases'])),
@@ -276,18 +227,18 @@ def test_problem(prob):
 				if 'packed' in prob and prob['packed'] else ''
 		))
 		for user, algos in prob['users'].items():
-			if (not prob['all'] and not common.any_prefix(prob['route'] + '/' + user)):
+			if (not prob['all'] and not common.any_prefix(common.rjoin(prob['route'], user))):
 				continue
 			for algo, path in algos.items():
-				if (not prob['all'] and not common.any_prefix(prob['route'] + '/' + user + '/' + algo)):
+				if (not prob['all'] and not common.any_prefix(common.rjoin(prob['route'], user, algo))):
 					continue
 				if os.path.exists('tmp'):
 					shutil.rmtree('tmp')
 				if prob['type'] == 'program':
 					os.makedirs('tmp')
-					shutil.copy(os.path.join(prob['path'], path), os.path.join('tmp', prob['name'] + '.' + path.split('.')[-1]))
+					shutil.copy(common.pjoin(prob['path'], path), common.pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
 				else:
-					shutil.copytree(os.path.join(prob['name'], user, algo), 'tmp')
+					shutil.copytree(common.pjoin(prob['name'], user, algo), 'tmp')
 				print('Now testing %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob)
 				while os.path.exists('tmp'):
@@ -314,15 +265,15 @@ def test_problem(prob):
 					fres.write('%s,%s\n' % (title, ','.join(line)))
 	if common.start_file:
 		if common.system == 'Windows':
-			os.startfile(os.path.join('result', prob['route'] + '.csv'))
+			os.startfile(common.pjoin('result', prob['route']) + '.csv')
 		else:
-			subprocess.call(["xdg-open", os.path.join('result', prob['route'] + '.csv')])
+			subprocess.call(["xdg-open", common.pjoin('result', prob['route']) + '.csv'])
 				
 def test_progs():
-	if not os.path.exists('result'):
+	if common.conf['folder'] != 'problem' and not os.path.exists('result'):
 		os.makedirs('result')
 	for day in common.days():
-		path = os.path.join('result', day['route'])
+		path = common.pjoin('result', day['route'])
 		if not os.path.exists(path):
 			os.makedirs(path)
 	for prob in common.probs():
@@ -334,7 +285,7 @@ if __name__ == '__main__':
 		if common.do_pack:
 			import packer
 			packer.test()
-		infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
+		common.infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
 		test_progs()
 	else:
 		print('\t-u day2/nodes/saffah,day0/sleep/zhx: Only do those work for saffah and zhx.')

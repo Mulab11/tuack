@@ -41,7 +41,7 @@ def copy_one_day_files(probs, day_name):
 	remkdir(os.path.join(output_folder, day_name, 'data'))
 	print('copy data files')
 	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
+		if common.rjoin(day_name, prob['name']) not in common.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'data')
@@ -59,7 +59,7 @@ def copy_one_day_files(probs, day_name):
 	print('copy down files')
 	remkdir(os.path.join(output_folder, day_name, 'down'))
 	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
+		if common.rjoin(day_name, prob['name']) not in common.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'down')
@@ -97,7 +97,7 @@ def pc2_copy_one_day_files(probs, day_name):
 	remkdir(os.path.join('pc2', day_name, 'data'))
 	print('copy data files')
 	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
+		if common.rjoin(day_name, prob['name']) not in common.prob_set:
 			continue
 		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
@@ -117,7 +117,7 @@ def pc2_copy_one_day_files(probs, day_name):
 	print('copy down files')
 	remkdir(os.path.join('pc2', day_name, 'down'))
 	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
+		if common.rjoin(day_name, prob['name']) not in common.prob_set:
 			continue
 		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
@@ -178,7 +178,7 @@ def prob2uoj_conf(prob):
 def uoj_copy_one_day_files(probs, day_name):
 	print('copy data files')
 	for prob in probs:
-		if day_name + '/' + prob['name'] not in common.prob_set:
+		if common.rjoin(day_name, prob['name']) not in common.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'data')
@@ -256,7 +256,8 @@ def test():
 	global output_folder
 	common.no_compiling = False
 	output_folder = 'bin'
-	remkdir('bin')
+	if common.conf['folder'] != 'problem':
+		remkdir('bin')
 	copy_files('test_')
 	
 def pc2():
@@ -279,7 +280,7 @@ def svn_init():
 		if day_name not in common.day_set:
 			continue
 		for prob in probs:
-			if day_name + '/' + prob['name'] not in common.prob_set:
+			if common.rjoin(day_name, prob['name']) not in common.prob_set:
 				continue
 			if not os.path.exists(os.path.join('uoj', day_name, prob['name'], '.svn')):
 				os.system(
@@ -298,7 +299,7 @@ def svn_upload():
 		if day_name not in common.day_set:
 			continue
 		for prob in probs:
-			if day_name + '/' + prob['name'] not in common.prob_set:
+			if common.rjoin(day_name, prob['name']) not in common.prob_set:
 				continue
 			os.system('svn add %s' % os.path.join(os.path.join('uoj', day_name, prob['name'], '1')))
 			os.system('svn commit %s -m "%s"' % (

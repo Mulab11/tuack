@@ -95,18 +95,32 @@ def set_default(prob, name):
 				datum['score'] = item_score
 '''
 
+pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
+rjoin = lambda *args : '/'.join(args).strip('/')
+
 def set_default_problem(conf, path = None):
-	if 'all' not in conf:
-		conf['all'] = True
+	conf['all'] = True
 	if 'title' not in conf and 'cnname' in conf:
 		conf['title'] = {'zh-cn' : conf['cnname']}
 	if 'test cases' in conf and type(conf['test cases']) == int:
 		conf['test cases'] = list(range(1, conf['test cases'] + 1))
-	else:
+	elif 'data' in conf:
 		tc = set()
 		for datum in conf['data']:
 			tc |= set(datum['cases'])
 		conf['test cases'] = sorted(list(tc))
+	if 'samples' not in conf:
+		if 'sample count' in conf:
+			conf['samples'] = [{'cases' : list(range(1, conf['sample count'] + 1))}]
+		else:
+			conf['samples'] = []
+	tc = set()
+	for datum in conf['samples']:
+		tc |= set(datum['cases'])
+	try:
+		conf['sample cases'] = sorted(list(tc))
+	except:
+		conf['sample cases'] = sorted(map(str, list(tc)))
 	if 'name' not in conf:
 		conf['name'] = path
 	if 'packed' in conf and conf['packed']:
@@ -125,15 +139,13 @@ def set_default_problem(conf, path = None):
 	return conf
 	
 def set_default_day(conf, path = None):
-	if 'all' not in conf:
-		conf['all'] = True
+	conf['all'] = True
 	if 'name' not in conf:
 		conf['name'] = path
 	return conf
 
 def set_default_contest(conf, path = None):
-	if 'all' not in conf:
-		conf['all'] = True
+	conf['all'] = True
 	if 'name' not in conf:
 		conf['name'] = path
 	return conf
@@ -172,35 +184,70 @@ def extend_merge(base, ext):
 			base[key] = val
 	return base
 	
+class NoJsonException(Exception):
+	pass
+	
 def load_json(path = '.', route = None):
 	for name in ['conf.json', 'prob.json']:
 		try:
-			full_path = os.path.join(path, name)
+			full_path = pjoin(path, name)
 			if os.path.exists(full_path):
 				conf = json.loads(open(full_path, 'rb').read().decode('utf-8'))
 				if 'folder' not in conf:
 					conf['folder'] = 'problem'
 				if conf['folder'] == 'extend':
-					base_conf = load_json(os.path.join(path, conf['base path']))
+					base_conf = load_json(pjoin(path, conf['base path']))
 					conf = extend_merge(base_conf, conf)
 					#print(conf)
 					path = base_conf['path']
 				else:
 					conf['path'] = path
 				conf = eval('set_default_' + conf['folder'])(conf, os.path.basename(path))
-				conf['route'] = '' if route == None else ((route + '/' if route else '') + conf['name'])
+				conf['route'] = '' if route == None else rjoin(route, conf['name'])
 				if 'subdir' in conf:
 					conf['sub'] = [
-						load_json(os.path.join(path, sub), conf['route']) \
+						load_json(pjoin(path, sub), conf['route']) \
 						for sub in conf['subdir']
 					]
 				return conf
 		except Exception as e:
-			print('Error at json configure file `%s`.' % os.path.join(path, name))
+			print('Error at json configure file `%s`.' % pjoin(path, name))
 			raise e
 	else:
-		raise Exception('Can\'t find configure json file at `%s`.' % path)
+		raise NoJsonException('Can\'t find configure json file at `%s`.' % path)
 
+def del_redundance(conf, red):
+	for key in red:
+		try:
+			conf.pop(key)
+		except:
+			pass
+	if not conf['name'] or conf['name'] == '.':
+		conf.pop('name')
+	return conf
+	
+redundances = {
+	'problem' : ['test cases', 'sample cases'],
+	'day' : [],
+	'contest' : []
+}
+
+common_redundances = ['all', 'path', 'route']
+		
+def save_json(conf):
+	if 'base path' in conf:
+		common.warning('extend folder type can\'t use generate.')
+		return
+	cp = conf.copy()
+	if 'sub' in cp:
+		sub = cp.pop('sub')
+		for s in sub:
+			save_json(s)
+	cp = del_redundance(cp, redundances[cp['folder']] + common_redundances)
+	open(pjoin(conf['path'], 'conf.json'), 'wb').write(
+		json.dumps(cp, indent = 2, sort_keys = True).encode('utf-8')
+	)
+		
 def any_prefix(pre):
 	for s in sub_set:
 		if s.startswith(pre):
@@ -252,30 +299,30 @@ def remkdir(name):
 			warning('Can\'t delete %s' % name)
 		
 def copy(source, name, target):
-	full_source = os.path.join(source, name)
+	full_source = pjoin(source, name)
 	if not os.path.exists(full_source):
 		raise Exception('No such file or path `%s`.' % full_source)
 	copied_data.add(full_source)
 	if os.path.isdir(full_source):
 		if full_source.endswith('.dir') or no_compiling:
-			full_target = (os.path.join(target, name) if os.path.exists(target) else target)
+			full_target = (pjoin(target, name) if os.path.exists(target) else target)
 			if full_source.endswith('.dir'):
 				full_target = full_target[:-4]
 			shutil.copytree(full_source, full_target)
 		else:
 			# TODO: make if there is a makefile
 			ret = os.getcwd()
-			os.chdir(os.path.join(source, name))
+			os.chdir(pjoin(source, name))
 			cpp_file = name + '.cpp'
 			elf_file = name + elf_suffix
 			if os.system('g++ %s -o %s -O2' % (cpp_file, elf_file)) != 0:
 				os.chdir(ret)
-				error('Can\'t compile \'%s\'' % os.path.join(full_source, cpp_file))
+				error('Can\'t compile \'%s\'' % pjoin(full_source, cpp_file))
 				return True
 			else:
 				os.chdir(ret)
-				infom('\'%s\' compile succeeded.' % os.path.join(full_source, cpp_file))
-			shutil.move(os.path.join(full_source, elf_file), target)
+				infom('\'%s\' compile succeeded.' % pjoin(full_source, cpp_file))
+			shutil.move(pjoin(full_source, elf_file), target)
 	else:
 		shutil.copy(full_source, target)
 	return True

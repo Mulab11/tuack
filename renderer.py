@@ -119,8 +119,9 @@ def secondary(s, sp, work):
 def tex(comp):
 	def render(conf, contest, path):
 		tex_problems = []
-		day_name = conf['name'] if conf['folder'] == 'day' else None
-		for prob in common.probs():
+		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
+		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
+		for prob in probs:
 			try:
 				common.copy(
 					os.path.join(prob['path'], 'statement'),
@@ -172,17 +173,14 @@ def tex(comp):
 		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		#all_problem_statement = env.get_template('day_title.tex').render(
 		
-		if day_name:
-			context.pop('prob')
-			context.pop('file_name')
-			context.pop('down_file')
-			context.pop('resource')
-			context.pop('render')
-			context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
-			context['problems'] = tex_problems
-			all_problem_statement = env.get_template('%s.tex.jinja' % base_template).render(context)
-		else:
-			all_problem_statement = tex_problems[0]
+		context.pop('prob')
+		context.pop('file_name')
+		context.pop('down_file')
+		context.pop('resource')
+		context.pop('render')
+		context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
+		context['problems'] = tex_problems
+		all_problem_statement = env.get_template('%s.tex.jinja' % base_template).render(context)
 		try:
 			open(os.path.join('tmp', 'problems.tex'), 'wb') \
 				.write(all_problem_statement.encode('utf-8'))

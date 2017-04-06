@@ -44,11 +44,11 @@
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
-{{ render('"' + down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') + '"') }}
+{{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') + '"') }}
 {{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
 {% else %}
 ```
-{{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
+{{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
 ```
 {% endif %}
 {% endblock %}
@@ -62,11 +62,11 @@
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
-{{ render('"' + down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') + '"') }}
+{{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') + '"') }}
 {{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
 {% else %}
 ```
-{{ down_file(prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
+{{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
 {% endif %}
 {%- endblock -%}
