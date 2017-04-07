@@ -7,7 +7,7 @@
 \ifdefined \precautions		%%For NOIP
 
 	\begin{center}
-		{\erhao \bf \thetitle \par}
+		\centerline{\erhao \bf \thetitle} \par
 		\ifdefined\engtitle
 			{\xiaoyi \hei \engtitle \par}
 		\fi
@@ -26,7 +26,7 @@
 
 	\null
 	\begin{center}
-		{\yihao \bf \thetitle \par}
+		\centerline{\yihao \bf \thetitle} \par
 		\ifdefined\subtitle
 			{\yihao \hei \subtitle \par} \vskip 1em
 		\fi
@@ -164,7 +164,7 @@
 	\hline
 		每个测试点分值
 		{%- for prob in probs -%}
-			& {{ 100 // prob['test cases'].__len__() }}
+			& {{ 100 // prob['test cases'].__len__() if prob['test cases'].__len__() > 0 else '??' }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline

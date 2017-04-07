@@ -46,6 +46,7 @@ def find_all_data(kind, folder, key):
 				ret.append(i)
 		return ret
 	for prob in common.probs():
+		print(prob['route'])
 		new_data = set()
 		exist_data = set(map(str, prob[key])) if key in prob else set()
 		find_data()
@@ -76,6 +77,7 @@ def find_all_code():
 				find_code(user, common.rjoin(path, f))
 
 	for prob in common.probs():
+		print(prob['route'])
 		if 'users' not in prob:
 			prob['users'] = {}
 		exist_code = set()

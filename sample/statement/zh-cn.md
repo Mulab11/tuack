@@ -1,77 +1,77 @@
 {{ self.title() }}
 
-## ÎÊÌâÃèÊö
+## é—®é¢˜æè¿°
 
-ÏÖÔÚ×Ó±êÌâ¶¼²»¼Ó·½À¨ºÅ `¡¾¡¿` ÁË¡£
+çŽ°åœ¨å­æ ‡é¢˜éƒ½ä¸åŠ æ–¹æ‹¬å· `ã€ã€‘` äº†ã€‚
 
-**ÒªÇ¿µ÷µÄ¶«Î÷**ÕâÃ´Ð´¡£
+**è¦å¼ºè°ƒçš„ä¸œè¥¿**è¿™ä¹ˆå†™ã€‚
 
-ÐÐÄÚµÄ¹«Ê½£º$sin \left(a x + b \right)$¡£
+è¡Œå†…çš„å…¬å¼ï¼š$sin \left(a x + b \right)$ã€‚
 
-ÐÐ¼äµÄ¹«Ê½£º
+è¡Œé—´çš„å…¬å¼ï¼š
 $$
 \frac{-b\pm\sqrt{b^2-4ac}}{2a}
 $$
 
-1. µÚÒ»µã
-2. µÚ¶þµã
+1. ç¬¬ä¸€ç‚¹
+2. ç¬¬äºŒç‚¹
 
-* µÚÒ»µã
-* µÚ¶þµã
+* ç¬¬ä¸€ç‚¹
+* ç¬¬äºŒç‚¹
 
-×Ö·û´®»ò´úÂë `This is a string`
+å­—ç¬¦ä¸²æˆ–ä»£ç  `This is a string`
 
 ```
 int main(int argc, char** argv);
 ```
 
-²»ÒªÓÃmarkdown×Ô´øµÄÓï·¨²åÈëÍ¼Æ¬£¨ÒòÎªÄ¿Ç°Ö§³Ö²»ºÃ£©£¬ÓÃÏÂÁÐÓï·¨²åÈëÍ¼Æ¬£º
+ä¸è¦ç”¨markdownè‡ªå¸¦çš„è¯­æ³•æ’å…¥å›¾ç‰‡ï¼ˆå› ä¸ºç›®å‰æ”¯æŒä¸å¥½ï¼‰ï¼Œç”¨ä¸‹åˆ—è¯­æ³•æ’å…¥å›¾ç‰‡ï¼š
 
 {{ render("template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False)") }}
 
-ÆäÖÐ `inline` Îª `False` ±íÊ¾ÕâÊÇÒ»¸ö¶ÀÕ¼Ò»ÐÐµÄÍ¼Æ¬£¬´ËÊ±Ö§³Ö `align`£¬Ñ¡ÏîÎª `left`£¬`middle` »ò `right`¡£
+å…¶ä¸­ `inline` ä¸º `False` è¡¨ç¤ºè¿™æ˜¯ä¸€ä¸ªç‹¬å ä¸€è¡Œçš„å›¾ç‰‡ï¼Œæ­¤æ—¶æ”¯æŒ `align`ï¼Œé€‰é¡¹ä¸º `left`ï¼Œ`middle` æˆ– `right`ã€‚
 
-Í¼Æ¬ÐèÒª±£´æÔÚÊÔÌâÄ¿Â¼µÄ `resources` ×ÓÄ¿Â¼ÏÂ¡£
+å›¾ç‰‡éœ€è¦ä¿å­˜åœ¨è¯•é¢˜ç›®å½•çš„ `resources` å­ç›®å½•ä¸‹ã€‚
 
-Èç¹ûÓÐ±¾¹¤¾ß²»ÄÜÌá¹©µÄ¹¦ÄÜ£¬ÐèÒªÖ±½ÓÊ¹ÓÃ tex »ò html ´úÂëµÄ£¬ÇëÊ¹ÓÃÏÂÁÐ·½Ê½ÒÔÃâÁíÍâÒ»ÖÖ¸ñÊ½ÏÂ³ö´í¡£
+å¦‚æžœæœ‰æœ¬å·¥å…·ä¸èƒ½æä¾›çš„åŠŸèƒ½ï¼Œéœ€è¦ç›´æŽ¥ä½¿ç”¨ tex æˆ– html ä»£ç çš„ï¼Œè¯·ä½¿ç”¨ä¸‹åˆ—æ–¹å¼ä»¥å…å¦å¤–ä¸€ç§æ ¼å¼ä¸‹å‡ºé”™ã€‚
 
 {{ render("'\\clearpage'", 'noi') }}
 
 {{ render(''' '<a href="http://oj.thusaac.org">TUOJ</a>' ''', 'html') }}
 
-ÉÏÊöµÚÒ»¸öÀý×ÓÊÇÎªÁËÅÅ°æºÃ¿´Ç¿ÐÐ¼ÓÈëÒ»¸ö·ÖÒ³·ûµÄÒâË¼£¬ÆäÖÐ `noi` ±íÊ¾Ö»ÔÚÉú³É NOI ·ç¸ñÌâÃæµÄÊ±ºòÊ¹ÓÃÕâ¸ö£»µÚ¶þ¸öÀý×ÓÊÇÔÚÉú³ÉÈÎºÎ html ¸ñÊ½ÌâÄ¿µÄÊ±ºò¼ÓÈëÒ»¸ö¹ã¸æ£¨Îí£©¡£
+ä¸Šè¿°ç¬¬ä¸€ä¸ªä¾‹å­æ˜¯ä¸ºäº†æŽ’ç‰ˆå¥½çœ‹å¼ºè¡ŒåŠ å…¥ä¸€ä¸ªåˆ†é¡µç¬¦çš„æ„æ€ï¼Œå…¶ä¸­ `noi` è¡¨ç¤ºåªåœ¨ç”Ÿæˆ NOI é£Žæ ¼é¢˜é¢çš„æ—¶å€™ä½¿ç”¨è¿™ä¸ªï¼›ç¬¬äºŒä¸ªä¾‹å­æ˜¯åœ¨ç”Ÿæˆä»»ä½• html æ ¼å¼é¢˜ç›®çš„æ—¶å€™åŠ å…¥ä¸€ä¸ªå¹¿å‘Šï¼ˆé›¾ï¼‰ã€‚
 
-¿ÉÑ¡µÄ²ÎÊýÓÐ `html`£¬`tex`£¬`noi`£¬`uoj`£¬`ccpc`£¬`ccc`£¬`tuoj`£¬`ccc-tex`£¬`ccc-html`£¬`tuoj-tex`£¬`tuoj-html`¡£
+å¯é€‰çš„å‚æ•°æœ‰ `html`ï¼Œ`tex`ï¼Œ`noi`ï¼Œ`uoj`ï¼Œ`ccpc`ï¼Œ`ccc`ï¼Œ`tuoj`ï¼Œ`ccc-tex`ï¼Œ`ccc-html`ï¼Œ`tuoj-tex`ï¼Œ`tuoj-html`ã€‚
 
-## ÊäÈë¸ñÊ½
+## è¾“å…¥æ ¼å¼
 
 {{ self.input_file() }}
 
-ÉÏÃæ»á¸ù¾Ý¾ßÌåµÄÆÀ²â»·¾³ËµÃ÷ÊäÈëÊÇÎÄ¼þ»¹ÊÇ±ê×¼ÊäÈëµÈ¡£
+ä¸Šé¢ä¼šæ ¹æ®å…·ä½“çš„è¯„æµ‹çŽ¯å¢ƒè¯´æ˜Žè¾“å…¥æ˜¯æ–‡ä»¶è¿˜æ˜¯æ ‡å‡†è¾“å…¥ç­‰ã€‚
 
-ÊäÈëµÚÒ»ÐÐ°üº¬Ò»¸öÕýÕûÊý $n$£¬±£Ö¤ $n \le {{ tools.hn(prob.args['n']) }}$¡£¡ûÕâÊÇÒýÓÃ `conf.json` ÖÐµÄ `args` µÄ `n` Ïî£¬È»ºóÓÃ¡°ºÃ¿´¡±µÄ¸ñÊ½Êä³ö¡£ÒýÓÃÊ±¼È¿ÉÒÔ `['args']` Ò²¿ÉÒÔ `.args`£»¡°ºÃ¿´¡±µÄ¸ñÊ½Èç `$10^9$`£¬`1,000,000,007`¡£
+è¾“å…¥ç¬¬ä¸€è¡ŒåŒ…å«ä¸€ä¸ªæ­£æ•´æ•° $n$ï¼Œä¿è¯ $n \le {{ tools.hn(prob.args['n']) }}$ã€‚â†è¿™æ˜¯å¼•ç”¨ `conf.json` ä¸­çš„ `args` çš„ `n` é¡¹ï¼Œç„¶åŽç”¨â€œå¥½çœ‹â€çš„æ ¼å¼è¾“å‡ºã€‚å¼•ç”¨æ—¶æ—¢å¯ä»¥ `['args']` ä¹Ÿå¯ä»¥ `.args`ï¼›â€œå¥½çœ‹â€çš„æ ¼å¼å¦‚ `$10^9$`ï¼Œ`1,000,000,007`ã€‚
 
-## Êä³ö¸ñÊ½
+## è¾“å‡ºæ ¼å¼
 
 {{ self.output_file() }}
 
-ÏÂÃæÊÇ×Ô¶¯¶ÁÈëÑùÀý `1.in/ans` È»ºóäÖÈ¾µ½ÌâÃæÖÐ£»Èç¹ûÖ»ÓÐÒ»×éÑùÀý£¬ÔòÈ¥µôÇ°Á½ÐÐ£¬ÑùÀýÈÔÈ»±£´æ³É `1.in/ans`¡£ÆäÖÐ `1` ¿ÉÒÔÊÇ×Ö·û´®¡£
+ä¸‹é¢æ˜¯è‡ªåŠ¨è¯»å…¥æ ·ä¾‹ `1.in/ans` ç„¶åŽæ¸²æŸ“åˆ°é¢˜é¢ä¸­ï¼›å¦‚æžœåªæœ‰ä¸€ç»„æ ·ä¾‹ï¼Œåˆ™åŽ»æŽ‰å‰ä¸¤è¡Œï¼Œæ ·ä¾‹ä»ç„¶ä¿å­˜æˆ `1.in/ans`ã€‚å…¶ä¸­ `1` å¯ä»¥æ˜¯å­—ç¬¦ä¸²ã€‚
 
 {% set vars = {} -%}
 {%- do vars.__setitem__('sample_id', 1) -%}
 {{ self.sample_text() }}
 
-ÏÂÃæÊÇÖ»ÌáÊ¾´æÔÚµÚ¶þ×éÑùÀý£¬µ«²»äÖÈ¾µ½ÌâÃæÖÐ¡£
+ä¸‹é¢æ˜¯åªæç¤ºå­˜åœ¨ç¬¬äºŒç»„æ ·ä¾‹ï¼Œä½†ä¸æ¸²æŸ“åˆ°é¢˜é¢ä¸­ã€‚
 
 {% do vars.__setitem__('sample_id', 2) -%}
 {{ self.sample_file() }}
 
-## ×ÓÈÎÎñ
+## å­ä»»åŠ¡
 
-Í¬Ñù²»½¨ÒéÓÃmarkdownÔ­ÉúµÄ±í¸ñ£¬Ê¹ÓÃÏÂÁÐ·½Ê½äÖÈ¾Ò»¸ö±í¸ñ£¬ÆäÖÐ±í¸ñ´æ·ÅÔÚÊÔÌâÄ¿Â¼µÄ `tables` ×ÓÄ¿Â¼ÏÂ¡£
+åŒæ ·ä¸å»ºè®®ç”¨markdownåŽŸç”Ÿçš„è¡¨æ ¼ï¼Œä½¿ç”¨ä¸‹åˆ—æ–¹å¼æ¸²æŸ“ä¸€ä¸ªè¡¨æ ¼ï¼Œå…¶ä¸­è¡¨æ ¼å­˜æ”¾åœ¨è¯•é¢˜ç›®å½•çš„ `tables` å­ç›®å½•ä¸‹ã€‚
 
 {{ render("table('data')") }}
 
 {{ render("table('table', {'width' : [1, 6]})") }}
 
-±í¸ñµÄÀý×Ó¼û `oi_tools/sample/tables`¡£Ô­ÀíÉÏÓÃÒ»¸ö¶þÎ¬µÄjson±í¸ñ´æ´¢£¬`null` ±íÊ¾ºÍÉÏÒ»ÐÐºÏ²¢£¬²»Ö§³ÖºáÏòºÏ²¢¡£½¨ÒéÓÃjinjaµÄ¸ñÊ½Ð´£¬ÈçÀý×ÓÖÐµÄ `data.json`£¬ÕâÑù¿ÉÒÔ¸ù¾ÝÊý¾ÝÉú³É£»¸úÊý¾ÝÎÞ¹ØµÄ±í¸ñÔò¿ÉÒÔÏñ `table.json` ÄÇÑù´æ´¢¡£
+è¡¨æ ¼çš„ä¾‹å­è§ `oi_tools/sample/tables`ã€‚åŽŸç†ä¸Šç”¨ä¸€ä¸ªäºŒç»´çš„jsonè¡¨æ ¼å­˜å‚¨ï¼Œ`null` è¡¨ç¤ºå’Œä¸Šä¸€è¡Œåˆå¹¶ï¼Œä¸æ”¯æŒæ¨ªå‘åˆå¹¶ã€‚å»ºè®®ç”¨jinjaçš„æ ¼å¼å†™ï¼Œå¦‚ä¾‹å­ä¸­çš„ `data.json`ï¼Œè¿™æ ·å¯ä»¥æ ¹æ®æ•°æ®ç”Ÿæˆï¼›è·Ÿæ•°æ®æ— å…³çš„è¡¨æ ¼åˆ™å¯ä»¥åƒ `table.json` é‚£æ ·å­˜å‚¨ã€‚

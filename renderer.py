@@ -124,6 +124,7 @@ def tex(comp):
 		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
 		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
 		for prob in probs:
+			print('rendering %s %s' % (comp, prob['route']))
 			try:
 				common.copy(
 					os.path.join(prob['path'], 'statement'),
@@ -172,9 +173,10 @@ def tex(comp):
 				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
+			
+		print('rendering %s %s' % (comp, prob['route']))
 		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		#all_problem_statement = env.get_template('day_title.tex').render(
-		
 		context.pop('prob')
 		context.pop('file_name')
 		context.pop('down_file')
@@ -224,6 +226,7 @@ def tex(comp):
 		
 def html(comp):
 	def render(prob):
+		print('rendering %s %s' % (comp, conf['route']))
 		path = os.path.join('statements', comp, prob['route'])
 		if os.path.exists(os.path.join(prob['path'], 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
@@ -285,4 +288,5 @@ if __name__ == '__main__':
 			work_list[common.work]()
 		final()
 	else:
+		pass
 		#print('\t-l zh-cn,en: Output in multiple languages.')
