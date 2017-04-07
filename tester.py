@@ -253,11 +253,15 @@ def test_problem(prob):
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]
 					reports = reports[:tc] + packed[2] + reports[tc:]
-				else:
+				elif tc > 0:
 					ratio = 100. / tc
 					scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
 					times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
 					reports = reports[:tc] + [''] + reports[tc:]
+				else:
+					scores = [0.0, 0.0] + scores
+					times = [0.0, 0.0] + times
+					reports = ['', ''] + reports
 				scores = map(lambda i : '%.1f' % i, scores)
 				times = map(lambda i : '%.3f' % i, times)
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
@@ -288,7 +292,4 @@ if __name__ == '__main__':
 		common.infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
 		test_progs()
 	else:
-		print('\t-u day2/nodes/saffah,day0/sleep/zhx: Only do those work for saffah and zhx.')
-		print('\t-a day2/nodes/saffah/std,day0/sleep/zhx/segtree: Only do those work for saffah/std and zhx/segtree.')
-		print('\tDo not use any two of -d, -p, -u and -a together.')
-		print('\t-k: Do not pack(compile chk and dos2unix) before test.')
+		pass

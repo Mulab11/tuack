@@ -24,7 +24,7 @@ diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
 elf_suffix = '' if system != 'Windows' else '.exe'
 problem_skip = re.compile(r'^(data|down|tables|resources|gen)$')
-user_skip = re.compile(r'^(val|gen|chk|checker|report|.*\.test|.*\.dir)$')
+user_skip = re.compile(r'^(val|gen|chk|checker|report|check|make_data|make|generate|generator|makedata|.*\.test|.*\.dir)$')
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
@@ -108,7 +108,7 @@ def set_default_problem(conf, path = None):
 		tc = set()
 		for datum in conf['data']:
 			tc |= set(datum['cases'])
-		conf['test cases'] = sorted(list(tc))
+		conf['test cases'] = sorted(map(str, list(tc)))
 	if 'samples' not in conf:
 		if 'sample count' in conf:
 			conf['samples'] = [{'cases' : list(range(1, conf['sample count'] + 1))}]
@@ -227,7 +227,7 @@ def del_redundance(conf, red):
 	return conf
 	
 redundances = {
-	'problem' : ['test cases', 'sample cases'],
+	'problem' : ['test cases', 'sample cases', 'sample count'],
 	'day' : [],
 	'contest' : []
 }
@@ -236,7 +236,7 @@ common_redundances = ['all', 'path', 'route']
 		
 def save_json(conf):
 	if 'base path' in conf:
-		common.warning('extend folder type can\'t use generate.')
+		warning('extend folder type can\'t use generate.')
 		return
 	cp = conf.copy()
 	if 'sub' in cp:
@@ -248,8 +248,10 @@ def save_json(conf):
 		json.dumps(cp, indent = 2, sort_keys = True).encode('utf-8')
 	)
 		
-def any_prefix(pre):
-	for s in sub_set:
+def any_prefix(pre, st = None):
+	if not st:
+		st = sub_set
+	for s in st:
 		if s.startswith(pre):
 			return True
 	return False
@@ -259,7 +261,7 @@ def probs(item = None, pick = False):
 		item = conf
 	pick |= not sub_set or item['route'] in sub_set
 	if item['folder'] == 'problem':
-		if pick or any_prefix(item['route'], sub_set):
+		if pick or any_prefix(item['route']):
 			item['all'] = pick
 			yield item
 	else:
@@ -274,7 +276,7 @@ def days(item = None, pick = False):
 	if item['folder'] == 'problem':
 		return
 	if item['folder'] == 'day':
-		if pick or any_prefix(item['route'], sub_set):
+		if pick or any_prefix(item['route']):
 			item['all'] = pick
 			yield item
 	else:
@@ -328,8 +330,9 @@ def copy(source, name, target):
 	return True
 	
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args
 	works = []
+	args = []
 	langs = ['zh-cn']
 	sub_set = None
 	start_file = True
@@ -360,7 +363,10 @@ def deal_args():
 			print('\t-p day0/sleep,day2: Only do those work for day0/sleep and day2.')
 			return False
 		else:
-			works += sys.argv[i].split(',')
+			if len(works) == 0:
+				works = sys.argv[i].split(',')
+			else:
+				args += sys.argv[i].split(',')
 		i += 1
 	# if -p or -d is not set, use all of the problems or days
 	'''

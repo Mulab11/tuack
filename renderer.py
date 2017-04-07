@@ -25,6 +25,8 @@ work_class = {
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
 	'tuoj' : {'tuoj-tex', 'tuoj-html'},
+	'tuoj-tex' : {'tuoj-tex'},
+	'tuoj-html' : {'tuoj-html'},
 	'ccc' : {'ccc-tex', 'ccc-html'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-html' : {'ccc-html'},
@@ -284,5 +286,3 @@ if __name__ == '__main__':
 		final()
 	else:
 		#print('\t-l zh-cn,en: Output in multiple languages.')
-		print('Use arguments other than options to run what to output.')
-		print('Enabled output types: noi, noip, uoj, tuoj, ccc-tex, ccc-html, ccpc.')

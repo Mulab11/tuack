@@ -146,7 +146,8 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 ```js
 {
-	"type" : "program",			//program传统，output提交答案，alternately交互
+	"folder" : "problem",
+  	"type" : "program",			//program传统，output提交答案，alternately交互
 	"name" : "excellent",		//建议加上题目名称，没有的话默认是文件夹名字
 	"title" : {					//现在标题要区分语言，原来的中文名称cnname停用
 		"zh-cn" : "优秀的拆分"
@@ -162,7 +163,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 		"pas" : "-O2"
 	},
 								//样例的数量不再使用
-    "samples" : {...},			//格式同data
+    "samples" : [...],			//格式同data
 	"args" : [10, 30000],		//这是全局参数，由出题人自定义，也可以在题面中引用；TODO：未来会传给val
 	"data" : [					//这是每个测试点的参数，注意只有args是出题人自己定义的
 		{
@@ -218,7 +219,22 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 但是我们推荐将所有数据的参数全部放在这里，题面的书写工具提供了获取这些参数的方法，你的数据生成器一般也有方法读取这个json文件（虽然C++也有相关的轮子，但如果不会的话你可以用python读了传给C++），未来我们还会将这些参数传给val。
 
+注意在这些json文件中，经过程序处理的中文会转成unicode字符串如 `\u7b2c\u4e00\u8bd5`，这除了你看不懂以外并不影响什么，你仍然可以在json中用utf-8格式写中文，甚至在一个字符串中混用这样的字符串和中文。
+
 ## 基本使用方式
+
+### 建立工程
+
+一般来讲，你可以用类似于下面的方式在当前目录下建立一场比赛的工程。
+
+```bash
+python -m generator contest
+python -m generator day day0 day1 day2
+cd day1
+python -m generator problem p1 p2 p3
+```
+
+这三种命令如果不带参数则表示在当前目录下建立一个比赛/比赛日/题目，否则表示建立子目录并在配置文件中建立连接。你可以建立单独的比赛日或题目，而不依赖于一个比赛或比赛日。
 
 ### 寻找文件
 
@@ -439,7 +455,7 @@ ${{ tools.hn(1000000) }}$
 {{ render(''' '<a href="http://uoj.ac">UOJ</a>' ''', 'html') }}
 ```
 
-上例表示只在html中渲染一个指向UOJ的超链接，当然UOJ中你还可以用md的超链接语法。第二个参数支持单个表示类型的字符串或是一个这样的字符串组成的list。其中支持的字符串包括：`html`，`tex`，`noi`，`uoj`，`ccpc`。
+上例表示只在html中渲染一个指向UOJ的超链接，当然UOJ中你还可以用md的超链接语法。第二个参数支持单个表示类型的字符串或是一个这样的字符串组成的list。其中支持的字符串包括：`html`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-html`，`tuoj-tex`，`tuoj-html` 等。
 
 ### 表格
 
