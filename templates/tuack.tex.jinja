@@ -238,7 +238,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['compile']['cpp'] }}
+					{\ttfamily {{ prob['compile']['cpp'] + (' -Wl,--stack=%d' % common.memory2bytes(prob['memory limit']) if common.out_system == 'Windows' else '') }} }
 				{% else %}
 					N/A
 				{% endif %}
@@ -249,7 +249,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['compile']['c'] }}
+					{\ttfamily {{ prob['compile']['c'] + (' -Wl,--stack=%d' % common.memory2bytes(prob['memory limit']) if common.out_system == 'Windows' else '') }} }
 				{% else %}
 					N/A
 				{% endif %}
@@ -260,7 +260,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['compile']['pas'] }}
+					{\ttfamily {{ prob['compile']['pas'] }} }
 				{% else %}
 					N/A
 				{% endif %}
