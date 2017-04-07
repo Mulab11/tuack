@@ -1,0 +1,17 @@
+*.log
+__pycache__
+*.zip
+release
+uoj
+noi
+pc2
+descriptions
+statements
+result
+*.swp
+*~
+.vscode
+tmp
+bin
+log
+**.exe
