@@ -226,7 +226,7 @@ def tex(comp):
 		
 def html(comp):
 	def render(prob):
-		print('rendering %s %s' % (comp, conf['route']))
+		print('rendering %s %s' % (comp, prob['route']))
 		path = os.path.join('statements', comp, prob['route'])
 		if os.path.exists(os.path.join(prob['path'], 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
@@ -277,6 +277,9 @@ def html(comp):
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
+	for day in common.days():
+		if not os.path.exists(common.pjoin('statements', comp, day['route'])):
+			os.makedirs(common.pjoin('statements', comp, day['route']))
 	for prob in common.probs():
 		render(prob)
 	
