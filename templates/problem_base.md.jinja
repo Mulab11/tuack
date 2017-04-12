@@ -30,7 +30,7 @@
 {% block sample_text -%}
 {% block title_sample %}
 {% if comp == 'uoj' -%}
-## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}】
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% endblock %}
 
@@ -38,7 +38,7 @@
 {% if comp == 'uoj' -%}
 ### 输入
 {%- elif comp == 'noi' or comp == 'ccpc' -%}
-## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入】
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入
 {% elif comp == 'ccc' %}
 ## Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
@@ -56,7 +56,7 @@
 {% if comp == 'uoj' -%}
 ### 输出
 {%- elif comp == 'noi' or comp == 'ccpc' -%}
-## 【样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出】
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出
 {% elif comp == 'ccc' %}
 ## Output for Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
@@ -77,14 +77,14 @@
 	{%- if comp == 'uoj' -%}
 ### 说明
 	{%- elif comp == 'noi' or comp == 'ccpc' -%}
-## 【样例{{ vars['sample_id'] }}说明】
+## 样例{{ vars['sample_id'] }}说明
 	{% elif comp == 'ccc' %}
 ## Explanation of the Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 	{%- endif -%}
 {%- endblock %}
 
 {% block sample_file -%}
-## 【样例{{vars['sample_id']}}】
+## 样例{{vars['sample_id']}}
 
 见{{ self.user_path() }}下的 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
