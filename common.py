@@ -71,7 +71,7 @@ def memory2bytes(st):
 	}
 	sp = st.split(' ')
 	un = (units[sp[1]] if len(sp) == 2 else 1)
-	return int(sp[0]) * un
+	return int(float(sp[0]) * un)
 	
 '''
 def set_default(prob, name):
@@ -328,6 +328,14 @@ def copy(source, name, target):
 	else:
 		shutil.copy(full_source, target)
 	return True
+	
+def xopen_file(path):
+	if system == 'Windows':
+		os.startfile(path)
+	elif system == 'Darwin':
+		subprocess.call(["open", path])
+	else:
+		subprocess.call(["xdg-open", path])
 	
 def deal_args():
 	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args

@@ -199,11 +199,7 @@ def tex(comp):
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
 		if common.start_file:
-			if common.system == 'Windows':
-				os.startfile(path)
-			else:
-				subprocess.call(["xdg-open", path])
-
+			common.xopen_file(path)
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
@@ -269,17 +265,15 @@ def html(comp):
 				).encode('utf-8')
 			)
 		if common.start_file:
-			if common.system == 'Windows':
-				os.startfile(path + '.md')
-			else:
-				subprocess.call(["xdg-open", path + '.md'])
+			common.xopen_file(path + '.md')
 						
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
-	for day in common.days():
-		if not os.path.exists(common.pjoin('statements', comp, day['route'])):
-			os.makedirs(common.pjoin('statements', comp, day['route']))
+	if common.conf['folder'] == 'contest':
+		for day in common.days():
+			if not os.path.exists(common.pjoin('statements', comp, day['route'])):
+				os.makedirs(common.pjoin('statements', comp, day['route']))
 	for prob in common.probs():
 		render(prob)
 	
