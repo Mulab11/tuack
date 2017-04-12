@@ -128,11 +128,11 @@ def tsinsen_oj():
 	status = None
 	for line in open(common.args[0], 'rb'):
 		if not status:			# 啥都没有
-			#try:
-			buffer = eval(line.decode('utf-8').strip()[:-1])()
-			#except Exception as e:
-			#	common.warning(str(e))
-			#	buffer = Base()
+			try:
+				buffer = eval(line.decode('utf-8').strip()[:-1])()
+			except Exception as e:
+				common.warning(str(e))
+				buffer = Base()
 			status = True
 		elif status == True:	# 读到了等号的行，还没读到标记开始的行
 			status = line

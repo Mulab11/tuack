@@ -366,7 +366,7 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 * `input_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `output_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `user_path` 选手目录，如果是noi会变成“选手目录”这几个字，uoj会变成下载链接。
-* `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。
+* `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。支持参数 `sample_id` 设置样例的编号（同时也是样例文件名）；`show space` 如果为真则会在PDF格式中将空格显示出来。
 * `title_sample` uoj的“样例输”是拆分成两级名称的，所以蛋疼地需要多一级，这里专指“【样例】”这个标签；其他环境下则会被渲染成空的。
 * `sample_input_text` 样例输入自动渲染。
 * `sample_output_text` 样例输入自动渲染。

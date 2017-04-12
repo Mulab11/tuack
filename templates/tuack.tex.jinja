@@ -79,7 +79,7 @@
 	{% if common.out_system != 'Windows' %}
 		目录
 		{%- for prob in probs -%}
-			& {{ prob['name'] }}
+			& {\ttfamily {{ prob['name'] }} }
 		{%- endfor -%} 
 		\tabularnewline
 	\hline
@@ -88,7 +88,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{{ prob['name'] + ('.exe' if common.out_system == 'Windows' else '') }}
+				{\ttfamily {{ prob['name'] + ('.exe' if common.out_system == 'Windows' else '') }} }
 			{% else %}
 				N/A
 			{% endif %}
@@ -101,15 +101,15 @@
 			&
 			{%- if io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
-					{{ prob['name'] }}.in
+					{\ttfamily {{ prob['name'] }}.in }
 				{%- else -%}
-					{{ prob['name'] }}*.in
+					{\ttfamily {{ prob['name'] }}*.in }
 				{%- endif -%}
 			{%- else -%}
 				{%- if prob['type'] != 'output' -%}
 					标准输入
 				{%- else -%}
-					*.in
+					{\ttfamily *.in }
 				{%- endif -%}
 			{%- endif -%}
 		{%- endfor -%}
@@ -120,15 +120,15 @@
 			&
 			{%- if io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
-					{{ prob['name'] }}.out
+					{\ttfamily {{ prob['name'] }}.out }
 				{%- else -%}
-					{{ prob['name'] }}*.out
+					{\ttfamily {{ prob['name'] }}*.out }
 				{%- endif -%}
 			{%- else -%}
 				{%- if prob['type'] != 'output' -%}
 					标准输入
 				{%- else -%}
-					*.out
+					{\ttfamily *.out }
 				{%- endif -%}
 			{%- endif -%}
 		{%- endfor -%}
@@ -189,7 +189,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['name'] }}.cpp
+					{\ttfamily {{ prob['name'] }}.cpp }
 				{% else %}
 					N/A
 				{% endif %}
@@ -200,7 +200,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['name'] }}.c
+					{\ttfamily {{ prob['name'] }}.c }
 				{% else %}
 					N/A
 				{% endif %}
@@ -211,7 +211,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{{ prob['name'] }}.pas
+					{\ttfamily {{ prob['name'] }}.pas }
 				{% else %}
 					N/A
 				{% endif %}
