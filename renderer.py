@@ -122,6 +122,9 @@ def tex(comp):
 		tex_problems = []
 		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
 		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
+		if len(probs) == 0:
+			print('Nothing to do for %s' % conf['route'])
+			return
 		for prob in probs:
 			print('rendering %s %s' % (comp, prob['route']))
 			try:
@@ -180,8 +183,8 @@ def tex(comp):
 				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
-			
-		print('rendering %s %s' % (comp, prob['route']))
+				
+		print('rendering %s %s' % (comp, conf['route']))
 		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		#all_problem_statement = env.get_template('day_title.tex').render(
 		context.pop('prob')
