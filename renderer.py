@@ -242,11 +242,18 @@ def html(comp):
 				os.path.join('tmp', 'problem.md.jinja')
 			)
 		except:
-			common.copy(
-				prob['path'],
-				'description.md',
-				os.path.join('tmp', 'problem.md.jinja')
-			)
+			try:
+				common.copy(
+					os.path.join(prob['path'], 'statement'),
+					'en.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
+			except:
+				common.copy(
+					prob['path'],
+					'description.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
