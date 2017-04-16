@@ -131,11 +131,18 @@ def tex(comp):
 					os.path.join('tmp', 'problem.md.jinja')
 				)
 			except:
-				common.copy(
-					prob['path'],
-					'description.md',
-					os.path.join('tmp', 'problem.md.jinja')
-				)
+				try:
+					common.copy(
+						os.path.join(prob['path'], 'statement'),
+						'en.md',
+						os.path.join('tmp', 'problem.md.jinja')
+					)
+				except:
+					common.copy(
+						prob['path'],
+						'description.md',
+						os.path.join('tmp', 'problem.md.jinja')
+					)
 			context = {
 				'prob' : prob,
 				'day' : conf if conf['folder'] == 'day' else None,
