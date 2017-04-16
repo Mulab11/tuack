@@ -148,7 +148,8 @@ def tex(comp):
 				'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
-				'precautions' : prec
+				'precautions' : prec,
+				'json' : json
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -248,7 +249,8 @@ def html(comp):
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
-			'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
+			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
+			'json' : json
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
 			.write(env.get_template('problem_base.md.jinja')

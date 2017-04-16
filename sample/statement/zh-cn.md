@@ -10,7 +10,7 @@
 
 行间的公式：
 $$
-\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+\frac{-b\pm\sqrt{b^2-4ac} }{2a}
 $$
 
 1. 第一点
@@ -35,9 +35,9 @@ int main(int argc, char** argv);
 
 如果有本工具不能提供的功能，需要直接使用 tex 或 html 代码的，请使用下列方式以免另外一种格式下出错。
 
-{{ render("'\\clearpage'", 'noi') }}
+{{ render(json.dumps('\\clearpage'), 'noi') }}
 
-{{ render(''' '<a href="http://oj.thusaac.org">TUOJ</a>' ''', 'html') }}
+{{ render(json.dumps('<a href="http://oj.thusaac.org">TUOJ</a>'), 'html') }}
 
 上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `noi` 表示只在生成 NOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
 
@@ -49,7 +49,7 @@ int main(int argc, char** argv);
 
 上面会根据具体的评测环境说明输入是文件还是标准输入等。
 
-输入第一行包含一个正整数 $n$，保证 $n \le {{ tools.hn(prob.args['n']) }}$。←这是引用 `conf.json` 中的 `args` 的 `n` 项，然后用“好看”的格式输出。引用时既可以 `['args']` 也可以 `.args`；“好看”的格式如 `$10^9$`，`1,000,000,007`。
+输入第一行包含一个正整数 $n$，保证 $n \le {{ tools.hn(prob.args['n']) }}$。←这是引用 `conf.json` 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `$10^9$`，`1,000,000,007`。
 
 ## 输出格式
 

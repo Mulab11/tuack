@@ -1,7 +1,7 @@
 {
 	"folder" : "problem",
 	"type" : "program",
-	"name" : "name_for_programers",
+	"name" : "name for programers",
 	"title" : {
 		"zh-cn" : "用于试题标题的中文名称"
 	},		
@@ -15,7 +15,9 @@
 		"pas" : "-O2"
 	},
     "samples" : [],
-	"args" : {},
+	"args" : {
+		"n" : 1000
+	},
 	"data" : [],
 	"users" : {}
 }

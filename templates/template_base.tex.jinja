@@ -25,7 +25,7 @@
 {% endif %}
 
 {% if day and 'start time' in day and 'end time' in day %}
-	\def\time{
+	\def\thetime{
 		{% if comp == 'noi' or comp == 'ccpc' %}比赛{% else %}测试{% endif %}时间：
 		{{ tools.time_range(day['start time'], day['end time'], '年', '月', '日').replace('~', '$\\sim$').replace(' ', '~') }}
 	}
