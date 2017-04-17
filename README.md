@@ -283,12 +283,22 @@ python -m packer uoj,noi,release
 用 `generator` 建好工程以后，可以用 `loader` 导入某个其他格式的题目或比赛。
 
 ```bash
-python loader 类型 来源路径
+python -m loader 类型 来源路径
 ```
 
 其中 `来源路径` 是存放原始工程的路径。
 
 本功能开发中，目前支持的类型有：`tsinsen-oj`。
+
+### 导出工程
+
+一个造好的工程可以用 `dumper` 导出成其他某种格式。
+
+```bash
+python -m dumper 类型
+```
+
+本功能开发中，目前支持的类型有：`lemon`（spj还没做）。
 
 ### 测试
 
