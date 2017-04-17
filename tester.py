@@ -69,7 +69,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 	que = Queue()
 	pro = Process(target = runner_linux, args = (name, que, ml, input, output))
 	pro.start()
-	pro.join(tl * time_multiplier)
+	pro.join(tl * common.time_multiplier)
 	if que.qsize() == 0:
 		fatal('Runner broken.')
 	elif que.qsize() == 1:

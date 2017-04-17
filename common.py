@@ -338,13 +338,15 @@ def xopen_file(path):
 		subprocess.call(["xdg-open", path])
 	
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args, do_zip, do_encript
 	works = []
 	args = []
 	langs = ['zh-cn']
 	sub_set = None
 	start_file = True
 	do_pack = True
+	do_zip = False
+	do_encript = False
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -361,6 +363,11 @@ def deal_args():
 			start_file = False
 		elif sys.argv[i] == '-k':
 			do_pack = False
+		elif sys.argv[i] == '-z':
+			do_zip = True
+		elif sys.argv[i] == '-e':
+			do_zip = True
+			do_encript = True
 		elif sys.argv[i] == '-l':
 			i += 1
 			langs = set(sys.argv[i].split(','))
@@ -398,3 +405,23 @@ def init():
 	conf = load_json()
 	#print(json.dumps(conf))
 	return True
+
+def default_lang(item):
+	if 'zh-cn' in item:
+		return item['zh-cn']
+	elif 'en' in item:
+		return item['en']
+	elif len(item) > 1:
+		for val in item.values():
+			return val
+	else:
+		return 'Unknown'
+	
+def run_r(cmd, path):
+	for f in os.listdir(path):
+		cpath = pjoin(path, f)
+		if os.path.isfile(cpath):
+			cmd(cpath)
+		else:
+			run_r(cmd, cpath)
+	
