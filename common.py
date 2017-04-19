@@ -72,28 +72,6 @@ def memory2bytes(st):
 	sp = st.split(' ')
 	un = (units[sp[1]] if len(sp) == 2 else 1)
 	return int(float(sp[0]) * un)
-	
-'''
-def set_default(prob, name):
-	if 'name' not in prob:
-		prob['name'] = name
-	if 'test cases' not in prob:
-		prob['test cases'] = sum((len(datum['cases']) for datum in prob['data']))
-	if 'packed' in prob and prob['packed']:
-		num_unscored = 0
-		total_score = 0.0
-		for datum in prob['data']:
-			if 'score' in datum:
-				total_score += datum['score']
-			else:
-				num_unscored += 1
-		if num_unscored == 0:
-			return
-		item_score = (100. - total_score) / num_unscored
-		for datum in prob['data']:
-			if 'score' not in datum:
-				datum['score'] = item_score
-'''
 
 pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
 rjoin = lambda *args : '/'.join(args).strip('/')
@@ -517,32 +495,37 @@ def check_install(pack):
 	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 
-def unix2dos(path):
+def change_eol(path, eol):
 	import uuid
 	ufname = str(uuid.uuid4())
 	space_end = False
+	is_text = True
 	with open(ufname, 'wb') as f:
-		for idx, line in enumerate(open(path, 'rb')):
-			line = line.rstrip(b'\r\n')
-			f.write(line + b'\r\n')
-			if not space_end and line.endswith(b' '):
-				print(u'【警告】文件`%s`第%d行末尾有空格。' % (path, idx + 1))
-				space_end = True
-	os.remove(path)
-	os.rename(ufname, path)
+		try:
+			for idx, line in enumerate(open(path, 'rb')):
+				line = line.rstrip(b'\r\n')
+				f.write(line + eol)
+				if not space_end and (line.endswith(b' ') or line.endswith(b'\t')):
+					print(u'【警告】文件`%s`第%d行末尾有空白符。' % (path, idx + 1))
+					space_end = True
+				for code in ['utf-8', 'gbk']:
+					try:
+						if '\0' in line.decode(code):
+							raise Exception('`\\0` in line')
+						break
+					except:
+						pass
+				else:
+					is_text = False
+					print(u'【信息】文件`%s`不是文本文件。' % path)
+					break
+		except:
+			is_test = False
+	if is_text:
+		os.remove(path)
+		os.rename(ufname, path)
+	else:
+		os.remove(ufname)
 
-def dos2unix(path):
-	import uuid
-	ufname = str(uuid.uuid4())
-	space_end = False
-	with open(ufname, 'wb') as f:
-		for idx, line in enumerate(open(path, 'rb')):
-			line = line.rstrip(b'\r\n')
-			f.write(line + b'\n')
-			if not space_end and line.endswith(b' '):
-				print(u'【警告】文件`%s`第%d行末尾有空格。' % (path, idx + 1))
-				space_end = True
-	os.remove(path)
-	os.rename(ufname, path)
-	
-	
+unix2dos = lambda path : change_eol(path, b'\r\n')
+dos2unix = lambda path : change_eol(path, b'\n')
