@@ -404,6 +404,11 @@ def init():
 		return False
 	conf = load_json()
 	#print(json.dumps(conf))
+	try:
+		check_install('git')
+		check_install('git_lfs')
+	except:
+		pass
 	return True
 
 def default_lang(item):
@@ -424,4 +429,120 @@ def run_r(cmd, path):
 			cmd(cpath)
 		else:
 			run_r(cmd, cpath)
+
+def check_install(pack):
+	def check_jinja2():
+		try:
+			import jinja2
+		except Exception as e:
+			print(u'python包jinja2没有安装，使用 pip install jinja2 安装。')
+			if system == 'Windows':
+				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
+			if system == 'Linux':
+				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
+			raise e
+	def check_pandoc():
+		ret = os.system('pandoc -v')
+		if ret != 0:
+			print(u'格式转换工具pandoc没有安装。')
+			if system == 'Windows':
+				print(u'Windows用户去官方网站下载安装，安装好后把pandoc.exe所在路径添加到环境变量PATH中。')
+			if system == 'Linux':
+				print(u'Ubuntu下用 sudo apt install pandoc 安装。')
+			raise Exception('pandoc not found')
+	def check_xelatex():
+		ret = os.system('xelatex --version')
+		if ret != 0:
+			print(u'TeX渲染工具XeLaTeX没有安装。')
+			if system == 'Windows':
+				print(u'Windows下可以先安装MiKTeX，在首次运行的时候会再提示安装后续文件。')
+			if system == 'Linux':
+				print(u'Ubuntu下先用 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra 安装工具；')
+				print(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
+				print(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
+				print(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
+			raise Exception('xelatex not found')
+	def check_pyside():
+		try:
+			import PySide
+		except Exception as e:
+			print(u'python包jinja2没有安装，使用 pip install pyside 安装。注意这个包只能在 python2 下使用。')
+			if system == 'Windows':
+				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
+			if system == 'Linux':
+				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
+			raise e
+	def check_git():
+		ret = os.system('git --version')
+		if ret != 0:
+			print(u'版本管理工具git没有安装，如果工程用git维护则你的修改可能无法成功提交。')
+			print(u'一个可能的安装教程见这里：')
+			print(u'https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git')
+			if system == 'Windows':
+				print(u'Windows下有多种不同的git版本，大家可以多交流好用的版本。')
+			print(u'git入门可以参看这里：')
+			print(u'http://rogerdudler.github.io/git-guide/index.zh.html')
+			print(u'一般推荐用ssh方式克隆仓库，并用公私钥保证安全，添加密钥的方式一般仓库的git网页上能找到。')
+			raise Exception('git not found')
+	def check_git_lfs():
+		ret = os.system('git lfs')
+		if ret != 0:
+			print(u'因为有些评测数据比较大，所以一般要求用git lfs大文件系统（Large File System）管理评测数据（in/ans）')
+			print(u'一个可能的安装教程见这里：')
+			print(u'https://git-lfs.github.com/')
+			print(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
+			print(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
+			raise Exception('git lfs not found')
+	def get_sys_env():
+		return '$'.join([
+			os.environ[key]
+			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
+			if key in os.environ
+		])
+		
+	global tool_conf
+	try:
+		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+	except:
+		tool_conf = {}
+	sys_env = get_sys_env()
+	if sys_env not in tool_conf:
+		tool_conf[sys_env] = {}
+	if 'installed' not in tool_conf[sys_env]:
+		tool_conf[sys_env]['installed'] = {}
+	if pack in tool_conf[sys_env]['installed'] and tool_conf[sys_env]['installed'][pack]:
+		return True
+	eval('check_' + pack)()
+	tool_conf[sys_env]['installed'][pack] = True
+	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
+	return True
+
+def unix2dos(path):
+	import uuid
+	ufname = str(uuid.uuid4())
+	space_end = False
+	with open(ufname, 'wb') as f:
+		for idx, line in enumerate(open(path, 'rb')):
+			line = line.rstrip(b'\r\n')
+			f.write(line + b'\r\n')
+			if not space_end and line.endswith(b' '):
+				print(u'【警告】文件`%s`第%d行末尾有空格。' % (path, idx + 1))
+				space_end = True
+	os.remove(path)
+	os.rename(ufname, path)
+
+def dos2unix(path):
+	import uuid
+	ufname = str(uuid.uuid4())
+	space_end = False
+	with open(ufname, 'wb') as f:
+		for idx, line in enumerate(open(path, 'rb')):
+			line = line.rstrip(b'\r\n')
+			f.write(line + b'\n')
+			if not space_end and line.endswith(b' '):
+				print(u'【警告】文件`%s`第%d行末尾有空格。' % (path, idx + 1))
+				space_end = True
+	os.remove(path)
+	os.rename(ufname, path)
+	
 	

@@ -44,19 +44,22 @@ git submodule update --init
 
 **所有基于文本的文件如果含有中文，必须用UTF-8编码。**
 
-**所有数据文件，必须用大文件系统 `git lfs` 管理。**一般地，如果你只在下文规定的地方存放数据文件，那么你可以将 `samples/.gitattributes` 复制到工程的根目录下，git会自动帮你进行管理。第一次使用参考[这里](https://github.com/git-lfs/git-lfs/wiki/Installation)安装。
+**所有数据文件，必须用大文件系统 `git lfs` 管理。**一般地，如果你只在下文规定的地方存放数据文件，那么你可以将 `samples/.gitattributes` 复制到每道题的目录下，git会自动帮你进行管理。当然事实上，如果你使用 `generator` 生成一个工程，本部分大多数事情都不用太关心。第一次使用参考[这里](https://github.com/git-lfs/git-lfs/wiki/Installation)安装。
 
 ```
-probs.json	//必须有一个文件说明每场比赛题目的顺序，具体格式见后文
+conf.json	//每层文件夹都有一个配置文件，这是一个“比赛”工程
 title.tex	//如果要输出NOI风格的pdf，需要在这里定义比赛的名字，否则不需要这个文件
 oi_tools	//把工具包放在这个位置
-day1		//第一层是不同天/场次，如果只有一场，仍然需要一个文件夹
-day2		//这层目录下可以有没有用的目录
-	day_title.tex	//如果要输出NOI风格的pdf，需要在这里定义这一天的名字、时间等
-	interval		//第二层目录是题目
+day1		//和conf.json的subdir匹配的路径，表示这个比赛工程的子“比赛日”
+day2		//匹配的另一个“比赛日”工程
+	conf.json		//这是一个“比赛日”的工程，一个比赛日可以单独存放
+	interval		//和比赛日conf.json的subdir匹配的路径，表示这个比赛工程的“题目”
 	drink
-	nodes			//注意这层目录下不要出现除了下述目录以外的目录，否则会被当做测试选手
-		conf.json	//必须有一个文件说明这道题目的信息
+	nodes			//这个比赛日有3个题目
+		conf.json	//这是一个“题目”的工程，一个题目也可以单独存放
+		statement	//题面，用markdown+jinja模板做（可以纯markdown，但不能包含html），详见generator生成出来的例子
+			zh-cn.md	//一般使用这一个
+			en.md		//如果是英文题面用这个
 		assignment[.pdf]		//命题报告，一个文件或文件夹，单文件用pdf、pptx、html等可以直接看的格式，文件夹必须用.dir结尾，下同
 		discussion[.pdf]		//讲题/题目讨论PPT，一个文件或文件夹
 		solution[.docx]			//题解
@@ -95,7 +98,6 @@ day2		//这层目录下可以有没有用的目录
 			SPFA.cpp	//现在也可以这么放置源代码了
 			hehe.dir	//如果你有其他文件夹，觉得想分享给大家，又不是模拟选手，用.dir
 			rename.py	//可以有其他想要分享的文件
-		description.md	//题面，用markdown+jinja模板做（可以纯markdown）
 		resources		//题面中使用的外部资源，例如图片、html或tex的模板（对于md无法表示的东西，需要分别写html和tex）
 			1.jpg		//和题面中名称相同的图片
 		tables			//需要用到的表格
@@ -107,7 +109,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 ### 题目描述文件
 
-`conf.json` 是整个工程的描述文件，你总是可以手工编辑这个文件来实现所想要的功能。
+`conf.json` 是一个工程或其子工程的描述文件，你总是可以手工编辑这个文件来实现所想要的功能。
 
 `conf.json` 必须是一个json文件，恰好包含一个dict/object，并且有一个元素为 `"folder" : "类型"`。`类型` 必须为 `contest`，`day`，`problem`，`extend` 中的一种。如果不含有 `folder` 元素，则认为是 `problem`。
 
@@ -332,7 +334,13 @@ python -m renderer noi,uoj
 
 Windows下可以安装MiKTeX，在首次运行的时候会再提示安装后续文件。
 
-Ubuntu下先 `sudo apt install texlive-xetex`。然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+Ubuntu下先运行下列命令：
+
+```bash
+sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
+```
+
+然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
 
 MacOS下待研究。
 
@@ -349,7 +357,7 @@ python -m tester -p day1/excellent/saffah/std
 
 注意所有指定的命令全部都改成了 `-p`，而且现在三种类型的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
 
-```
+```bash
 python -m tester -p excellent/saffah
 ```
 

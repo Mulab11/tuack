@@ -18,6 +18,7 @@ import platform
 import common
 
 def lemon(conf = None):
+	common.check_install('pyside')
 	if not conf:
 		if common.conf['folder'] == 'problem':
 			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
@@ -103,12 +104,15 @@ def lemon(conf = None):
 	ofs.writeRawData(str(obuff))
 	file_.close()
 	
-	common.run_r(lambda path : os.system('unix2dos %s' % path), common.pjoin('lemon', conf['route'], 'data'))
+	common.run_r(common.unix2dos, common.pjoin('lemon', conf['route'], 'data'))
 	
 	if common.do_zip:
 		import zipfile
 		with zipfile.ZipFile(common.pjoin('lemon', conf['route']) + '.zip', 'w') as z:
 			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf['route']))
+	
+	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
+	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 
 work_list = {
 	'lemon' : lemon

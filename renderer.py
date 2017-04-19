@@ -16,7 +16,10 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
-import jinja2
+try:
+	import jinja2
+except:
+	pass
 import tools
 import uuid
 
@@ -118,6 +121,8 @@ def secondary(s, sp, work):
 		return ' {{ ' + s + ' }} '
 	
 def tex(comp):
+	common.check_install('pandoc')
+	common.check_install('xelatex')
 	def render(conf, contest, path):
 		tex_problems = []
 		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
@@ -297,6 +302,7 @@ def html(comp):
 	
 if __name__ == '__main__':
 	if common.init():
+		common.check_install('jinja2')
 		common.infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
 		init()
 		for common.work in common.works:
