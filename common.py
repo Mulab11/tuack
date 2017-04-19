@@ -76,7 +76,20 @@ def memory2bytes(st):
 pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
 rjoin = lambda *args : '/'.join(args).strip('/')
 
+natsort_warned = None
+
 def set_default_problem(conf, path = None):
+	global natsort_warned
+	try:
+		if not natsort_warned:
+			check_install('natsort')
+		import natsort
+		sorter = lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
+	except:
+		if not natsort_warned:
+			print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
+			natsort_warned = True
+		sorter = sorted
 	conf['all'] = True
 	if 'title' not in conf and 'cnname' in conf:
 		conf['title'] = {'zh-cn' : conf['cnname']}
@@ -86,7 +99,7 @@ def set_default_problem(conf, path = None):
 		tc = set()
 		for datum in conf['data']:
 			tc |= set(datum['cases'])
-		conf['test cases'] = sorted(map(str, list(tc)))
+		conf['test cases'] = sorter(map(str, list(tc)))
 	if 'samples' not in conf:
 		if 'sample count' in conf:
 			conf['samples'] = [{'cases' : list(range(1, conf['sample count'] + 1))}]
@@ -95,10 +108,7 @@ def set_default_problem(conf, path = None):
 	tc = set()
 	for datum in conf['samples']:
 		tc |= set(datum['cases'])
-	try:
-		conf['sample cases'] = sorted(list(tc))
-	except:
-		conf['sample cases'] = sorted(map(str, list(tc)))
+	conf['sample cases'] = sorter(map(str, list(tc)))
 	if 'name' not in conf:
 		conf['name'] = path
 	if 'packed' in conf and conf['packed']:
@@ -127,24 +137,6 @@ def set_default_contest(conf, path = None):
 	if 'name' not in conf:
 		conf['name'] = path
 	return conf
-	
-'''
-def load_problems():
-	problem_names = json.load(open('probs.json'))
-	probs = {}
-	for day, names in problem_names.items():
-		problems = []
-		for name in names:
-			try:
-				problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
-				set_default(problem, name)
-				problems.append(problem)
-			except Exception as e:
-				print('At %s/%s.' % (day, name))
-				raise e
-		probs[day] = problems
-	return probs
-'''
 
 def extend_merge(base, ext):
 	for key, val in ext.items():
@@ -409,16 +401,19 @@ def run_r(cmd, path):
 			run_r(cmd, cpath)
 
 def check_install(pack):
-	def check_jinja2():
+	def check_import(pack, extra_info = '', pack_name = None):
 		try:
-			import jinja2
+			__import__(pack)
 		except Exception as e:
-			print(u'python包jinja2没有安装，使用 pip install jinja2 安装。')
+			print(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
 			if system == 'Windows':
 				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
 			if system == 'Linux':
 				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
 			raise e
+	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
+	check_jinja2 = lambda : check_import('jinja2')
+	check_natsort = lambda : check_import('natsort')
 	def check_pandoc():
 		ret = os.system('pandoc -v')
 		if ret != 0:
@@ -440,16 +435,6 @@ def check_install(pack):
 				print(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
 				print(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
 			raise Exception('xelatex not found')
-	def check_pyside():
-		try:
-			import PySide
-		except Exception as e:
-			print(u'python包jinja2没有安装，使用 pip install pyside 安装。注意这个包只能在 python2 下使用。')
-			if system == 'Windows':
-				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
-			if system == 'Linux':
-				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
-			raise e
 	def check_git():
 		ret = os.system('git --version')
 		if ret != 0:
