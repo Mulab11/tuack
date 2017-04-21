@@ -300,7 +300,7 @@ python -m loader 类型 来源路径
 python -m dumper 类型
 ```
 
-本功能开发中，目前支持的类型有：`lemon`（spj还没做）。
+本功能开发中，目前支持的类型有：`lemon`,`arbiter`（spj还没做）。
 
 ### 测试
 
