@@ -78,66 +78,6 @@ rjoin = lambda *args : '/'.join(args).strip('/')
 
 natsort_warned = None
 
-def set_default_problem(conf, path = None):
-	global natsort_warned
-	try:
-		if not natsort_warned:
-			check_install('natsort')
-		import natsort
-		sorter = lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
-	except:
-		if not natsort_warned:
-			print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
-			natsort_warned = True
-		sorter = sorted
-	conf['all'] = True
-	if 'title' not in conf and 'cnname' in conf:
-		conf['title'] = {'zh-cn' : conf['cnname']}
-	if 'test cases' in conf and type(conf['test cases']) == int:
-		conf['test cases'] = list(range(1, conf['test cases'] + 1))
-	elif 'data' in conf:
-		tc = set()
-		for datum in conf['data']:
-			tc |= set(datum['cases'])
-		conf['test cases'] = sorter(map(str, list(tc)))
-	if 'samples' not in conf:
-		if 'sample count' in conf:
-			conf['samples'] = [{'cases' : list(range(1, conf['sample count'] + 1))}]
-		else:
-			conf['samples'] = []
-	tc = set()
-	for datum in conf['samples']:
-		tc |= set(datum['cases'])
-	conf['sample cases'] = sorter(map(str, list(tc)))
-	if 'name' not in conf:
-		conf['name'] = path
-	if 'packed' in conf and conf['packed']:
-		num_unscored = 0
-		total_score = 0.0
-		for datum in conf['data']:
-			if 'score' in datum:
-				total_score += datum['score']
-			else:
-				num_unscored += 1
-		if num_unscored != 0:
-			item_score = (100. - total_score) / num_unscored
-			for datum in conf['data']:
-				if 'score' not in datum:
-					datum['score'] = item_score
-	return conf
-	
-def set_default_day(conf, path = None):
-	conf['all'] = True
-	if 'name' not in conf:
-		conf['name'] = path
-	return conf
-
-def set_default_contest(conf, path = None):
-	conf['all'] = True
-	if 'name' not in conf:
-		conf['name'] = path
-	return conf
-
 def extend_merge(base, ext):
 	for key, val in ext.items():
 		if key == 'path' or key == 'folder':
@@ -157,6 +97,197 @@ def extend_merge(base, ext):
 class NoJsonException(Exception):
 	pass
 	
+class Configure(dict):
+	@staticmethod
+	def merge_item(base, ext):
+		if type(base) == type(ext) == list:
+			return base + ext
+		elif type(base) != dict or type(ext) != dict:
+			raise Exception('extend error %s' % key)
+		ret = base.copy()
+		for key, val in ext.items():
+			if key.endswith('+'):
+				k = key[:-1]
+				ret[k] = merge_item(base[k], val)
+			else:
+				ret[key] = val
+		return ret
+
+	def __init__(self, val, path = None):
+		if type(val) == dict:
+			super().__init__(val)
+		elif type(val) == str:
+			super().__init__(json.loads(val))
+		elif type(val) == bytes:
+			super().__init__(json.loads(val.decode('utf-8')))
+		else:
+			raise Exception('Can\'t translate this object to a Configure.')
+		self.folder = self['folder']
+		self.parent = None
+		self.path = path
+		
+	def __contains__(self, key):
+		return super().__contains__(key + '+') or super().__contains__(key) or (self.parent and key in self.parent)
+		
+	def getitem(self, key, trans = lambda prob, val, key, depth : val, depth = 0):
+		if super().__contains__(key + '+'):
+			cur = trans(self, super().__getitem__(key + '+'), key, depth)
+			return self.merge_item(cur, self.parent.getitem(key, trans, depth + 1)) if self.parent else cur
+		if super().__contains__(key):
+			return trans(self, super().__getitem__(key), key, depth)
+		return self.parent.getitem(key, trans, depth + 1) if self.parent else None
+
+	def __getitem__(self, key):
+		return self.getitem(key)
+
+	def set_default(self, path = None):
+		self.all = True
+		if 'name' not in self:
+			self['name'] = path
+		return self
+		
+	def probs(self, pick = False):
+		pick |= not sub_set or item.route in sub_set
+		if type(self) == Problem:
+			if pick or any_prefix(self.route):
+				self.all = pick
+				yield self
+		else:
+			for sub in self.sub:
+				for prob in sub.probs(pick):
+					yield prob
+	
+	def days(self, pick = False):
+		pick |= not sub_set or item['route'] in sub_set
+		if type(self) == Problem:
+			return
+		if type(self) == Day:
+			if pick or any_prefix(item['route']):
+				self.all = pick
+				yield self
+		else:
+			for sub in self.sub:
+				for day in sub.days(pick):
+					yield day
+					
+def probs(item = None, pick = False):
+	if not item:
+		item = conf
+	return conf.probs(pick)
+	
+def days(item = None, pick = False):
+	if not item:
+		item = conf
+	return conf.days(pick)
+		
+class Contest(Configure):
+	pass
+	
+class Day(Configure):
+	pass
+	
+class DataPath(str):
+	def __new__(self, val):
+		return super().__new__(self, '*' * val['depth'] + val['case'])
+	def __init__(self, val):
+		self.data = val
+		super().__init__()
+	def __getitem__(self, key):
+		return self.data[key]
+	def full(self):
+		return pjoin(self['prefix'], self['key'], self['case'])
+	
+class Problem(Configure):
+	def set_default(self, path = None):
+		super().set_default(path)
+		global natsort_warned
+		try:
+			if not natsort_warned:
+				check_install('natsort')
+			import natsort
+			sorter = lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
+		except:
+			if not natsort_warned:
+				print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
+				natsort_warned = True
+			sorter = sorted
+		if 'title' not in self and 'cnname' in self:
+			self['title'] = {'zh-cn' : self.pop('cnname')}
+		
+		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample cases', 'sample_cases', 'down')]:
+			tc = set()
+			if data in self:
+				for datum in self.__getattribute__(data)():
+					tc |= set(datum['cases'])
+			else:
+				self[data] = []
+			if cases in self and type(self[cases]) == int:
+				to_dp = lambda i : DataPath({'case' : str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
+				self[data] = [{'cases' : [
+					to_dp(i) for i in range(1, self.pop(cases) + 1) \
+					if to_dp(i) not in tc
+				]}]
+			self.__setattr__(attr, sorter(list(tc)))
+		
+		if self['packed']:
+			num_unscored = 0
+			total_score = 0.0
+			for datum in self['data']:
+				if 'score' in datum:
+					total_score += datum['score']
+				else:
+					num_unscored += 1
+			if num_unscored != 0:
+				item_score = (100. - total_score) / num_unscored
+				for datum in self['data']:
+					if 'score' not in datum:
+						datum['score'] = item_score
+						
+	def extend_pathed(self, path):
+		if path.startswith(':'):
+			return self.parent.extend_pathed(path[1:])
+		return pjoin(self.path, path)
+		
+	def users(self):
+		def users_pathed(self, users, key = '', depth = 0):
+			if type(users) == str:
+				return self.extend_pathed(users)
+			return {
+				key : users_pathed(self, val) \
+				for key, val in users.items()
+			}
+		return self.getitem('users', users_pathed)
+		
+	def get_data(self, key):
+		def data_pathed(self, data, key, depth):
+			key_map = {
+				'data' : 'data',
+				'samples' : 'down'
+			}
+			ret = []
+			for datum in data:
+				tmp = []
+				for case in datum['cases']:
+					cur = self
+					dep = depth
+					cas = str(case)
+					while cas.startswith(':'):
+						cas = cas[1:]
+						dep -= 1
+						cur = cur.parent
+					tmp.append(DataPath({'case' : cas, 'key' : key_map[key], 'depth' : dep, 'prefix' : cur.path}))
+				datum_fixed = datum.copy()
+				datum_fixed['cases'] = tmp
+				ret.append(datum_fixed)
+			return ret
+		return self.getitem(key, data_pathed)
+		
+	def data(self):
+		return self.get_data('data')
+		
+	def samples(self):
+		return self.get_data('samples')
+		
 def load_json(path = '.', route = None):
 	for name in ['conf.json', 'prob.json']:
 		try:
@@ -167,16 +298,18 @@ def load_json(path = '.', route = None):
 					conf['folder'] = 'problem'
 				if conf['folder'] == 'extend':
 					base_conf = load_json(pjoin(path, conf['base path']))
-					conf = extend_merge(base_conf, conf)
-					#print(conf)
-					path = base_conf['path']
+					folder = base_conf.folder
 				else:
-					conf['path'] = path
-				conf = eval('set_default_' + conf['folder'])(conf, os.path.basename(path))
-				conf['route'] = '' if route == None else rjoin(route, conf['name'])
+					folder = conf['folder']
+				conf = eval(folder.capitalize())(conf, path) 	## !!所有conf['path']的地方都要改
+				if conf['folder'] == 'extend':
+					conf.parent = base_conf
+					conf.folder = base_conf.folder
+				conf.set_default(os.path.basename(path))
+				conf.route = '' if route == None else rjoin(route, conf['name'])
 				if 'subdir' in conf:
-					conf['sub'] = [
-						load_json(pjoin(path, sub), conf['route']) \
+					conf.sub = [
+						load_json(pjoin(path, sub), conf.route) \
 						for sub in conf['subdir']
 					]
 				return conf
@@ -225,34 +358,6 @@ def any_prefix(pre, st = None):
 		if s.startswith(pre):
 			return True
 	return False
-		
-def probs(item = None, pick = False):
-	if not item:
-		item = conf
-	pick |= not sub_set or item['route'] in sub_set
-	if item['folder'] == 'problem':
-		if pick or any_prefix(item['route']):
-			item['all'] = pick
-			yield item
-	else:
-		for sub in item['sub']:
-			for prob in probs(sub, pick):
-				yield prob
-				
-def days(item = None, pick = False):
-	if not item:
-		item = conf
-	pick |= not sub_set or item['route'] in sub_set
-	if item['folder'] == 'problem':
-		return
-	if item['folder'] == 'day':
-		if pick or any_prefix(item['route']):
-			item['all'] = pick
-			yield item
-	else:
-		for sub in item['sub']:
-			for day in days(sub, pick):
-				yield day
 
 def mkdir(name):
 	if not os.path.exists(name):

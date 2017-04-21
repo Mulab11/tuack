@@ -30,12 +30,12 @@ def find_doc(path, name):
 	return None
 
 def test_copy_problem_files(prob):
-	data_path = os.path.join(prob['path'], 'data')
+	data_path = os.path.join(prob.path, 'data')
 	try:
-		copy(data_path, 'chk', os.path.join(output_folder, prob['route']))
-		prob['chk'] = True
+		copy(data_path, 'chk', os.path.join(output_folder, prob.route))
+		prob.chk = True
 	except Exception as e:
-		prob['chk'] = False
+		prob.chk = False
 	
 def copy_one_day_files(probs, day_name):
 	remkdir(os.path.join(output_folder, day_name, 'data'))
@@ -226,7 +226,7 @@ def uoj_copy_one_day_files(probs, day_name):
 
 def copy_files(suffix = ''):
 	for day in common.days():
-		common.mkdir(os.path.join(output_folder, day['route']))
+		common.mkdir(os.path.join(output_folder, day.route))
 	for prob in common.probs():
 		eval(suffix + 'copy_problem_files')(prob)
 
