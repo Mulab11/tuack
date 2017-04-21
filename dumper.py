@@ -114,13 +114,12 @@ def lemon(conf = None):
 	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 
-def arbiter_info(info,filename):
-	ofile = open(filename,'w')
-	for i in info:
-		print('%s%s'%(i,info[i]),file=ofile)
-	ofile.close()
-
 def arbiter(conf = None,daynum = 0):
+	def arbiter_info(info, filename):
+		with open(filename,'wb') as ofile:
+			for key, val in sorted(info.items()):
+				ofile.write(('%s%s\n' % (key, val)).encode('gbk'))
+
 	if not conf:
 		print('makedirs')
 		common.remkdir('arbiter')
@@ -130,21 +129,20 @@ def arbiter(conf = None,daynum = 0):
 		os.makedirs(common.pjoin('arbiter','result'))
 		os.makedirs(common.pjoin('arbiter','tmp'))
 		if common.conf['folder'] == 'problem':
-			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
+			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
 		if common.conf['folder'] == 'day':
 			arbiter(common.days())
 		else:
-			for day in common.days():
+			for idx, day in enumerate(common.days(), start = 1):
 				os.makedirs(common.pjoin('arbiter','players',day['route']))
 				os.makedirs(common.pjoin('arbiter','result',day['route']))
-				daynum += 1
-				arbiter(day,daynum)
+				arbiter(day,idx)
 			print('dos2unix')
-			os.system('dos2unix arbiter/data/* -q')
-			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))
+			common.run_r(common.dos2unix, common.pjoin('arbiter', 'data'))
+			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))	#这里也不能直接copy，见下面的处理方式
 			cfg = {}
 			cfg['NAME='] = common.conf['name']
-			cfg['DAYNUM='] = daynum
+			cfg['DAYNUM='] = idx
 			cfg['ENV='] = 'env.info'
 			cfg['PLAYER='] = 'player.info'
 			cfg['TEAM='] = 'team.info'
@@ -160,9 +158,7 @@ def arbiter(conf = None,daynum = 0):
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
 	arbiter_info(dayinfo,common.pjoin('arbiter',conf['name']+'.info'))
-	probnum = 0
-	for prob in common.probs(conf):
-		probnum += 1
+	for probnum, prob in enumerate(common.probs(conf), start = 1):
 		print(prob['name'])
 		probinfo = {}
 		probinfo['TITLE='] = ''
@@ -174,28 +170,31 @@ def arbiter(conf = None,daynum = 0):
 		if prob['type'] == 'program':
 			probinfo['TYPE='] = 'SOURCE'
 		else:
-			print('暂时只支持非交互式程序题')
+			print(u'【警告】暂时只支持非交互式程序题。')
 		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']+' MB'))
+		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
 		probinfo['SAMPLES='] = len(prob['test cases'])
-		score_per_case = int(100 / len(prob['test cases']))
+		score_per_case = 100 // len(prob['test cases'])
 		if score_per_case * len(prob['test cases']) != 100:
-			print('满分不是100哦~')
+			print(u'【警告】满分不是100哦。')
 		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
 		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
 		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
 		if 'packed' in prob and prob['packed']:
 			raise Exception('Can\'t dump packed problem for arbiter.')
-		else:
-			casenum = 0
-			for case in prob['test cases']:
-				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.in'))'''
-				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
-				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
-				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
-				casenum += 1
-				probinfo['MARK='+str(casenum)+'@'] = str(int(score_per_case))
-			shutil.copy(common.pjoin('oi_tools','sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
+		for idx, case in enumerate(prob['test cases'], start = 1):
+			'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.in'))'''
+			shutil.copy(
+				common.pjoin(prob['path'],'data',str(case)+'.in'),
+				common.pjoin('arbiter','data',prob['name']+str(idx)+'.in')
+			)
+			'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
+			shutil.copy(
+				common.pjoin(prob['path'],'data',str(case)+'.ans'),
+				common.pjoin('arbiter','data',prob['name']+str(idx)+'.ans')
+			)
+			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
+		shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 work_list = {
