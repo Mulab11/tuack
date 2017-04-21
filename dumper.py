@@ -113,13 +113,12 @@ def lemon(conf = None):
 	
 	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
-
+'''userlist = {}'''
 def arbiter(conf = None,daynum = 0):
 	def arbiter_info(info, filename):
 		with open(filename,'wb') as ofile:
-			for key, val in sorted(info.items()):
+			for key, val in info.items():
 				ofile.write(('%s%s\n' % (key, val)).encode('gbk'))
-
 	if not conf:
 		print('makedirs')
 		common.remkdir('arbiter')
@@ -127,6 +126,7 @@ def arbiter(conf = None,daynum = 0):
 		os.makedirs(common.pjoin('arbiter','final'))
 		os.makedirs(common.pjoin('arbiter','players'))
 		os.makedirs(common.pjoin('arbiter','result'))
+		os.makedirs(common.pjoin('arbiter','filter'))
 		os.makedirs(common.pjoin('arbiter','tmp'))
 		if common.conf['folder'] == 'problem':
 			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
@@ -150,6 +150,7 @@ def arbiter(conf = None,daynum = 0):
 			arbiter_info(cfg,common.pjoin('arbiter','setup.cfg'))
 			team = {}
 			arbiter_info(team,common.pjoin('arbiter','team.info'))
+			'''arbiter_info(userlist,common.pjoin('arbiter','player.info'))'''
 		return
 	dayinfo = {}
 	dayinfo['NAME='] = '第'+str(daynum)+'场'+'--机试'
@@ -172,7 +173,7 @@ def arbiter(conf = None,daynum = 0):
 		else:
 			print(u'【警告】暂时只支持非交互式程序题。')
 		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
+		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit'])/(2**20))
 		probinfo['SAMPLES='] = len(prob['test cases'])
 		score_per_case = 100 // len(prob['test cases'])
 		if score_per_case * len(prob['test cases']) != 100:
@@ -194,9 +195,17 @@ def arbiter(conf = None,daynum = 0):
 				common.pjoin('arbiter','data',prob['name']+str(idx)+'.ans')
 			)
 			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
-		shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
+		'''for idx, userdir in enumerate(prob['users'],start = 1):
+			for idx2, code in enumerate(prob['users'][userdir],start = 1):
+				dirname = prob['name']+'-'+str(idx)+str(idx2)
+				codename = userdir + code
+				tmplist = prob['users'][userdir][code].split('/')
+				codedir = common.pjoin(prob['path'],*tmplist)
+				os.makedirs(common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
+				shutil.copy(codedir,common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
+				userlist[dirname + '@'] =  codename'''
+		shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','filter',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
-
 work_list = {
 	'lemon' : lemon,
 	'arbiter' : arbiter
