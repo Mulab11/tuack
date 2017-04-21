@@ -114,8 +114,91 @@ def lemon(conf = None):
 	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 
+def arbiter_info(info,filename):
+	ofile = open(filename,'w')
+	for i in info:
+		print('%s%s'%(i,info[i]),file=ofile)
+	ofile.close()
+
+def arbiter(conf = None,daynum = 0):
+	if not conf:
+		print('makedirs')
+		common.remkdir('arbiter')
+		os.makedirs(common.pjoin('arbiter','data'))
+		os.makedirs(common.pjoin('arbiter','final'))
+		os.makedirs(common.pjoin('arbiter','players'))
+		os.makedirs(common.pjoin('arbiter','result'))
+		os.makedirs(common.pjoin('arbiter','tmp'))
+		if common.conf['folder'] == 'problem':
+			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
+		if common.conf['folder'] == 'day':
+			arbiter(common.days())
+		else:
+			for day in common.days():
+				os.makedirs(common.pjoin('arbiter','players',day['route']))
+				os.makedirs(common.pjoin('arbiter','result',day['route']))
+				daynum += 1
+				arbiter(day,daynum)
+			print('dos2unix')
+			os.system('dos2unix arbiter/data/* -q')
+			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))
+			cfg = {}
+			cfg['NAME='] = common.conf['name']
+			cfg['DAYNUM='] = daynum
+			cfg['ENV='] = 'env.info'
+			cfg['PLAYER='] = 'player.info'
+			cfg['TEAM='] = 'team.info'
+			cfg['MISC='] = 'misc.info'
+			arbiter_info(cfg,common.pjoin('arbiter','setup.cfg'))
+			team = {}
+			arbiter_info(team,common.pjoin('arbiter','team.info'))
+		return
+	dayinfo = {}
+	dayinfo['NAME='] = '第'+str(daynum)+'场'+'——'+conf['name']
+	dayinfo['PLAYERDIR='] = ''
+	dayinfo['CASEDIR='] = ''
+	dayinfo['BASESCORE='] = 0
+	dayinfo['TASKNUM='] = len(conf['subdir'])
+	arbiter_info(dayinfo,common.pjoin('arbiter',conf['name']+'.info'))
+	probnum = 0
+	for prob in common.probs(conf):
+		probnum += 1
+		print(prob['name'])
+		probinfo = {}
+		probinfo['TITLE='] = ''
+		probinfo['NAME='] = prob['name']
+		probinfo['RUN='] = ''
+		probinfo['INFILESUFFIX='] = 'in'
+		probinfo['ANSFILESUFFIX='] = 'ans'
+		probinfo['PLUG='] = prob['name']+'_e'
+		if prob['type'] == 'program':
+			probinfo['TYPE='] = 'SOURCE'
+		else:
+			print('暂时只支持非交互式程序题')
+		probinfo['LIMIT='] = int(prob['time limit'])
+		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
+		probinfo['SAMPLES='] = len(prob['test cases'])
+		score_per_case = 100 / len(prob['test cases'])
+		probinfo['CLL=c@gcc'] = ' -o $o $i ' + prob['compile']['c']
+		probinfo['CLL=cpp@g++'] = ' -o $o $i ' + prob['compile']['cpp']
+		probinfo['CLL=pas@fpc'] = ' -o $o $i ' + prob['compile']['pas']
+		if 'packed' in prob and prob['packed']:
+			raise Exception('Can\'t dump packed problem for arbiter.')
+		else:
+			casenum = 0
+			for case in prob['test cases']:
+				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.in'))'''
+				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
+				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
+				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
+				casenum += 1
+				probinfo['MARK='+str(casenum)+'@'] = score_per_case
+			shutil.copy(common.pjoin('oi_tools','sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
+		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
+
 work_list = {
-	'lemon' : lemon
+	'lemon' : lemon,
+	'arbiter' : arbiter
 }
 
 if __name__ == '__main__':
