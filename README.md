@@ -1,5 +1,3 @@
-#oi_tools
-
 我们推荐将oi_tools的路径加到PYTHONPATH环境变量中。
 
 也可以把oi_tools的父路径加到PYTHONPATH中，这样可以防止污染名称。相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python -m oi_tools.tester`。
@@ -14,14 +12,12 @@ git clone --recusive 父工程的仓库地址
 
 如果已经clone下来了父工程，发现这个子工程是空的，可以用这个方式clone子工程
 
-```
+```bash
 cd oi_tools
 git submodule update --init
 ```
 
 相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python oi_tools/tester.py`。
-
-## 文件的存放和定义
 
 ### 造题存储原则
 
@@ -38,11 +34,159 @@ git submodule update --init
 
 造这套轮子有很大一个目的就是帮助大家解决包括但不限于上面的问题。当然这个轮子还不是很好用，如果有疑问或建议也欢迎随时提出。
 
-### 文件路径
-
-请严格遵循下列路径结构保存你的文件，否则部分工具无法正确运行。具体的某些文件格式见后文。
+## 基本使用方式
 
 **所有基于文本的文件如果含有中文，必须用UTF-8编码。**
+
+### 建立工程
+
+一般来讲，你可以用类似于下面的方式在当前目录下建立一场比赛的工程。
+
+```bash
+python -m generator contest
+python -m generator day day0 day1 day2
+cd day1
+python -m generator problem p1 p2 p3
+```
+
+这三种命令如果不带参数则表示在当前目录下建立一个比赛/比赛日/题目，否则表示建立子目录并在配置文件中建立连接。你可以建立单独的比赛日或题目，而不依赖于一个比赛或比赛日。
+
+### 寻找文件
+
+我们提供了一个笨拙的工具，可以试图寻找数据、样例和源程序，只要你将它们放在了 `data`、`down`、题目根目录的某个子目录中，并且不是明显不是源程序的文件，那么可以被以下方式找到并添加进 `conf.json`。
+
+```bash
+python -m generator data
+python -m generator samples
+python -m generator code
+```
+
+### 文件样例
+
+我们提供了一些文件的样例，放在 `sample` 文件夹下。一般情况下你只要用 `generator` 生成了工程，工程中就会自带这些样例。如果工程中找不到的话，可以参看下面：
+
+-   `.gitattributes`：描述大文件存储所需的信息。
+-   `*.gitignore`：三类文件夹中防止把多余的文件存到git仓库中所需的描述文件，改成 `.gitignore` 使用。
+-   `*.json`：三类文件夹的描述文件例子，改成 `conf.json` 使用。
+-   `statement/`：题面的例子。
+-   `tables/`：表格的例子。
+-   `uoj.json`：复制到根目录下使用，描述配置UOJ的关联，暂时弃用。
+
+### 导入工程
+
+用 `generator` 建好工程以后，可以用 `loader` 导入某个其他格式的题目或比赛。
+
+```bash
+python -m loader 类型 来源路径
+```
+
+其中 `来源路径` 是存放原始工程的路径。
+
+本功能开发中，目前支持的类型有：`tsinsen-oj`。
+
+### 导出工程
+
+一个造好的工程可以用 `dumper` 导出成其他某种格式。
+
+```bash
+python -m dumper 类型1,类型2,...
+```
+
+本功能开发中，目前支持的类型有：`lemon`（spj还没做），`arbiter`。
+
+老版的oi_tools有一个导出工具 `packer`，此项功能目前弃用，将会更新合并至 `dumper`（用于输出成其他题目存储格式的工具，目前开发中），下面将列举出它的用法。但因为并没有维护这段代码，因此不保证能够成功运行。
+
+可以在根目录下运行下列命令生成对应的数据包：
+
+```bash
+python -m packer uoj,noi,release
+```
+
+表示生成uoj、noi和发布使用的数据包，生成多种包之间用逗号隔开。
+
+目前支持输出下列种类的数据包：
+
+-   `test`：用于 `tester.py` 的数据包；
+-   `release`：用于发布的zip包；
+-   `noi`：noi风格的数据包；
+-   `pc2`：$pc^2$风格的数据包；
+-   `uoj`：uoj风格的数据包，并自动上传到uoj。如果需要上传到uoj，需要配置文件 `uoj.json`，安装svn，并在 `conf.json` 中添加 `uoj id` 参数。
+
+### 测试
+
+可以在根目录下运行下列命令进行测试：
+
+```bash
+python -m tester
+```
+
+其中结果将输出到对应天目录下的 `result` 目录下，并会自动打开。要想不自动打开则在后面加上 `-s`。
+
+### 题面生成
+
+可以在根目录下运行下列命令生成对应的题面：
+
+```bash
+python -m renderer noi,uoj
+```
+
+表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
+
+生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`）。
+
+目前支持两类题面：
+
+-   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
+-   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`uoj`，`ccc-html`。
+
+题面的书写后文将有详细说明。
+
+### 安装XeLaTeX
+
+Windows下可以安装MiKTeX，在首次运行的时候会再提示安装后续文件。
+
+Ubuntu下先运行下列命令：
+
+```bash
+sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
+```
+
+然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+
+MacOS下待研究。
+
+### 只对特定的题目进行操作
+
+前面几个工具都可以使用类似于 `-p day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
+
+```bash
+python -m packer noi,release,test -p day1,day2
+python -m tester -p day1/excellent,day2/drink
+python -m tester -p day1/excellent/saffah
+python -m tester -p day1/excellent/saffah/std
+```
+
+注意所有指定的命令全部都改成了 `-p`，而且现在三种类型的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
+
+```bash
+python -m tester -p excellent/saffah
+```
+
+需要注意的是，这里的路径不是**绝对或相对路径**，而是**题目的组织层次**，即就算你不按照规定的层次存储文件夹（主要是为了继承），你也需要写成上文中的这种层次。
+
+### 指定操作系统
+
+这几个工具都可以指定操作系统，使用命令如 `-o Windows` 。其中操作系统的名称与python的 `platform.system()` 调用结果一致；目前只判断了Windows和非Windows。默认是当前操作系统。
+
+对于  `packer`，将会把所有数据转成指定操作系统的换行符；对于 `renderer`，会按指定的操作系统习惯输出题面。
+
+注意：编译的chk等只跟运行环境的操作系统有关，不能指定操作系统。
+
+## 文件的存放和定义
+
+### 文件路径
+
+如果你按照前文所述进行了操作，那么你一般不用担心文件的存放问题，否则请参看这里讲到的文件存放路径规定。
 
 **所有数据文件，必须用大文件系统 `git lfs` 管理。**一般地，如果你只在下文规定的地方存放数据文件，那么你可以将 `samples/.gitattributes` 复制到每道题的目录下，git会自动帮你进行管理。当然事实上，如果你使用 `generator` 生成一个工程，本部分大多数事情都不用太关心。第一次使用参考[这里](https://github.com/git-lfs/git-lfs/wiki/Installation)安装。
 
@@ -225,154 +369,6 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 注意在这些json文件中，经过程序处理的中文会转成unicode字符串如 `\u7b2c\u4e00\u8bd5`，这除了你看不懂以外并不影响什么，你仍然可以在json中用utf-8格式写中文，甚至在一个字符串中混用这样的字符串和中文。
 
-## 基本使用方式
-
-### 建立工程
-
-一般来讲，你可以用类似于下面的方式在当前目录下建立一场比赛的工程。
-
-```bash
-python -m generator contest
-python -m generator day day0 day1 day2
-cd day1
-python -m generator problem p1 p2 p3
-```
-
-这三种命令如果不带参数则表示在当前目录下建立一个比赛/比赛日/题目，否则表示建立子目录并在配置文件中建立连接。你可以建立单独的比赛日或题目，而不依赖于一个比赛或比赛日。
-
-### 寻找文件
-
-我们提供了一个笨拙的工具，可以试图寻找数据、样例和源程序，只要你将它们放在了 `data`、`down`、题目根目录的某个子目录中，并且不是明显不是源程序的文件，那么可以被以下方式找到并添加进 `conf.json`。
-
-```bash
-python -m generator data
-python -m generator samples
-python -m generator code
-```
-
-### 文件样例
-
-我们提供了一些文件的样例，放在 `sample` 文件夹下，其中：
-
-* `.gitattributes`：描述大文件存储所需的信息。
-* `*.gitignore`：三类文件夹中防止把多余的文件存到git仓库中所需的描述文件，改成 `.gitignore` 使用。
-* `*.json`：三类文件夹的描述文件例子，改成 `conf.json` 使用。
-* `statement/`：题面的例子。
-* `tables/`：表格的例子。
-
-* `uoj.json`：复制到根目录下使用，描述配置UOJ的关联，暂时弃用。
-
-### 数据包生成
-
-*此项功能目前弃用，将会更新合并至 `dumper`（用于输出成其他题目存储格式的工具，目前开发中），本节仅供参考，不保证能够成功运行。*
-
-可以在根目录下运行下列命令生成对应的数据包：
-
-```bash
-python -m packer uoj,noi,release
-```
-
-表示生成uoj、noi和发布使用的数据包，生成多种包之间用逗号隔开。
-
-目前支持输出下列种类的数据包：
-* `test`：用于 `tester.py` 的数据包；
-* `release`：用于发布的zip包；
-* `noi`：noi风格的数据包；
-* `pc2`：$pc^2$风格的数据包；
-
-* `uoj`：uoj风格的数据包，并自动上传到uoj。如果需要上传到uoj，需要配置文件 `uoj.json`，安装svn，并在 `conf.json` 中添加 `uoj id` 参数。
-
-### 导入工程
-
-用 `generator` 建好工程以后，可以用 `loader` 导入某个其他格式的题目或比赛。
-
-```bash
-python -m loader 类型 来源路径
-```
-
-其中 `来源路径` 是存放原始工程的路径。
-
-本功能开发中，目前支持的类型有：`tsinsen-oj`。
-
-### 导出工程
-
-一个造好的工程可以用 `dumper` 导出成其他某种格式。
-
-```bash
-python -m dumper 类型
-```
-
-本功能开发中，目前支持的类型有：`lemon`（spj还没做）。
-
-### 测试
-
-可以在根目录下运行下列命令进行测试：
-
-```bash
-python -m tester
-```
-
-其中结果将输出到对应天目录下的 `result` 目录下，并会自动打开。要想不自动打开则在后面加上 `-s`。
-
-### 题面生成
-
-可以在根目录下运行下列命令生成对应的题面：
-
-```bash
-python -m renderer noi,uoj
-```
-
-表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
-
-生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`）。
-
-目前支持两类题面：
-* `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
-* `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`uoj`，`ccc-html`。
-
-题面的书写后文将有详细说明。
-
-### 安装XeLaTeX
-
-Windows下可以安装MiKTeX，在首次运行的时候会再提示安装后续文件。
-
-Ubuntu下先运行下列命令：
-
-```bash
-sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
-```
-
-然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
-
-MacOS下待研究。
-
-### 只对特定的题目进行操作
-
-前面几个工具都可以使用类似于 `-p day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
-
-```bash
-python -m packer noi,release,test -p day1,day2
-python -m tester -p day1/excellent,day2/drink
-python -m tester -p day1/excellent/saffah
-python -m tester -p day1/excellent/saffah/std
-```
-
-注意所有指定的命令全部都改成了 `-p`，而且现在三种类型的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
-
-```bash
-python -m tester -p excellent/saffah
-```
-
-需要注意的是，这里的路径不是**绝对或相对路径**，而是**题目的组织层次**，即就算你不按照规定的层次存储文件夹（主要是为了继承），你也需要写成上文中的这种层次。
-
-### 指定操作系统
-
-这几个工具都可以指定操作系统，使用命令如 `-o Windows` 。其中操作系统的名称与python的 `platform.system()` 调用结果一致；目前只判断了Windows和非Windows。默认是当前操作系统。
-
-对于  `packer`，将会把所有数据转成指定操作系统的换行符；对于 `renderer`，会按指定的操作系统习惯输出题面。
-
-注意：编译的chk等只跟运行环境的操作系统有关，不能指定操作系统。
-
 ## 题面的书写
 
 如果你不使用任何的特性，你可以用纯 markdown 书写题面，并将以 `description.md` 命名保存在试题目录下。
@@ -467,6 +463,8 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 ```
 ${{ tools.hn(1000000) }}$
 ```
+
+此外你还可以从 `common` 中读取公共的任何全局变量，例如 `common.out_system` 可以读取要输出到的系统，你可根据不同的系统写不同的题面（例如checker在不同系统中的用法不同）。
 
 ### 两轮渲染
 
