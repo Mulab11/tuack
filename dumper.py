@@ -154,7 +154,7 @@ def arbiter(conf = None,daynum = 0):
 			arbiter_info(team,common.pjoin('arbiter','team.info'))
 		return
 	dayinfo = {}
-	dayinfo['NAME='] = '第'+str(daynum)+'场'+'——'+conf['name']
+	dayinfo['NAME='] = '第'+str(daynum)+'场'+'--机试'
 	dayinfo['PLAYERDIR='] = ''
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
@@ -176,12 +176,14 @@ def arbiter(conf = None,daynum = 0):
 		else:
 			print('暂时只支持非交互式程序题')
 		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
+		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']+' MB'))
 		probinfo['SAMPLES='] = len(prob['test cases'])
-		score_per_case = 100 / len(prob['test cases'])
-		probinfo['CLL=c@gcc'] = ' -o $o $i ' + prob['compile']['c']
-		probinfo['CLL=cpp@g++'] = ' -o $o $i ' + prob['compile']['cpp']
-		probinfo['CLL=pas@fpc'] = ' -o $o $i ' + prob['compile']['pas']
+		score_per_case = int(100 / len(prob['test cases']))
+		if score_per_case * len(prob['test cases']) != 100:
+			print('满分不是100哦~')
+		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
+		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
+		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
 		if 'packed' in prob and prob['packed']:
 			raise Exception('Can\'t dump packed problem for arbiter.')
 		else:
@@ -192,7 +194,7 @@ def arbiter(conf = None,daynum = 0):
 				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
 				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
 				casenum += 1
-				probinfo['MARK='+str(casenum)+'@'] = score_per_case
+				probinfo['MARK='+str(casenum)+'@'] = str(int(score_per_case))
 			shutil.copy(common.pjoin('oi_tools','sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
