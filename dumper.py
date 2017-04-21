@@ -206,9 +206,14 @@ def arbiter(conf = None,daynum = 0):
 				userlist[dirname + '@'] =  codename'''
 		shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','filter',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
+
+def down(conf = None):
+	pass
+
 work_list = {
 	'lemon' : lemon,
-	'arbiter' : arbiter
+	'arbiter' : arbiter,
+	'down' : down
 }
 
 if __name__ == '__main__':
