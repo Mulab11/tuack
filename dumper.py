@@ -208,7 +208,31 @@ def arbiter(conf = None,daynum = 0):
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 def down(conf = None):
-	pass
+	if not conf:
+		common.remkdir('down')
+		if common.conf['folder'] == 'problem':
+			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
+		if common.conf['folder'] == 'day':
+			down(common.days())
+		else:
+			for idx, day in enumerate(common.days(), start = 1):
+				down(day)
+			print('dos2unix')
+			common.run_r(common.dos2unix, common.pjoin('down'))
+		return
+	os.makedirs(common.pjoin('down',conf['name']))
+	for prob in common.probs(conf):
+		print(prob['name'])
+		os.makedirs(common.pjoin('down',conf['name'],prob['name']))
+		for idx, case in enumerate(prob['sample cases'], start = 1):
+			shutil.copy(
+				common.pjoin(prob['path'],'down',str(case)+'.in'),
+				common.pjoin('down',conf['name'],prob['name'],prob['name']+str(idx)+'.in')
+			)
+			shutil.copy(
+				common.pjoin(prob['path'],'down',str(case)+'.ans'),
+				common.pjoin('down',conf['name'],prob['name'],prob['name']+str(idx)+'.ans')
+			)
 
 work_list = {
 	'lemon' : lemon,
