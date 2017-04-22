@@ -226,8 +226,8 @@ def tex(comp):
 		'json' : json
 	}
 	prec = None
-	if os.path.exists(os.path.join('precautions', 'zh-cn.md')):
-		common.copy('precautions', 'zh-cn.md', 'tmp')
+	if os.path.exists(common.pjoin(common.conf['path'], 'precautions', 'zh-cn.md')):
+		common.copy(common.pjoin(common.conf['path'], 'precautions'), 'zh-cn.md', 'tmp')
 		open(common.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(env.get_template('zh-cn.md').render(context, conf = common.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
