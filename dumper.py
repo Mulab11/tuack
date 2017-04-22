@@ -70,10 +70,10 @@ def lemon(conf = None):
 				tc = datum['cases']
 				ost.writeInt32(len(tc))
 				for c in tc:
-					ost.writeQString(str(c) + '.in')
+					ost.writeQString(common.pjoin(prob['name'], str(c) + '.in'))
 				ost.writeInt32(len(tc))
 				for c in tc:
-					ost.writeQString(str(c) + '.ans')
+					ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
 		else:
 			score = 100. / len(prob['test cases'])
 			ost.writeInt32(len(prob['test cases']))
@@ -82,9 +82,9 @@ def lemon(conf = None):
 				ost.writeInt32(prob['time limit'] * 1000)
 				ost.writeInt32(common.memory2bytes(prob['memory limit']) / 2 ** 20)
 				ost.writeInt32(1)
-				ost.writeQString(str(c) + '.in')
+				ost.writeQString(common.pjoin(prob['name'], str(c) + '.in'))
 				ost.writeInt32(1)
-				ost.writeQString(str(c) + '.ans')
+				ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
 		
 		sp = list(prob['route'].split('/'))
 		target = ['lemon'] + sp[:-1] + ['data', sp[-1]]

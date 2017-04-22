@@ -255,7 +255,9 @@ def test_problem(prob):
 						pass
 				tc = len(prob['test cases'])
 				if 'packed' in prob and prob['packed']:
-					score_map = {prob['test cases'][i] : i for i in range(tc)}
+					score_map = {}
+					for i in range(tc):
+						score_map[prob['test cases'][i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]

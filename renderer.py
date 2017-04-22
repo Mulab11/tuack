@@ -218,15 +218,23 @@ def tex(comp):
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
+	context = {
+		'io_style' : io_style,
+		'comp' : comp,
+		'tools' : tools,
+		'common' : common,
+		'json' : json
+	}
 	prec = None
-	if os.path.exists(os.path.join('precautions', 'zh-cn.md')):
-		common.copy('precautions', 'zh-cn.md', 'tmp')
+	if os.path.exists(common.pjoin(common.conf['path'], 'precautions', 'zh-cn.md')):
+		common.copy(common.pjoin(common.conf['path'], 'precautions'), 'zh-cn.md', 'tmp')
+		open(common.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(env.get_template('zh-cn.md').render(context, conf = common.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
-			os.path.join('tmp', 'zh-cn.md'),
+			os.path.join('tmp', 'precautions.md'),
 			os.path.join('tmp', 'precautions.tex')
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
-	#shutil.copy(os.path.join('title.tex'), 'tmp')
 	if common.conf['folder'] != 'problem':
 		for day in common.days():
 			result_path = os.path.join('statements', comp, day['name'] + '.pdf')
