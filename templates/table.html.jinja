@@ -1,4 +1,8 @@
-<table class="table table-bordered"><thead>
+<table class="table table-bordered"
+{%- if 'font size' in options -%}
+	style="font-size:{{options['font size']}}"
+{%- endif -%}
+><thead>
 	{%- for i in range(table.__len__()) -%}
 		<tr>
 		{%- with first_row = loop.first -%}
