@@ -17,7 +17,7 @@ cd oi_tools
 git submodule update --init
 ```
 
-相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python oi_tools/tester.py`。
+相应的，下文中所有形如 `python -m tester` 的命令都要改成  `python oi_tools的路径/tester.py`。
 
 ### 造题存储原则
 
@@ -114,30 +114,30 @@ python -m packer uoj,noi,release
 
 ### 测试
 
-可以在根目录下运行下列命令进行测试：
+可以在比赛/比赛日/题目目录下运行下列命令进行测试：
 
 ```bash
 python -m tester
 ```
 
-其中结果将输出到对应天目录下的 `result` 目录下，并会自动打开。要想不自动打开则在后面加上 `-s`。
+其中结果将输出到 `result` 目录下，并会自动打开。要想不自动打开则在后面加上 `-s`。
 
 ### 题面生成
 
 可以在根目录下运行下列命令生成对应的题面：
 
 ```bash
-python -m renderer noi,uoj
+python -m renderer noi,tuoj-html
 ```
 
-表示生成uoj和noi风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
+表示生成noi和tuoj-html风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
 
-生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`）。
+生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`），没有安装的话运行时会提示安装方式。
 
 目前支持两类题面：
 
--   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`noi`，`noip`，`ccpc`，`ccc-tex`。
--   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`uoj`，`ccc-html`。
+-   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoj-tex`，`noi`，`ccpc`，`ccc-tex`。
+-   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj-html`，`ccc-html`，`uoj`（似乎这个现在有bug）。
 
 题面的书写后文将有详细说明。
 
@@ -160,13 +160,13 @@ MacOS下待研究。
 前面几个工具都可以使用类似于 `-p day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
 
 ```bash
-python -m packer noi,release,test -p day1,day2
+python -m dumper arbiter -p day1,day2
 python -m tester -p day1/excellent,day2/drink
 python -m tester -p day1/excellent/saffah
 python -m tester -p day1/excellent/saffah/std
 ```
 
-注意所有指定的命令全部都改成了 `-p`，而且现在三种类型的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
+注意所有指定的命令全部都改成了 `-p`，而且现在比赛/比赛日/题目的文件夹都可以使用这个命令。例如你现在在 `day1` 文件夹下的话，要指定测试 `excellent` 一题 `saffah` 的程序，那么使用的命令是
 
 ```bash
 python -m tester -p excellent/saffah
@@ -371,7 +371,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 ## 题面的书写
 
-如果你不使用任何的特性，你可以用纯 markdown 书写题面，并将以 `description.md` 命名保存在试题目录下。
+如果你不使用任何的特性，你可以用纯 markdown 书写题面，并将以 `statement/*.md` 命名保存在试题目录下。其中 `*` 替换为相应的语言例如 `zh-cn`。
 此外还提供了少量的工具以扩展 markdown 不支持的功能。
 
 注意：**不要在题面里直接插入任何html代码**。因为虽然markdown原生支持嵌入html，但因为我们要渲染成tex，所以不能直接使用任何原生html语法，例如表格、带格式的图片等都需要特殊处理，具体可以参考后文的“两轮渲染”。
@@ -388,17 +388,17 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 所有的模板都存在该工程的templates目录下，有兴趣开发模板或是想修改的话欢迎联系我入坑。
 
-### description.md
+### statement/*.md
 
-可以参考NOI2016网格这题，下面提到的大部分功能在这个题目中都有使用，详细代码见NOI2016的[git工程](http://git.oschina.net/mulab/NOI2016)。
+如果你使用generator生成了题面，你将看到大部分你可能用到的东西的例子。
 
-`{% block title %}{% endblock %}` 表示使用名为 `title` 的子块，这个子块在uoj模式下会渲染成时间、空间限制和题目类型（如果不为传统型的话），在noi模式下会留空。
+`{{ self.title() }}` 表示使用名为 `title` 的子块，这个子块在某些下会渲染成时间、空间限制和题目类型（如果不为传统型的话），在noi模式下会留空等等。
 这些子块定义在 `problem_base.md.jinja` 中，可用的还有：
 * `input_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `output_file` 输入文件的描述，根据平台说明是标准输入还是从文件输入。
 * `user_path` 选手目录，如果是noi会变成“选手目录”这几个字，uoj会变成下载链接。
 * `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。支持参数 `sample_id` 设置样例的编号（同时也是样例文件名）；`show space` 如果为真则会在PDF格式中将空格显示出来。
-* `title_sample` uoj的“样例输”是拆分成两级名称的，所以蛋疼地需要多一级，这里专指“【样例】”这个标签；其他环境下则会被渲染成空的。
+* `title_sample` uoj的“样例输入/输出”是拆分成两级名称的，所以蛋疼地需要多一级，这里专指“【样例】”这个标签；其他环境下则会被渲染成空的。
 * `sample_input_text` 样例输入自动渲染。
 * `sample_output_text` 样例输入自动渲染。
 * `sample_text` 样例自动渲染，会自动从 `down` 中读入样例文件并添加到题面中，需要下面提到的前置变量。
@@ -409,10 +409,11 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 一个块只能在代码中直接出现一次，如果需要多次使用，需要写成 `{{ self.块名称() }}` ，例如 `{{ self.title() }}`。
 事实上，可以总是使用这种方式输出一个块，上面那种方式是为了更好地支持继承，因此我们推荐在造题的时候始终使用这种方式引用块。
 
-有的块需要用到前置的变量，例如文字样例自动渲染需要提供样例的编号 `sample_id` 作为变量，具体会写成这样：
+有的块需要用到前置的变量，例如文字样例自动渲染需要提供样例的编号 `sample_id` 作为变量，并且要显示样例中的空格，具体会写成这样：
 ```
 {% set vars = {} -%}
-{%- do vars.__setitem__('sample_id', 1) -%}
+{% do vars.__setitem__('sample_id', 1) %}
+{% do vars.__setitem__('show space', True) %}
 {{ self.sample_text() }}
 ```
 
@@ -428,11 +429,11 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 题目标题用一级标题 `#`，在题面书写的时候并不需要加上，而应该用标题子块代替。
 
-每个小节标题，如 `【题目描述】` 用二级标题 `##`，会被渲染成Latex的subsection和html的h2。
+每个小节标题，如 `题目描述` 用二级标题 `##`，会被渲染成Latex的subsection和html的h2。
 （不要吐槽这样在uoj上字体太大了，这里最好是uoj改css，或者你有兴趣的话可以造一个模板来造标题，其实挺简单的）
 
 小节下的标题用三级标题 `###`，会被渲染成Latex的subsubsection和html的h3。
-对于uoj，`【样例】` 下的 `输入` 会使用比上面低一级的标题，而这个在noi style的题面中会不单列一级标题；为了通用，建议使用上面提到的子块生成样例。
+对于uoj，`样例` 下的 `输入` 会使用比上面低一级的标题，而这个在noi style的题面中会不单列一级标题；为了通用，建议使用上面提到的子块生成样例。
 
 样例使用三个反引号（不知道markdown里面怎么打这几个字符）括起来的pre来装，同样建议用子块而非自己做样例。
 
@@ -442,15 +443,15 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的中文名，可以用下列写法（两种方法等价）：
 ```
-{{ prob['cnname'] }}
-{{ prob.cnname }}
+{{ prob['title']['zh-cn'] }}
+{{ prob.cnname['zh-cn'] }}
 ```
 
 获取当前的渲染环境，可以用变量 `comp`（会被赋值为 `noi`、`uoj` 等），输入输出方式用变量 `io_style`（会被赋值为 `fio`、`stdio` 等）。
 
-如果需要以文本的形式展示某个下发的文件，提供了一个函数 `down_file(file_name)`，例如：
+样例提供了自动渲染，但如果需要以文本的形式展示某个其他下发的文件，提供了一个函数 `down_file(file_name)`，例如：
 ```
-## 【样例输出】
+## 样例输出
 //这里应该有3个`
 {{ down_file('1.ans') }}
 //这里应该有3个`
@@ -463,6 +464,8 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 ```
 ${{ tools.hn(1000000) }}$
 ```
+
+会输出成这样：$10^{6}$。
 
 此外你还可以从 `common` 中读取公共的任何全局变量，例如 `common.out_system` 可以读取要输出到的系统，你可根据不同的系统写不同的题面（例如checker在不同系统中的用法不同）。
 
@@ -489,6 +492,12 @@ ${{ tools.hn(1000000) }}$
 ```
 
 上例表示只在html中渲染一个指向UOJ的超链接，当然UOJ中你还可以用md的超链接语法。第二个参数支持单个表示类型的字符串或是一个这样的字符串组成的list。其中支持的字符串包括：`html`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-html`，`tuoj-tex`，`tuoj-html` 等。
+
+需要注意的是，两轮渲染特别容易出现转义的问题，即某些需要转义的字符有可能需要经过多次转义才能存储下来（例如 `"` → `\"` → `\\\"`），这里推荐使用 tools.dumps 等方法生成你要多次转义的字符串，例如上面那个可以写成：
+
+```
+{{ render(tools.dumps('<a href="http://uoj.ac">UOJ</a>'), 'html') }}
+```
 
 ### 表格
 
