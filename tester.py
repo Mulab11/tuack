@@ -53,7 +53,7 @@ def run_windows(name, tl, ml, input = None, output = None):
 def runner_linux(name, que, ml, input = None, output = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; time -f "%%U" -o timer ./%s %s %s' % (
-			common.memory2bytes(ml) // 1024,
+			int(common.Memory(ml).KB),
 			name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',

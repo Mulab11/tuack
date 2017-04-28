@@ -57,22 +57,6 @@ def fatal(info):
 	frep.close()
 	sys.exit(info)
 
-def memory2bytes(st):	
-	units = {
-		'B' : 1,
-		'K' : 2 ** 10,
-		'KB' : 2 ** 10,
-		'M' : 2 ** 20,
-		'MB' : 2 ** 20,
-		'G' : 2 ** 30,
-		'GB' : 2 ** 30,
-		'T' : 2 ** 40,
-		'TB' : 2 ** 40
-	}
-	sp = st.split(' ')
-	un = (units[sp[1]] if len(sp) == 2 else 1)
-	return int(float(sp[0]) * un)
-
 pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
 rjoin = lambda *args : '/'.join(args).strip('/')
 
@@ -93,10 +77,37 @@ def extend_merge(base, ext):
 		else:
 			base[key] = val
 	return base
-	
+
+class Memory(str):
+	units = {
+		'B' : 1,
+		'K' : 2 ** 10,
+		'KB' : 2 ** 10,
+		'M' : 2 ** 20,
+		'MB' : 2 ** 20,
+		'G' : 2 ** 30,
+		'GB' : 2 ** 30,
+		'T' : 2 ** 40,
+		'TB' : 2 ** 40
+	}
+	def __new__(self, val):
+		return super(Memory, self).__new__(self, val)
+	def byte(self):
+		if self[-1] == 'B':
+			sp = 2 if self[-2] in self.units else 1
+		else:
+			sp = 1
+		un = self.units[self[-sp:]]
+		return float(self[:-sp]) * un
+	def __init__(self, val):
+		super(Memory, self).__init__()
+		b = self.byte()
+		for key, val in self.units.items():
+			self.__setattr__(key, b / val)
+
 class NoJsonException(Exception):
 	pass
-	
+
 class Configure(dict):
 	@staticmethod
 	def merge_item(base, ext):
@@ -125,10 +136,11 @@ class Configure(dict):
 		self.folder = self['folder']
 		self.parent = None
 		self.path = path
-		
+		self.sub = []
+
 	def __contains__(self, key):
 		return super(Configure, self).__contains__(key + '+') or super(Configure, self).__contains__(key) or (self.parent and key in self.parent)
-		
+
 	def getitem(self, key, trans = lambda prob, val, key, depth : val, depth = 0):
 		if super(Configure, self).__contains__(key + '+'):
 			cur = trans(self, super(Configure, self).__getitem__(key + '+'), key, depth)
@@ -145,7 +157,7 @@ class Configure(dict):
 		if 'name' not in self:
 			self['name'] = path
 		return self
-		
+
 	def probs(self, pick = False):
 		pick |= not sub_set or item.route in sub_set
 		if type(self) == Problem:
@@ -156,7 +168,7 @@ class Configure(dict):
 			for sub in self.sub:
 				for prob in sub.probs(pick):
 					yield prob
-	
+
 	def days(self, pick = False):
 		pick |= not sub_set or item['route'] in sub_set
 		if type(self) == Problem:
@@ -169,25 +181,25 @@ class Configure(dict):
 			for sub in self.sub:
 				for day in sub.days(pick):
 					yield day
-					
+
 def probs(item = None, pick = False):
 	if not item:
 		item = conf
 	return conf.probs(pick)
-	
+
 def days(item = None, pick = False):
 	if not item:
 		item = conf
 	return conf.days(pick)
-		
+
 class Contest(Configure):
 	def __init__(self, *args):
 		super(Contest, self).__init__(*args)
-	
+
 class Day(Configure):
 	def __init__(self, *args):
 		super(Day, self).__init__(*args)
-	
+
 class DataPath(str):
 	def __new__(self, val):
 		return super(DataPath, self).__new__(self, '*' * val['depth'] + val['case'])
@@ -198,26 +210,35 @@ class DataPath(str):
 		return self.data[key]
 	def full(self):
 		return pjoin(self['prefix'], self['key'], self['case'])
-	
+
+def sorter():
+	global natsort_warned
+	try:
+		if not natsort_warned:
+			check_install('natsort')
+		import natsort
+		return lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
+	except:
+		if not natsort_warned:
+			print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
+			natsort_warned = True
+		return sorted
+
+class Datum(dict):
+	def __init__(self, datum, prob = None, key = 'data'):
+		super(Datum, self).__init__(datum)
+		self.prob = prob
+		self.key = key
+	def ml(self):
+		return Memory(self['memory limit']) if 'memory limit' in self else self.prob.ml()
+
 class Problem(Configure):
 	def __init__(self, *args):
 		super(Problem, self).__init__(*args)
 	def set_default(self, path = None):
 		super(Problem, self).set_default(path)
-		global natsort_warned
-		try:
-			if not natsort_warned:
-				check_install('natsort')
-			import natsort
-			sorter = lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
-		except:
-			if not natsort_warned:
-				print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
-				natsort_warned = True
-			sorter = sorted
 		if 'title' not in self and 'cnname' in self:
 			self['title'] = {'zh-cn' : self.pop('cnname')}
-		
 		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample cases', 'sample_cases', 'down')]:
 			tc = set()
 			if data in self:
@@ -231,8 +252,8 @@ class Problem(Configure):
 					to_dp(i) for i in range(1, self.pop(cases) + 1) \
 					if to_dp(i) not in tc
 				]}]
-			self.__setattr__(attr, sorter(list(tc)))
-		
+			self.__setattr__(attr, sorter()(list(tc)))
+
 		if self['packed']:
 			num_unscored = 0
 			total_score = 0.0
@@ -246,12 +267,12 @@ class Problem(Configure):
 				for datum in self['data']:
 					if 'score' not in datum:
 						datum['score'] = item_score
-						
+
 	def extend_pathed(self, path):
 		if path.startswith(':'):
 			return self.parent.extend_pathed(path[1:])
 		return pjoin(self.path, path)
-		
+
 	def users(self):
 		def users_pathed(self, users, key = '', depth = 0):
 			if type(users) == str:
@@ -261,7 +282,7 @@ class Problem(Configure):
 				for key, val in users.items()
 			}
 		return self.getitem('users', users_pathed)
-		
+
 	def get_data(self, key):
 		def data_pathed(self, data, key, depth):
 			key_map = {
@@ -282,16 +303,22 @@ class Problem(Configure):
 					tmp.append(DataPath({'case' : cas, 'key' : key_map[key], 'depth' : dep, 'prefix' : cur.path}))
 				datum_fixed = datum.copy()
 				datum_fixed['cases'] = tmp
-				ret.append(datum_fixed)
+				ret.append(Datum(datum_fixed, self, key))
 			return ret
 		return self.getitem(key, data_pathed)
-		
+
 	def data(self):
 		return self.get_data('data')
-		
+
 	def samples(self):
 		return self.get_data('samples')
 		
+	def ml(self):
+		return Memory(self['memory limit'])
+		
+	def memory_limit(self):
+		return self.ml()
+
 def load_json(path = '.', route = None):
 	for name in ['conf.json', 'prob.json']:
 		try:
@@ -332,29 +359,17 @@ def del_redundance(conf, red):
 	if not conf['name'] or conf['name'] == '.':
 		conf.pop('name')
 	return conf
-	
-redundances = {
-	'problem' : ['test cases', 'sample cases', 'sample count'],
-	'day' : [],
-	'contest' : []
-}
 
-common_redundances = ['all', 'path', 'route']
-		
 def save_json(conf):
 	if 'base path' in conf:
 		warning('extend folder type can\'t use generate.')
 		return
-	cp = conf.copy()
-	if 'sub' in cp:
-		sub = cp.pop('sub')
-		for s in sub:
-			save_json(s)
-	cp = del_redundance(cp, redundances[cp['folder']] + common_redundances)
-	open(pjoin(conf['path'], 'conf.json'), 'wb').write(
-		json.dumps(cp, indent = 2, sort_keys = True).encode('utf-8')
+	for s in conf.sub:
+		save_json(s)
+	open(pjoin(conf.path, 'conf.json'), 'wb').write(
+		json.dumps(conf, indent = 2, sort_keys = True).encode('utf-8')
 	)
-		
+
 def any_prefix(pre, st = None):
 	if not st:
 		st = sub_set
@@ -366,7 +381,7 @@ def any_prefix(pre, st = None):
 def mkdir(name):
 	if not os.path.exists(name):
 		os.makedirs(name)
-		
+
 def remkdir(name):
 	while True:
 		try:
@@ -378,7 +393,7 @@ def remkdir(name):
 		except Exception as e:
 			print(e)
 			warning('Can\'t delete %s' % name)
-		
+
 def copy(source, name, target):
 	full_source = pjoin(source, name)
 	if not os.path.exists(full_source):
@@ -407,7 +422,7 @@ def copy(source, name, target):
 	else:
 		shutil.copy(full_source, target)
 	return True
-	
+
 def xopen_file(path):
 	if system == 'Windows':
 		os.startfile(path)
@@ -415,7 +430,7 @@ def xopen_file(path):
 		subprocess.call(["open", path])
 	else:
 		subprocess.call(["xdg-open", path])
-	
+
 def deal_args():
 	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args, do_zip, do_encript
 	works = []
@@ -476,7 +491,7 @@ def deal_args():
 			day_set = {prob.split('/')[0] for prob in prob_set}
 	'''
 	return True
-	
+
 def init():
 	global conf
 	if not deal_args():
@@ -500,7 +515,7 @@ def tr(item):
 			return val
 	else:
 		return 'Unknown'
-	
+
 def run_r(cmd, path):
 	for f in os.listdir(path):
 		cpath = pjoin(path, f)
@@ -571,7 +586,7 @@ def check_install(pack):
 			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
 			if key in os.environ
 		] + ['py%x' % sys.hexversion])
-		
+
 	global tool_conf
 	try:
 		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))

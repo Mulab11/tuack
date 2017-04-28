@@ -67,7 +67,7 @@ def lemon(conf = None):
 			for datum in prob['data']:
 				ost.writeInt32(datum['score'])
 				ost.writeInt32((datum['time limit'] if 'time limit' in datum else conf['time limit']) * 1000)
-				ost.writeInt32(common.memory2bytes(datum['memory limit'] if 'memory limit' in datum else conf['memory limit']) / 2 ** 20)
+				ost.writeInt32(datum.memory_limit().MB)
 				tc = datum['cases']
 				ost.writeInt32(len(tc))
 				for c in tc:
@@ -81,7 +81,7 @@ def lemon(conf = None):
 			for c in prob.test_cases:
 				ost.writeInt32(score)
 				ost.writeInt32(prob['time limit'] * 1000)
-				ost.writeInt32(common.memory2bytes(prob['memory limit']) / 2 ** 20)
+				ost.writeInt32(prob.memory_limit().MB)
 				ost.writeInt32(1)
 				ost.writeQString(common.pjoin(prob['name'], str(c) + '.in'))
 				ost.writeInt32(1)
@@ -174,7 +174,7 @@ def arbiter(conf = None,daynum = 0):
 		else:
 			print(u'【警告】暂时只支持非交互式程序题。')
 		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit'])/(2**20))
+		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
 		probinfo['SAMPLES='] = len(prob.test_cases)
 		score_per_case = 100 // len(prob.test_cases)
 		if score_per_case * len(prob.test_cases) != 100:
@@ -294,7 +294,7 @@ def arbiter(conf = None,daynum = 0):
 		else:
 			print(u'暂时只支持非交互式程序题')
 		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
+		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
 		probinfo['SAMPLES='] = len(prob.test_cases)
 		score_per_case = 100 / len(prob.test_cases)
 		probinfo['CLL=c@gcc'] = ' -o $o $i ' + prob['compile']['c']

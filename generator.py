@@ -19,7 +19,7 @@ import common
 
 def find_all_data(kind, folder, key):
 	def find_data(path = ''):
-		full_path = common.pjoin(prob['path'], folder, path)
+		full_path = common.pjoin(prob.path, folder, path)
 		for f in os.listdir(full_path):
 			if os.path.isfile(common.pjoin(full_path, f)):
 				if not f.endswith('.in'):
@@ -33,11 +33,7 @@ def find_all_data(kind, folder, key):
 			else:
 				find_data(common.rjoin(path, f))
 	def parse(data):
-		try:
-			return sorted(map(int, list(data)))
-		except Exception as e:
-			pass
-		tmp = sorted(list(data))
+		tmp = common.sorter()(map(str, list(data)))
 		ret = []
 		for i in tmp:
 			try:
@@ -46,14 +42,12 @@ def find_all_data(kind, folder, key):
 				ret.append(i)
 		return ret
 	for prob in common.probs():
-		print(prob['route'])
+		print(prob.route)
 		new_data = set()
-		exist_data = set(map(str, prob[key])) if key in prob else set()
+		exist_data = set(map(str, prob.__getattribute__(key)))
 		find_data()
 		new_data = parse(new_data)
-		if key not in prob:
-			prob[key] = []
-		prob[key] += new_data
+		prob.__getattribute__(key).__iadd__(new_data)
 		if kind not in prob:
 			prob[kind] = []
 		if len(new_data) > 0:
@@ -62,7 +56,7 @@ def find_all_data(kind, folder, key):
 	
 def find_all_code():
 	def find_code(user, path):
-		full_path = common.pjoin(prob['path'], user, path)
+		full_path = common.pjoin(prob.path, user, path)
 		for f in os.listdir(full_path):
 			if os.path.isfile(common.pjoin(full_path, f)):
 				for key in common.compilers:
@@ -77,15 +71,15 @@ def find_all_code():
 				find_code(user, common.rjoin(path, f))
 
 	for prob in common.probs():
-		print(prob['route'])
+		print(prob.route)
 		if 'users' not in prob:
 			prob['users'] = {}
 		exist_code = set()
 		for user, algos in prob['users'].items():
 			for algo, path in algos.items():
 				exist_code.add(path)
-		for f in os.listdir(prob['path']):
-			if common.user_skip.match(f) or os.path.isfile(common.pjoin(prob['path'], f)):
+		for f in os.listdir(prob.path):
+			if common.user_skip.match(f) or os.path.isfile(common.pjoin(prob.path, f)):
 				continue
 			if f not in prob['users']:
 				prob['users'][f] = {}
@@ -126,15 +120,15 @@ def new_dir(folder):
 		if path != '.':
 			conf = json.loads(open(common.pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
 			conf['name'] = path
-			conf['path'] = path
+			conf.path = path
 			common.save_json(conf)
 	if len(common.args) != 0:
 		common.conf['subdir'] = sorted(list(set(common.conf['subdir'] + common.args)))
 		common.save_json(common.conf)
 
 work_list = {
-	'data' : lambda : find_all_data('data', 'data', 'test cases'),
-	'samples' : lambda : find_all_data('samples', 'down', 'sample cases'),
+	'data' : lambda : find_all_data('data', 'data', 'test_cases'),
+	'samples' : lambda : find_all_data('samples', 'down', 'sample_cases'),
 	'code' : find_all_code,
 	'contest' : lambda : new_dir('contest'),
 	'day' : lambda : new_dir('day'),
