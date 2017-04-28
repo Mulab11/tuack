@@ -15,6 +15,7 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
+import logging
 
 work = None
 system = platform.system()
@@ -43,6 +44,7 @@ copied_data = set()
 no_compiling = False
 path = os.path.dirname(os.path.realpath(__file__))
 
+'''
 def infom(info):
 	frep.write('[I]' + info + '\n')
 
@@ -56,27 +58,26 @@ def fatal(info):
 	frep.write('[E]' + info + '\n')
 	frep.close()
 	sys.exit(info)
+'''
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+file_log = logging.FileHandler('tuack.log')
+file_log.setLevel(logging.INFO)
+bash_log = logging.StreamHandler()
+bash_log.setLevel(logging.DEBUG)
+file_log.setFormatter(logging.Formatter('[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'))
+bash_log.setFormatter(logging.Formatter('[%(levelname).1s]%(message)s'))
+log.addHandler(file_log)
+log.addHandler(bash_log)
+
+class NoFileException(Exception):
+	pass
 
 pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
 rjoin = lambda *args : '/'.join(args).strip('/')
 
 natsort_warned = None
-
-def extend_merge(base, ext):
-	for key, val in ext.items():
-		if key == 'path' or key == 'folder':
-			continue
-		elif key.endswith('+'):
-			k = key[:-1]
-			if type(base[k]) == type(val) == dict:
-				base[k] = extend_merge(base[k], val)
-			elif type(base[k]) == type(val) == list:
-				base[k] += val
-			else:
-				raise Exception('extend error %s' % key)
-		else:
-			base[key] = val
-	return base
 
 class Memory(str):
 	units = {
@@ -105,16 +106,14 @@ class Memory(str):
 		for key, val in self.units.items():
 			self.__setattr__(key, b / val)
 
-class NoJsonException(Exception):
-	pass
-
 class Configure(dict):
 	@staticmethod
 	def merge_item(base, ext):
 		if type(base) == type(ext) == list:
 			return base + ext
 		elif type(base) != dict or type(ext) != dict:
-			raise Exception('extend error %s' % key)
+			log.error('Extend conf.json error, type of key `%s` doesn\'t match.' % key)
+			raise TypeError('extend error %s' % key)
 		ret = base.copy()
 		for key, val in ext.items():
 			if key.endswith('+'):
@@ -159,7 +158,7 @@ class Configure(dict):
 		return self
 
 	def probs(self, pick = False):
-		pick |= not sub_set or item.route in sub_set
+		pick |= not sub_set or self.route in sub_set
 		if type(self) == Problem:
 			if pick or any_prefix(self.route):
 				self.all = pick
@@ -170,11 +169,11 @@ class Configure(dict):
 					yield prob
 
 	def days(self, pick = False):
-		pick |= not sub_set or item['route'] in sub_set
+		pick |= not sub_set or self.route in sub_set
 		if type(self) == Problem:
 			return
 		if type(self) == Day:
-			if pick or any_prefix(item['route']):
+			if pick or any_prefix(self.route):
 				self.all = pick
 				yield self
 		else:
@@ -220,7 +219,7 @@ def sorter():
 		return lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
 	except:
 		if not natsort_warned:
-			print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
+			log.warning(u'`natsort`用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
 			natsort_warned = True
 		return sorted
 
@@ -275,7 +274,7 @@ class Problem(Configure):
 
 	def users(self):
 		def users_pathed(self, users, key = '', depth = 0):
-			if type(users) == str:
+			if type(users) != dict:
 				return self.extend_pathed(users)
 			return {
 				key : users_pathed(self, val) \
@@ -332,7 +331,7 @@ def load_json(path = '.', route = None):
 					folder = base_conf.folder
 				else:
 					folder = conf['folder']
-				conf = eval(folder.capitalize())(conf, path) 	## !!所有conf['path']的地方都要改
+				conf = eval(folder.capitalize())(conf, path)
 				if conf['folder'] == 'extend':
 					conf.parent = base_conf
 					conf.folder = base_conf.folder
@@ -345,10 +344,11 @@ def load_json(path = '.', route = None):
 					]
 				return conf
 		except Exception as e:
-			print('Error at json configure file `%s`.' % pjoin(path, name))
+			log.error('Error at json configure file `%s`.' % pjoin(path, name))
 			raise e
 	else:
-		raise NoJsonException('Can\'t find configure json file at `%s`.' % path)
+		log.error('Can\'t find configure json file at `%s`.' % path)
+		raise NoFileException('Can\'t find configure json file at `%s`.' % path)
 
 def del_redundance(conf, red):
 	for key in red:
@@ -361,9 +361,6 @@ def del_redundance(conf, red):
 	return conf
 
 def save_json(conf):
-	if 'base path' in conf:
-		warning('extend folder type can\'t use generate.')
-		return
 	for s in conf.sub:
 		save_json(s)
 	open(pjoin(conf.path, 'conf.json'), 'wb').write(
@@ -391,13 +388,13 @@ def remkdir(name):
 				os.makedirs(name)
 			break
 		except Exception as e:
-			print(e)
-			warning('Can\'t delete %s' % name)
+			log.warning('Can\'t delete %s' % name)
+			log.warning(e)
 
 def copy(source, name, target):
 	full_source = pjoin(source, name)
 	if not os.path.exists(full_source):
-		raise Exception('No such file or path `%s`.' % full_source)
+		raise NoFileException('No such file or path `%s`.' % full_source)
 	copied_data.add(full_source)
 	if os.path.isdir(full_source):
 		if full_source.endswith('.dir') or no_compiling:
@@ -477,32 +474,20 @@ def deal_args():
 			else:
 				args += sys.argv[i].split(',')
 		i += 1
-	# if -p or -d is not set, use all of the problems or days
-	'''
-	if not prob_set:
-		prob_set = set()
-		for day, info in probs.items():
-			for prob in info:
-				prob_set.add(day + '/' + prob['name'])
-	if not day_set:
-		if not prob_set:
-			day_set = set(probs.keys())
-		else:
-			day_set = {prob.split('/')[0] for prob in prob_set}
-	'''
 	return True
 
 def init():
+	import __main__
 	global conf
 	if not deal_args():
 		return False
 	conf = load_json()
-	#print(json.dumps(conf))
 	try:
 		check_install('git')
 		check_install('git_lfs')
 	except:
 		pass
+	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	return True
 
 def tr(item):
@@ -529,11 +514,11 @@ def check_install(pack):
 		try:
 			__import__(pack)
 		except Exception as e:
-			print(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
+			log.error(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
 			if system == 'Windows':
-				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
+				log.info(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
 			if system == 'Linux':
-				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
+				log.info(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
 			raise e
 	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
 	check_jinja2 = lambda : check_import('jinja2')
@@ -541,44 +526,45 @@ def check_install(pack):
 	def check_pandoc():
 		ret = os.system('pandoc -v')
 		if ret != 0:
-			print(u'格式转换工具pandoc没有安装。')
+			log.error(u'格式转换工具pandoc没有安装。')
 			if system == 'Windows':
-				print(u'Windows用户去官方网站下载安装，安装好后把pandoc.exe所在路径添加到环境变量PATH中。')
+				log.info(u'Windows用户去官方网站下载安装，安装好后把pandoc.exe所在路径添加到环境变量PATH中。')
 			if system == 'Linux':
-				print(u'Ubuntu下用 sudo apt install pandoc 安装。')
+				log.info(u'Ubuntu下用 sudo apt install pandoc 安装。')
 			raise Exception('pandoc not found')
 	def check_xelatex():
 		ret = os.system('xelatex --version')
 		if ret != 0:
-			print(u'TeX渲染工具XeLaTeX没有安装。')
+			log.error(u'TeX渲染工具XeLaTeX没有安装。')
 			if system == 'Windows':
-				print(u'Windows下可以先安装MiKTeX，在首次运行的时候会再提示安装后续文件。')
+				log.info(u'Windows下可以先安装MiKTeX，在首次运行的时候会再提示安装后续文件。')
 			if system == 'Linux':
-				print(u'Ubuntu下先用 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra 安装工具；')
-				print(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
-				print(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
-				print(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
+				log.info(u'Ubuntu下先用 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra 安装工具；')
+				log.info(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
+				log.info(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
+				log.info(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
 			raise Exception('xelatex not found')
 	def check_git():
 		ret = os.system('git --version')
 		if ret != 0:
-			print(u'版本管理工具git没有安装，如果工程用git维护则你的修改可能无法成功提交。')
-			print(u'一个可能的安装教程见这里：')
-			print(u'https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git')
+			log.warning(u'版本管理工具git没有安装，如果工程用git维护则你的修改可能无法成功提交。')
+			log.info(u'一个可能的安装教程见这里：')
+			log.info(u'https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git')
 			if system == 'Windows':
-				print(u'Windows下有多种不同的git版本，大家可以多交流好用的版本。')
-			print(u'git入门可以参看这里：')
-			print(u'http://rogerdudler.github.io/git-guide/index.zh.html')
-			print(u'一般推荐用ssh方式克隆仓库，并用公私钥保证安全，添加密钥的方式一般仓库的git网页上能找到。')
+				log.info(u'Windows下有多种不同的git版本，大家可以多交流好用的版本。')
+			log.info(u'git入门可以参看这里：')
+			log.info(u'http://rogerdudler.github.io/git-guide/index.zh.html')
+			log.info(u'一般推荐用ssh方式克隆仓库，并用公私钥保证安全，添加密钥的方式一般仓库的git网页上能找到。')
 			raise Exception('git not found')
 	def check_git_lfs():
 		ret = os.system('git lfs')
 		if ret != 0:
-			print(u'因为有些评测数据比较大，所以一般要求用git lfs大文件系统（Large File System）管理评测数据（in/ans）')
-			print(u'一个可能的安装教程见这里：')
-			print(u'https://git-lfs.github.com/')
-			print(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
-			print(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
+			log.warning(u'git大文件系统lfs没有安装，如果工程使用了它你可能无法同步。')
+			log.info(u'因为有些评测数据比较大，所以一般要求用git lfs大文件系统（Large File System）管理评测数据（in/ans）')
+			log.info(u'一个可能的安装教程见这里：')
+			log.info(u'https://git-lfs.github.com/')
+			log.info(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
+			log.info(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
 			raise Exception('git lfs not found')
 	def get_sys_env():
 		return '$'.join([
@@ -615,7 +601,7 @@ def change_eol(path, eol):
 				line = line.rstrip(b'\r\n')
 				f.write(line + eol)
 				if not space_end and (line.endswith(b' ') or line.endswith(b'\t')):
-					print(u'【警告】文件`%s`第%d行末尾有空白符。' % (path, idx + 1))
+					log.warning(u'换行符转换：文件`%s`第%d行末尾有空白符。' % (path, idx + 1))
 					space_end = True
 				for code in ['utf-8', 'gbk']:
 					try:
@@ -626,7 +612,7 @@ def change_eol(path, eol):
 						pass
 				else:
 					is_text = False
-					print(u'【信息】文件`%s`不是文本文件。' % path)
+					log.info(u'换行符转换：文件`%s`不是文本文件。' % path)
 					break
 		except:
 			is_test = False

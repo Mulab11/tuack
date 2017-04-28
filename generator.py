@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
+from common import log
 
 def find_all_data(kind, folder, key):
 	def find_data(path = ''):
@@ -42,7 +43,7 @@ def find_all_data(kind, folder, key):
 				ret.append(i)
 		return ret
 	for prob in common.probs():
-		print(prob.route)
+		log.info(u'在题目`%s`下搜索%s数据。' % (key, prob.route))
 		new_data = set()
 		exist_data = set(map(str, prob.__getattribute__(key)))
 		find_data()
@@ -71,7 +72,7 @@ def find_all_code():
 				find_code(user, common.rjoin(path, f))
 
 	for prob in common.probs():
-		print(prob.route)
+		log.info(u'在题目`%s`下搜索源代码。' % prob.route)
 		if 'users' not in prob:
 			prob['users'] = {}
 		exist_code = set()
@@ -103,7 +104,8 @@ def new_dir(folder):
 		dirs = ['.']
 	else:
 		if not common.conf:
-			raise Exception('No `conf.json` in this directory.')
+			log.error(u'当前文件夹下没有 `conf.json` 文件。')
+			raise common.NoFileException('No `conf.json` in this directory.')
 		dirs = common.args
 	for path in dirs:
 		if not os.path.exists(path):
@@ -134,7 +136,7 @@ work_list = {
 	'day' : lambda : new_dir('day'),
 	'problem' : lambda : new_dir('problem')
 }
-	
+
 if __name__ == '__main__':
 	try:
 		result = common.init()
@@ -142,7 +144,6 @@ if __name__ == '__main__':
 		common.conf = None
 		result = True
 	if result:
-		common.infom('Generation starts at %s.\n' % str(datetime.datetime.now()))
 		for common.work in common.works:
 			work_list[common.work]()
 	else:

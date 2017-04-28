@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
+from common import log
 try:
 	import jinja2
 except:
@@ -89,7 +90,7 @@ def table(path, name, temp, context, options):
 		table = json.loads(res)
 	except Exception as e:
 		open(os.path.join('tmp', 'table.tmp.json'), 'w').write(res)
-		print('You can find the json file in tmp/table.tmp.json')
+		log.info('You can find the json file with error in tmp/table.tmp.json')
 		raise e
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
@@ -128,10 +129,10 @@ def tex(comp):
 		day_name = conf['name'] if conf.folder == 'day' else '测试'
 		probs = list(conf.probs())
 		if len(probs) == 0:
-			print('Nothing to do for %s' % conf.route)
+			log.info('Nothing to do for %s' % conf.route)
 			return
 		for prob in probs:
-			print('rendering %s %s' % (comp, prob.route))
+			log.info('rendering %s %s' % (comp, prob.route))
 			try:
 				common.copy(
 					os.path.join(prob.path, 'statement'),
@@ -193,7 +194,7 @@ def tex(comp):
 			)
 			tex_problems.append(res)
 
-		print('rendering %s %s' % (comp, conf.route))
+		log.info('rendering %s %s' % (comp, conf.route))
 		context.pop('prob')
 		context.pop('file_name')
 		context.pop('down_file')
@@ -211,8 +212,8 @@ def tex(comp):
 				.write(all_problem_statement.encode('utf-8'))
 			raise e
 		os.chdir('tmp')
-		os.system('xelatex problems.tex')
-		os.system('xelatex problems.tex')
+		os.system('xelatex -quiet problems.tex')
+		os.system('xelatex -quiet problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
 		if common.start_file:
@@ -247,7 +248,7 @@ def tex(comp):
 		
 def html(comp):
 	def render(prob):
-		print('rendering %s %s' % (comp, prob.route))
+		log.info('rendering %s %s' % (comp, prob.route))
 		path = os.path.join('statements', comp, prob.route)
 		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
@@ -317,7 +318,6 @@ def html(comp):
 if __name__ == '__main__':
 	if common.init():
 		common.check_install('jinja2')
-		common.infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
 		init()
 		for common.work in common.works:
 			work_list[common.work]()

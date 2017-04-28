@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
+from common import log
 
 def tsinsen_oj():
 	new_tc = []
@@ -153,7 +154,6 @@ work_list = {
 	
 if __name__ == '__main__':
 	if common.init() and len(common.args) != 0:
-		common.infom('Loading starts at %s.\n' % str(datetime.datetime.now()))
 		for common.work in common.works:
 			work_list[common.work]()
 	else:

@@ -16,7 +16,8 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
-	
+from common import log
+
 def run_windows(name, tl, ml, input = None, output = None):
 	'''
 	On windows, memory limit is not considered.
@@ -75,7 +76,6 @@ def run_linux(name, tl, ml, input = None, output = None):
 	elif que.qsize() == 1:
 		ret = 'Time out.'
 		pid = que.get()
-		#print('pid = %d' % pid)
 		os.killpg(os.getpgid(pid), signal.SIGTERM)
 		t = 0.
 	else:
@@ -85,7 +85,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 			try:
 				t = float(open('timer').readline())
 			except:
-				warning('Timer broken.')
+				log.warning('Timer broken.')
 				t = 0.
 			ret = None
 		else:
@@ -219,7 +219,7 @@ def packed_score(scores, times, reports, score_map, prob):
 	
 def test_problem(prob):
 	if 'users' not in prob:
-		common.error('No `users` in conf.json of problem `%s`, try to use `python -m load users`.')
+		log.error(u'题目`%s`的conf.json缺少`users`字段，使用`python -m loader users`搜索源代码。')
 		return
 	with open(common.pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
@@ -242,7 +242,7 @@ def test_problem(prob):
 					shutil.copy(path, common.pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
 				else:
 					shutil.copytree(common.pjoin(prob['name'], user, algo), 'tmp')
-				print('Now testing %s:%s:%s' % (prob['name'], user, algo))
+				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob)
 				while os.path.exists('tmp'):
 					try:
@@ -291,13 +291,9 @@ def test_progs():
 if __name__ == '__main__':
 	if common.init():
 		common.work = 'test'
-		#for prob in common.probs():
-		#	for case in prob.test_cases:
-		#		print(case.full())
 		if common.do_pack:
 			import packer
 			packer.test()
-		common.infom('Testing starts at %s.\n' % str(datetime.datetime.now()))
 		test_progs()
 	else:
 		pass

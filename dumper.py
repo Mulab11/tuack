@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
+from common import log
 
 def lemon(conf = None):
 	common.check_install('pyside')
@@ -30,6 +31,7 @@ def lemon(conf = None):
 				os.makedirs(common.pjoin('lemon', day.route))
 				lemon(day)
 		return
+	log.info(u'导出lemon工程：%s' % conf.route)
 	os.makedirs(common.pjoin('lemon', conf.route, 'data'))
 	os.makedirs(common.pjoin('lemon', conf.route, 'source'))
 	jzp_magic = 0x20111127
@@ -42,6 +44,7 @@ def lemon(conf = None):
 	probs = list(conf.probs())
 	ost.writeInt32(len(probs))
 	for prob in probs:
+		log.info(u'导出lemon题目：%s' % prob.route)
 		ost.writeQString(common.tr(prob['title']))
 		ost.writeQString(prob['name'])
 		ost.writeQString(prob['name'] + '.in')
@@ -112,8 +115,8 @@ def lemon(conf = None):
 		with zipfile.ZipFile(common.pjoin('lemon', conf.route) + '.zip', 'w') as z:
 			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf.route))
 	
-	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
-	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
+	log.warning(u'目前SPJ的支持暂时还没有实现，有需要请手工配置。')
+	log.warning(u'目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 '''userlist = {}'''
 def arbiter(conf = None,daynum = 0):
 	def arbiter_info(info, filename):
@@ -322,7 +325,6 @@ work_list = {
 
 if __name__ == '__main__':
 	if common.init():
-		common.infom('Dumping starts at %s.\n' % str(datetime.datetime.now()))
 		for common.work in common.works:
 			work_list[common.work]()
 	else:
