@@ -115,11 +115,11 @@ class Configure(dict):
 
 	def __init__(self, val, path = None):
 		if type(val) == dict:
-			super().__init__(val)
+			super(Configure, self).__init__(val)
 		elif type(val) == str:
-			super().__init__(json.loads(val))
+			super(Configure, self).__init__(json.loads(val))
 		elif type(val) == bytes:
-			super().__init__(json.loads(val.decode('utf-8')))
+			super(Configure, self).__init__(json.loads(val.decode('utf-8')))
 		else:
 			raise Exception('Can\'t translate this object to a Configure.')
 		self.folder = self['folder']
@@ -127,14 +127,14 @@ class Configure(dict):
 		self.path = path
 		
 	def __contains__(self, key):
-		return super().__contains__(key + '+') or super().__contains__(key) or (self.parent and key in self.parent)
+		return super(Configure, self).__contains__(key + '+') or super(Configure, self).__contains__(key) or (self.parent and key in self.parent)
 		
 	def getitem(self, key, trans = lambda prob, val, key, depth : val, depth = 0):
-		if super().__contains__(key + '+'):
-			cur = trans(self, super().__getitem__(key + '+'), key, depth)
+		if super(Configure, self).__contains__(key + '+'):
+			cur = trans(self, super(Configure, self).__getitem__(key + '+'), key, depth)
 			return self.merge_item(cur, self.parent.getitem(key, trans, depth + 1)) if self.parent else cur
-		if super().__contains__(key):
-			return trans(self, super().__getitem__(key), key, depth)
+		if super(Configure, self).__contains__(key):
+			return trans(self, super(Configure, self).__getitem__(key), key, depth)
 		return self.parent.getitem(key, trans, depth + 1) if self.parent else None
 
 	def __getitem__(self, key):
@@ -181,25 +181,29 @@ def days(item = None, pick = False):
 	return conf.days(pick)
 		
 class Contest(Configure):
-	pass
+	def __init__(self, *args):
+		super(Contest, self).__init__(*args)
 	
 class Day(Configure):
-	pass
+	def __init__(self, *args):
+		super(Day, self).__init__(*args)
 	
 class DataPath(str):
 	def __new__(self, val):
-		return super().__new__(self, '*' * val['depth'] + val['case'])
+		return super(DataPath, self).__new__(self, '*' * val['depth'] + val['case'])
 	def __init__(self, val):
 		self.data = val
-		super().__init__()
+		super(DataPath, self).__init__()
 	def __getitem__(self, key):
 		return self.data[key]
 	def full(self):
 		return pjoin(self['prefix'], self['key'], self['case'])
 	
 class Problem(Configure):
+	def __init__(self, *args):
+		super(Problem, self).__init__(*args)
 	def set_default(self, path = None):
-		super().set_default(path)
+		super(Problem, self).set_default(path)
 		global natsort_warned
 		try:
 			if not natsort_warned:
@@ -486,7 +490,7 @@ def init():
 		pass
 	return True
 
-def default_lang(item):
+def tr(item):
 	if 'zh-cn' in item:
 		return item['zh-cn']
 	elif 'en' in item:
@@ -566,7 +570,7 @@ def check_install(pack):
 			os.environ[key]
 			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
 			if key in os.environ
-		])
+		] + ['py%x' % sys.hexversion])
 		
 	global tool_conf
 	try:

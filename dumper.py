@@ -20,18 +20,18 @@ import common
 def lemon(conf = None):
 	common.check_install('pyside')
 	if not conf:
-		if common.conf['folder'] == 'problem':
+		if common.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
 		common.remkdir('lemon')
-		if common.conf['folder'] == 'day':
+		if common.conf.folder == 'day':
 			lemon(common.conf)
 		else:
 			for day in common.days():
-				os.makedirs(common.pjoin('lemon', day['route']))
+				os.makedirs(common.pjoin('lemon', day.route))
 				lemon(day)
 		return
-	os.makedirs(common.pjoin('lemon', conf['route'], 'data'))
-	os.makedirs(common.pjoin('lemon', conf['route'], 'source'))
+	os.makedirs(common.pjoin('lemon', conf.route, 'data'))
+	os.makedirs(common.pjoin('lemon', conf.route, 'source'))
 	jzp_magic = 0x20111127
 	zlib_magic = 0x185E
 	import zlib
@@ -39,9 +39,10 @@ def lemon(conf = None):
 	obuff = QtCore.QByteArray()
 	ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
 	ost.writeQString(conf['name'])
-	ost.writeInt32(len(conf['sub']))
-	for prob in common.probs(conf):
-		ost.writeQString(common.default_lang(prob['title']))
+	probs = list(conf.probs())
+	ost.writeInt32(len(probs))
+	for prob in probs:
+		ost.writeQString(common.tr(prob['title']))
 		ost.writeQString(prob['name'])
 		ost.writeQString(prob['name'] + '.in')
 		ost.writeQString(prob['name'] + '.out')
@@ -75,9 +76,9 @@ def lemon(conf = None):
 				for c in tc:
 					ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
 		else:
-			score = 100. / len(prob['test cases'])
-			ost.writeInt32(len(prob['test cases']))
-			for c in prob['test cases']:
+			score = 100. / len(prob.test_cases)
+			ost.writeInt32(len(prob.test_cases))
+			for c in prob.test_cases:
 				ost.writeInt32(score)
 				ost.writeInt32(prob['time limit'] * 1000)
 				ost.writeInt32(common.memory2bytes(prob['memory limit']) / 2 ** 20)
@@ -86,16 +87,16 @@ def lemon(conf = None):
 				ost.writeInt32(1)
 				ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
 		
-		sp = list(prob['route'].split('/'))
+		sp = list(prob.route.split('/'))
 		target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
-		shutil.copytree(common.pjoin(prob['path'], 'data'), common.pjoin(*target))
+		shutil.copytree(common.pjoin(prob.path, 'data'), common.pjoin(*target))
 	
 	compressed = QtCore.QByteArray(zlib.compress(str(obuff)))
 	obuff = QtCore.QByteArray()
 	ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
 	ost.writeUInt32(zlib_magic)
 	ost.writeRawData(str(compressed))
-	file_ = QtCore.QFile(common.pjoin('lemon', conf['route'], conf['name'] + '.cdf'))
+	file_ = QtCore.QFile(common.pjoin('lemon', conf.route, conf['name'] + '.cdf'))
 	file_.open(QtCore.QIODevice.WriteOnly)
 	ofs = QtCore.QDataStream(file_)
 	ofs.writeUInt32(jzp_magic)
@@ -104,12 +105,12 @@ def lemon(conf = None):
 	ofs.writeRawData(str(obuff))
 	file_.close()
 	
-	common.run_r(common.unix2dos, common.pjoin('lemon', conf['route'], 'data'))
+	common.run_r(common.unix2dos, common.pjoin('lemon', conf.route, 'data'))
 	
 	if common.do_zip:
 		import zipfile
-		with zipfile.ZipFile(common.pjoin('lemon', conf['route']) + '.zip', 'w') as z:
-			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf['route']))
+		with zipfile.ZipFile(common.pjoin('lemon', conf.route) + '.zip', 'w') as z:
+			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf.route))
 	
 	print(u'【警告】目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	print(u'【警告】目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
@@ -128,14 +129,14 @@ def arbiter(conf = None,daynum = 0):
 		os.makedirs(common.pjoin('arbiter','result'))
 		os.makedirs(common.pjoin('arbiter','filter'))
 		os.makedirs(common.pjoin('arbiter','tmp'))
-		if common.conf['folder'] == 'problem':
+		if common.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
-		if common.conf['folder'] == 'day':
+		if common.conf.folder == 'day':
 			arbiter(common.days())
 		else:
 			for idx, day in enumerate(common.days(), start = 1):
-				os.makedirs(common.pjoin('arbiter','players',day['route']))
-				os.makedirs(common.pjoin('arbiter','result',day['route']))
+				os.makedirs(common.pjoin('arbiter','players',day.route))
+				os.makedirs(common.pjoin('arbiter','result',day.route))
 				arbiter(day,idx)
 			print('dos2unix')
 			common.run_r(common.dos2unix, common.pjoin('arbiter', 'data'))
@@ -153,7 +154,7 @@ def arbiter(conf = None,daynum = 0):
 			'''arbiter_info(userlist,common.pjoin('arbiter','player.info'))'''
 		return
 	dayinfo = {}
-	dayinfo['NAME='] = '第'+str(daynum)+'场'+'--机试'
+	dayinfo['NAME='] = u'第'+str(daynum)+u'场'+u'--机试'
 	dayinfo['PLAYERDIR='] = ''
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
@@ -174,24 +175,24 @@ def arbiter(conf = None,daynum = 0):
 			print(u'【警告】暂时只支持非交互式程序题。')
 		probinfo['LIMIT='] = int(prob['time limit'])
 		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit'])/(2**20))
-		probinfo['SAMPLES='] = len(prob['test cases'])
-		score_per_case = 100 // len(prob['test cases'])
-		if score_per_case * len(prob['test cases']) != 100:
+		probinfo['SAMPLES='] = len(prob.test_cases)
+		score_per_case = 100 // len(prob.test_cases)
+		if score_per_case * len(prob.test_cases) != 100:
 			print(u'【警告】满分不是100哦。')
 		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
 		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
 		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
 		if 'packed' in prob and prob['packed']:
 			raise Exception('Can\'t dump packed problem for arbiter.')
-		for idx, case in enumerate(prob['test cases'], start = 1):
-			'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.in'))'''
+		for idx, case in enumerate(prob.test_cases, start = 1):
+			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.in'))'''
 			shutil.copy(
-				common.pjoin(prob['path'],'data',str(case)+'.in'),
+				common.pjoin(prob.path,'data',str(case)+'.in'),
 				common.pjoin('arbiter','data',prob['name']+str(idx)+'.in')
 			)
-			'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
+			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.ans'))'''
 			shutil.copy(
-				common.pjoin(prob['path'],'data',str(case)+'.ans'),
+				common.pjoin(prob.path,'data',str(case)+'.ans'),
 				common.pjoin('arbiter','data',prob['name']+str(idx)+'.ans')
 			)
 			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
@@ -200,7 +201,7 @@ def arbiter(conf = None,daynum = 0):
 				dirname = prob['name']+'-'+str(idx)+str(idx2)
 				codename = userdir + code
 				tmplist = prob['users'][userdir][code].split('/')
-				codedir = common.pjoin(prob['path'],*tmplist)
+				codedir = common.pjoin(prob.path,*tmplist)
 				os.makedirs(common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				shutil.copy(codedir,common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
@@ -209,36 +210,34 @@ def arbiter(conf = None,daynum = 0):
 
 def down(conf = None):
 	if not conf:
+		conf = common.conf
 		common.remkdir('down')
-		if common.conf['folder'] == 'problem':
-			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
-		if common.conf['folder'] == 'day':
-			down(common.days())
-		else:
-			for idx, day in enumerate(common.days(), start = 1):
-				down(day)
-			print('dos2unix')
-			common.run_r(common.dos2unix, common.pjoin('down'))
+	if conf.folder == 'problem':
+		raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
+	if conf.folder == 'contest':
+		for idx, day in enumerate(common.days(), start = 1):
+			os.makedirs(common.pjoin('down', day['name']))
+			down(day)
+		print('dos2unix')
+		common.run_r(common.dos2unix, common.pjoin('down'))
 		return
-	os.makedirs(common.pjoin('down',conf['name']))
-	for prob in common.probs(conf):
-		print(prob['name'])
-		os.makedirs(common.pjoin('down',conf['name'],prob['name']))
-		for idx, case in enumerate(prob['sample cases'], start = 1):
+	for prob in conf.probs():
+		print(prob.route)
+		os.makedirs(common.pjoin('down', prob.route))
+		for idx, case in enumerate(prob.sample_cases, start = 1):
 			shutil.copy(
-				common.pjoin(prob['path'],'down',str(case)+'.in'),
-				common.pjoin('down',conf['name'],prob['name'],prob['name']+str(idx)+'.in')
+				common.pjoin(prob.path,'down',str(case)+'.in'),
+				common.pjoin('down', prob.route, prob['name']+str(idx)+'.in')
 			)
 			shutil.copy(
-				common.pjoin(prob['path'],'down',str(case)+'.ans'),
-				common.pjoin('down',conf['name'],prob['name'],prob['name']+str(idx)+'.ans')
+				common.pjoin(prob.path,'down',str(case)+'.ans'),
+				common.pjoin('down', prob.route, prob['name']+str(idx)+'.ans')
 			)
 
 def arbiter_info(info,filename):
-	ofile = open(filename,'w')
-	for i in info:
-		print('%s%s'%(i,info[i]),file=ofile)
-	ofile.close()
+	with open(filename, 'wb') as f:
+		for k, v in info.items():
+			f.write(('%s%s\n' % (k, v)).encode('gbk'))
 
 def arbiter(conf = None,daynum = 0):
 	if not conf:
@@ -249,18 +248,17 @@ def arbiter(conf = None,daynum = 0):
 		os.makedirs(common.pjoin('arbiter','players'))
 		os.makedirs(common.pjoin('arbiter','result'))
 		os.makedirs(common.pjoin('arbiter','tmp'))
-		if common.conf['folder'] == 'problem':
+		if common.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
-		if common.conf['folder'] == 'day':
+		if common.conf.folder == 'day':
 			arbiter(common.days())
 		else:
-			for day in enumerate(common.days(), start = 1):
-				os.makedirs(common.pjoin('arbiter','players',day['route']))
-				os.makedirs(common.pjoin('arbiter','result',day['route']))
-				daynum += 1
+			for day_num, day in enumerate(common.days(), start = 1):
+				os.makedirs(common.pjoin('arbiter','players',day.route))
+				os.makedirs(common.pjoin('arbiter','result',day.route))
 				arbiter(day,daynum)
 			print('dos2unix')
-			os.system('dos2unix arbiter/data/* -q')
+			common.run_r(common.dos2unix, common.pjoin('arbiter', 'data'))
 			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))
 			cfg = {}
 			cfg['NAME='] = common.conf['name']
@@ -274,7 +272,7 @@ def arbiter(conf = None,daynum = 0):
 			arbiter_info(team,common.pjoin('arbiter','team.info'))
 		return
 	dayinfo = {}
-	dayinfo['NAME='] = '第'+str(daynum)+'场'+'——'+conf['name']
+	dayinfo['NAME='] = u'第'+str(daynum)+u'场'+u'——'+conf['name']
 	dayinfo['PLAYERDIR='] = ''
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
@@ -294,11 +292,11 @@ def arbiter(conf = None,daynum = 0):
 		if prob['type'] == 'program':
 			probinfo['TYPE='] = 'SOURCE'
 		else:
-			print('暂时只支持非交互式程序题')
+			print(u'暂时只支持非交互式程序题')
 		probinfo['LIMIT='] = int(prob['time limit'])
 		probinfo['MEMLIMITS='] = int(common.memory2bytes(prob['memory limit']))
-		probinfo['SAMPLES='] = len(prob['test cases'])
-		score_per_case = 100 / len(prob['test cases'])
+		probinfo['SAMPLES='] = len(prob.test_cases)
+		score_per_case = 100 / len(prob.test_cases)
 		probinfo['CLL=c@gcc'] = ' -o $o $i ' + prob['compile']['c']
 		probinfo['CLL=cpp@g++'] = ' -o $o $i ' + prob['compile']['cpp']
 		probinfo['CLL=pas@fpc'] = ' -o $o $i ' + prob['compile']['pas']
@@ -306,11 +304,11 @@ def arbiter(conf = None,daynum = 0):
 			raise Exception('Can\'t dump packed problem for arbiter.')
 		else:
 			casenum = 0
-			for case in prob['test cases']:
-				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.in'))'''
-				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
-				'''print('copyfile %s'%common.pjoin(prob['path'],'data',case+'.ans'))'''
-				shutil.copy(common.pjoin(prob['path'],'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
+			for case in prob.test_cases:
+				'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.in'))'''
+				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
+				'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.ans'))'''
+				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
 				casenum += 1
 				probinfo['MARK='+str(casenum)+'@'] = score_per_case
 			shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))

@@ -125,46 +125,50 @@ def tex(comp):
 	common.check_install('xelatex')
 	def render(conf, contest, path):
 		tex_problems = []
-		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
-		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
+		day_name = conf['name'] if conf.folder == 'day' else '测试'
+		probs = list(conf.probs())
 		if len(probs) == 0:
-			print('Nothing to do for %s' % conf['route'])
+			print('Nothing to do for %s' % conf.route)
 			return
 		for prob in probs:
-			print('rendering %s %s' % (comp, prob['route']))
+			print('rendering %s %s' % (comp, prob.route))
 			try:
 				common.copy(
-					os.path.join(prob['path'], 'statement'),
+					os.path.join(prob.path, 'statement'),
 					'zh-cn.md',
 					os.path.join('tmp', 'problem.md.jinja')
 				)
+				lang = 'zh-cn'
 			except:
 				try:
 					common.copy(
-						os.path.join(prob['path'], 'statement'),
+						os.path.join(prob.path, 'statement'),
 						'en.md',
 						os.path.join('tmp', 'problem.md.jinja')
 					)
+					lang = 'en'
 				except:
 					common.copy(
-						prob['path'],
+						prob.path,
 						'description.md',
 						os.path.join('tmp', 'problem.md.jinja')
 					)
+					lang = 'zh-cn'
 			context = {
 				'prob' : prob,
-				'day' : conf if conf['folder'] == 'day' else None,
+				'day' : conf if conf.folder == 'day' else None,
 				'contest' : contest,
 				'io_style' : io_style,
 				'comp' : comp,
 				'tools' : tools,
 				'common' : common,
 				'file_name' : lambda name : file_name(comp, prob, name),
-				'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
-				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
+				'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
+				'resource' : lambda name : os.path.join('..', prob.path, 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
 				'precautions' : prec,
-				'json' : json
+				'json' : json,
+				'lang' : lang
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(env.get_template('problem_base.md.jinja')
@@ -185,19 +189,17 @@ def tex(comp):
 			res = env.get_template('problem.tex.jinja').render(
 				context,
 				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
-				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
+				table = lambda name, options = {} : table(os.path.join(prob.path, 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
-				
-		print('rendering %s %s' % (comp, conf['route']))
-		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
-		#all_problem_statement = env.get_template('day_title.tex').render(
+
+		print('rendering %s %s' % (comp, conf.route))
 		context.pop('prob')
 		context.pop('file_name')
 		context.pop('down_file')
 		context.pop('resource')
 		context.pop('render')
-		context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
+		context['probs'] = list(conf.probs())
 		context['problems'] = tex_problems
 		all_problem_statement = env.get_template('%s.tex.jinja' % base_template).render(context)
 		try:
@@ -226,8 +228,8 @@ def tex(comp):
 		'json' : json
 	}
 	prec = None
-	if os.path.exists(common.pjoin(common.conf['path'], 'precautions', 'zh-cn.md')):
-		common.copy(common.pjoin(common.conf['path'], 'precautions'), 'zh-cn.md', 'tmp')
+	if os.path.exists(common.pjoin(common.conf.path, 'precautions', 'zh-cn.md')):
+		common.copy(common.pjoin(common.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
 		open(common.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(env.get_template('zh-cn.md').render(context, conf = common.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
@@ -235,41 +237,44 @@ def tex(comp):
 			os.path.join('tmp', 'precautions.tex')
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
-	if common.conf['folder'] != 'problem':
+	if common.conf.folder != 'problem':
 		for day in common.days():
 			result_path = os.path.join('statements', comp, day['name'] + '.pdf')
-			render(day, common.conf if common.conf['folder'] == 'contest' else None, result_path)
+			render(day, common.conf if common.conf.folder == 'contest' else None, result_path)
 	else:
 		result_path = os.path.join('statements', comp, common.conf['name'] + '.pdf')
 		render(common.conf, None, result_path)
 		
 def html(comp):
 	def render(prob):
-		print('rendering %s %s' % (comp, prob['route']))
-		path = os.path.join('statements', comp, prob['route'])
-		if os.path.exists(os.path.join(prob['path'], 'resources')):
+		print('rendering %s %s' % (comp, prob.route))
+		path = os.path.join('statements', comp, prob.route)
+		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
-			shutil.copytree(os.path.join(prob['path'], 'resources'), path)
+			shutil.copytree(os.path.join(prob.path, 'resources'), path)
 		try:
 			common.copy(
-				os.path.join(prob['path'], 'statement'),
+				os.path.join(prob.path, 'statement'),
 				'zh-cn.md',
 				os.path.join('tmp', 'problem.md.jinja')
 			)
+			lang = 'zh-cn'
 		except:
 			try:
 				common.copy(
-					os.path.join(prob['path'], 'statement'),
+					os.path.join(prob.path, 'statement'),
 					'en.md',
 					os.path.join('tmp', 'problem.md.jinja')
 				)
+				lang = 'en'
 			except:
 				common.copy(
-					prob['path'],
+					prob.path,
 					'description.md',
 					os.path.join('tmp', 'problem.md.jinja')
 				)
+				lang = 'zh-cn'
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
@@ -277,10 +282,11 @@ def html(comp):
 			'tools' : tools,
 			'common' : common,
 			'file_name' : lambda name : file_name(comp, prob, name),
-			'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
+			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
 			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
-			'json' : json
+			'json' : json,
+			'lang' : lang
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
 			.write(env.get_template('problem_base.md.jinja')
@@ -292,22 +298,22 @@ def html(comp):
 				.render(
 					context,
 					template = lambda temp_name, **context : env.get_template(temp_name + '.html.jinja').render(context),
-					table = lambda name, options={} : table(os.path.join(prob['path'], 'tables'), name, 'table.html.jinja', context, options)
+					table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
 		if common.start_file:
 			common.xopen_file(path + '.md')
-						
+
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
-	if common.conf['folder'] == 'contest':
+	if common.conf.folder == 'contest':
 		for day in common.days():
-			if not os.path.exists(common.pjoin('statements', comp, day['route'])):
-				os.makedirs(common.pjoin('statements', comp, day['route']))
+			if not os.path.exists(common.pjoin('statements', comp, day.route)):
+				os.makedirs(common.pjoin('statements', comp, day.route))
 	for prob in common.probs():
 		render(prob)
-	
+
 if __name__ == '__main__':
 	if common.init():
 		common.check_install('jinja2')
@@ -318,4 +324,3 @@ if __name__ == '__main__':
 		final()
 	else:
 		pass
-		#print('\t-l zh-cn,en: Output in multiple languages.')

@@ -160,13 +160,13 @@
 	\hline
 		测试点数目
 		{%- for prob in probs -%}
-			& {{ prob['test cases'].__len__() }}
+			& {{ prob.test_cases.__len__() }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
 		每个测试点分值
 		{%- for prob in probs -%}
-			& {{ 100 // prob['test cases'].__len__() if prob['test cases'].__len__() > 0 else '??' }}
+			& {{ 100 // prob.test_cases.__len__() if prob.test_cases.__len__() > 0 else '??' }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline

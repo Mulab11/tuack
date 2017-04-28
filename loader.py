@@ -110,7 +110,7 @@ def tsinsen_oj():
 	class InData(File):
 		last_in = None
 		def __init__(self):
-			tc = set(common.conf['test cases'])
+			tc = set(common.conf.test_cases)
 			for i in range(1, len(tc) + 2):
 				if str(i) not in tc:
 					name = i
@@ -123,7 +123,7 @@ def tsinsen_oj():
 		def __init__(self):
 			super().__init__('data', '%d.out' % InData.last_in)
 
-	if common.conf['folder'] != 'problem':
+	if common.conf.folder != 'problem':
 		common.fatal('Must load to a problem')
 	status = None
 	for line in open(common.args[0], 'rb'):

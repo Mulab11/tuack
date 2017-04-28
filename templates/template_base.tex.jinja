@@ -31,8 +31,8 @@
 	}
 {% endif %}
 
-{% if contest and 'place' in context %}
-	\def\place{ {{context.place['en']}} }
+{% if contest and 'place' in contest %}
+	\def\place{ {{contest.place['en']}} }
 {% endif %}
 
 {% if precautions %}
@@ -58,7 +58,7 @@
 }}}
 \chead{}
 \lfoot{}
-\cfoot{\parbox{\textwidth}{\centering \footnotesize 第~ \thepage{} 页 ~~~~ 共~ \pageref{LastPage} 页}}
+\cfoot{\parbox{\textwidth}{\centering \footnotesize 第 \thepage{} 页 ~~~~ 共 \pageref{LastPage} 页}}
 \rfoot{}
 
 {% endblock %}
