@@ -95,7 +95,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 
 def runner_mac(name, que, ml, input = None, output = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; (time ./%s %s %s) 2> timer' % (
+		'ulimit -v %d; (time -p ./%s %s %s) 2> timer' % (
 			common.memory2bytes(ml) // 1024,
 			name,
 			'< %s' % input if input else '',
@@ -107,8 +107,6 @@ def runner_mac(name, que, ml, input = None, output = None):
 	que.put(pro.pid)
 	ret = pro.wait()
 	que.put(ret)
-
-timer_re = re.compile('(\d+)m([0-9.]+)s')
 
 def run_mac(name, tl, ml, input = None, output = None):
 	que = Queue()
@@ -129,14 +127,8 @@ def run_mac(name, tl, ml, input = None, output = None):
 				try:
 					with open('timer') as f:
 						f.readline()
-						f.readline()
 						s = f.readline()
-						m = timer_re.match(s.split()[-1])
-						if m:
-							t = 60 * int(m.group(1)) + float(m.group(2))
-						else:
-							common.warning('Timer broken')
-							t = 0.
+						t = float(s.split()[-1])
 				except:
 					common.warning('Timer broken.')
 					t = 0.
