@@ -58,13 +58,15 @@ work_list = {
 
 secondary_dict = {}
 
-def init():
-	global env
-	common.mkdir('statements')
-	shutil.rmtree('tmp', ignore_errors = True)
+def get_template(fname):
 	env = jinja2.Environment(
 		loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_']
 	)
+	return env.get_template(fname)
+
+def init():
+	common.mkdir('statements')
+	shutil.rmtree('tmp', ignore_errors = True)
 	time.sleep(0.1)
 	shutil.copytree(os.path.join(common.path, 'templates'), 'tmp')
 	
@@ -81,7 +83,7 @@ def file_name(comp, prob, name):
 	
 def table(path, name, temp, context, options):
 	common.copy(path, name + '.json', os.path.join('tmp', 'table.json'))
-	res = env.get_template('table.json').render(context, options = options)
+	res = get_template('table.json').render(context, options = options)
 	try:
 		table = json.loads(res)
 	except Exception as e:
@@ -95,7 +97,7 @@ def table(path, name, temp, context, options):
 		for j in range(min(len(table[i]), len(table[i + 1]))):
 			if table[i + 1][j] == None:
 				cnt[i][j] += cnt[i + 1][j]
-	ret = env.get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
+	ret = get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
 	os.remove(os.path.join('tmp', 'table.json'))
 	return ret
 	
@@ -151,7 +153,7 @@ def tex(comp):
 				'precautions' : prec
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
-				.write(env.get_template('problem_base.md.jinja')
+				.write(get_template('problem_base.md.jinja')
 					.render(context)
 					.encode('utf-8')
 				)
@@ -166,16 +168,16 @@ def tex(comp):
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
 				tex.encode('utf-8')
 			)
-			res = env.get_template('problem.tex.jinja').render(
+			res = get_template('problem.tex.jinja').render(
 				context,
-				template = lambda temp_name, **context : env.get_template(temp_name + '.tex.jinja').render(context),
+				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja').render(context),
 				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
 			
 		print('rendering %s %s' % (comp, prob['route']))
 		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
-		#all_problem_statement = env.get_template('day_title.tex').render(
+		#all_problem_statement = get_template('day_title.tex').render(
 		context.pop('prob')
 		context.pop('file_name')
 		context.pop('down_file')
@@ -183,7 +185,7 @@ def tex(comp):
 		context.pop('render')
 		context['probs'] = conf['sub'] if conf['folder'] == 'day' else [conf]
 		context['problems'] = tex_problems
-		all_problem_statement = env.get_template('%s.tex.jinja' % base_template).render(context)
+		all_problem_statement = get_template('%s.tex.jinja' % base_template).render(context)
 		try:
 			open(os.path.join('tmp', 'problems.tex'), 'wb') \
 				.write(all_problem_statement.encode('utf-8'))
@@ -224,7 +226,7 @@ def html(comp):
 		print('rendering %s %s' % (comp, prob['route']))
 		path = os.path.join('statements', comp, prob['route'])
 		if os.path.exists(os.path.join(prob['path'], 'resources')):
-			shutil.rmtree(path, ignore_errors = True)
+			shutil.rmtree(path, ignore_errors = False)
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob['path'], 'resources'), path)
 		try:
@@ -251,15 +253,15 @@ def html(comp):
 			'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
-			.write(env.get_template('problem_base.md.jinja')
+			.write(get_template('problem_base.md.jinja')
 				.render(context)
 				.encode('utf-8')
 			)
 		open(path + '.md', 'wb') \
-			.write(env.get_template('problem.md')
+			.write(get_template('problem.md')
 				.render(
 					context,
-					template = lambda temp_name, **context : env.get_template(temp_name + '.html.jinja').render(context),
+					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja').render(context),
 					table = lambda name, options={} : table(os.path.join(prob['path'], 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
