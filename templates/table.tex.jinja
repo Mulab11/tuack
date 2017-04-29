@@ -1,4 +1,8 @@
 \begin{center}
+{
+{% if 'font size' in options %}
+	\fontsize{ {{options['font size']}} }{ {{options['font size'] * 1.2}} }\selectfont
+{% endif %}
 	{%- if 'width' in options and options['width'] -%}
 		{% set sum_width = tools.sum(options['width']) %}
 		\begin{tabularx}{\the \textwidth}
@@ -23,7 +27,7 @@
 			{% for j in range(table[i].__len__()) -%}
 				{%- if table[i][j] != None -%}
 					{%- if ifirst -%}
-						{{table[i][j]}}
+						{{ table[i][j] }}
 					{%- else -%}
 						\multirow{ {{- cnt[i][j] -}} }{*}{
 							{%- if 'width' in options and options['width'] -%}
@@ -57,4 +61,5 @@
 	{%- else -%}
 		\end{tabular}
 	{%- endif -%}
+}
 \end{center}

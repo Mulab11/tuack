@@ -16,7 +16,10 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
-import jinja2
+try:
+	import jinja2
+except:
+	pass
 import tools
 import uuid
 
@@ -120,10 +123,15 @@ def secondary(s, sp, work):
 		return ' {{ ' + s + ' }} '
 	
 def tex(comp):
+	common.check_install('pandoc')
+	common.check_install('xelatex')
 	def render(conf, contest, path):
 		tex_problems = []
 		day_name = conf['name'] if conf['folder'] == 'day' else '测试'
 		probs = conf['sub'] if conf['folder'] == 'day' else [conf]
+		if len(probs) == 0:
+			print('Nothing to do for %s' % conf['route'])
+			return
 		for prob in probs:
 			print('rendering %s %s' % (comp, prob['route']))
 			try:
@@ -133,11 +141,18 @@ def tex(comp):
 					os.path.join('tmp', 'problem.md.jinja')
 				)
 			except:
-				common.copy(
-					prob['path'],
-					'description.md',
-					os.path.join('tmp', 'problem.md.jinja')
-				)
+				try:
+					common.copy(
+						os.path.join(prob['path'], 'statement'),
+						'en.md',
+						os.path.join('tmp', 'problem.md.jinja')
+					)
+				except:
+					common.copy(
+						prob['path'],
+						'description.md',
+						os.path.join('tmp', 'problem.md.jinja')
+					)
 			context = {
 				'prob' : prob,
 				'day' : conf if conf['folder'] == 'day' else None,
@@ -150,7 +165,8 @@ def tex(comp):
 				'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob['path'], 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
-				'precautions' : prec
+				'precautions' : prec,
+				'json' : json
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(get_template('problem_base.md.jinja')
@@ -174,8 +190,8 @@ def tex(comp):
 				table = lambda name, options = {} : table(os.path.join(prob['path'], 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
-			
-		print('rendering %s %s' % (comp, prob['route']))
+				
+		print('rendering %s %s' % (comp, conf['route']))
 		#shutil.copy(os.path.join(day_name, 'day_title.tex'), 'tmp')
 		#all_problem_statement = get_template('day_title.tex').render(
 		context.pop('prob')
@@ -204,15 +220,23 @@ def tex(comp):
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
+	context = {
+		'io_style' : io_style,
+		'comp' : comp,
+		'tools' : tools,
+		'common' : common,
+		'json' : json
+	}
 	prec = None
-	if os.path.exists(os.path.join('precautions', 'zh-cn.md')):
-		common.copy('precautions', 'zh-cn.md', 'tmp')
+	if os.path.exists(common.pjoin(common.conf['path'], 'precautions', 'zh-cn.md')):
+		common.copy(common.pjoin(common.conf['path'], 'precautions'), 'zh-cn.md', 'tmp')
+		open(common.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(env.get_template('zh-cn.md').render(context, conf = common.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
-			os.path.join('tmp', 'zh-cn.md'),
+			os.path.join('tmp', 'precautions.md'),
 			os.path.join('tmp', 'precautions.tex')
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
-	#shutil.copy(os.path.join('title.tex'), 'tmp')
 	if common.conf['folder'] != 'problem':
 		for day in common.days():
 			result_path = os.path.join('statements', comp, day['name'] + '.pdf')
@@ -236,11 +260,18 @@ def html(comp):
 				os.path.join('tmp', 'problem.md.jinja')
 			)
 		except:
-			common.copy(
-				prob['path'],
-				'description.md',
-				os.path.join('tmp', 'problem.md.jinja')
-			)
+			try:
+				common.copy(
+					os.path.join(prob['path'], 'statement'),
+					'en.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
+			except:
+				common.copy(
+					prob['path'],
+					'description.md',
+					os.path.join('tmp', 'problem.md.jinja')
+				)
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
@@ -250,7 +281,8 @@ def html(comp):
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob['path'], 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
-			'render' : lambda s, sp = None : secondary(s, sp, 'uoj')
+			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
+			'json' : json
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
 			.write(get_template('problem_base.md.jinja')
@@ -280,6 +312,7 @@ def html(comp):
 	
 if __name__ == '__main__':
 	if common.init():
+		common.check_install('jinja2')
 		common.infom('Rendering starts at %s.\n' % str(datetime.datetime.now()))
 		init()
 		for common.work in common.works:

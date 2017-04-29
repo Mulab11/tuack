@@ -64,14 +64,16 @@ def js_hn(num):
 	'''
 	适合阅读的数，json版本
 	'''
-	return hn(num).replace('\\', '\\\\')
+	return json.dumps(hn(num))[1:-1]
 
 def to_time(dttm):
 	return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S%z')
 	
 def time_range(start, end, year = '-', month = '-', day = ''):
-	st = datetime.strptime(start, '%Y-%m-%d %H:%M:%S%z')
-	ed = datetime.strptime(end, '%Y-%m-%d %H:%M:%S%z')
+	st = datetime.strptime(start[:-5], '%Y-%m-%d %H:%M:%S')
+	ed = datetime.strptime(end[:-5], '%Y-%m-%d %H:%M:%S')
+	#st = datetime.strptime(start, '%Y-%m-%d %H:%M:%S%z')	#python2 兼容性不好，暂时不用时区了
+	#ed = datetime.strptime(end, '%Y-%m-%d %H:%M:%S%z')
 	ret = st.strftime('%Y%%sQAQ%m%%sQAQ%d%%s %H:%M').replace('QAQ0', '').replace('QAQ', '') % (year, month, day)
 	if st.second:
 		ret += ':%02d' % st.second
@@ -90,3 +92,7 @@ def time_range(start, end, year = '-', month = '-', day = ''):
 	if ed.second:
 		ret += ':%02d' % ed.second
 	return ret
+
+def json_dumps_twice(s):
+	return json.dumps(json.dumps(s))
+	

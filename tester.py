@@ -69,7 +69,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 	que = Queue()
 	pro = Process(target = runner_linux, args = (name, que, ml, input, output))
 	pro.start()
-	pro.join(tl * time_multiplier)
+	pro.join(tl * common.time_multiplier)
 	if que.qsize() == 0:
 		fatal('Runner broken.')
 	elif que.qsize() == 1:
@@ -132,8 +132,14 @@ def test(prob):
 		('down', i) for i in prob['sample cases']
 	]
 	for path, i in all_cases:
-		print('Case %s:%s' % (path, str(i)), end = '\r')
+		print('Case %s:%s  ' % (path, str(i)), end = '\r')
 		shutil.copy(common.pjoin(prob['path'], path, str(i) + '.in'), common.pjoin('tmp', 'in'))
+		shutil.copy(common.pjoin(prob['path'], path, str(i) + '.ans'), common.pjoin('tmp', 'ans'))
+		for fname in ('in', 'ans'):
+			if common.system == 'Windows':
+				common.unix2dos(common.pjoin('tmp', fname))
+			else:
+				common.dos2unix(common.pjoin('tmp', fname))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
 			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
@@ -155,9 +161,9 @@ def test(prob):
 				shutil.copy(common.pjoin('bin', prob['route']), common.pjoin('tmp', 'chk' + common.elf_suffix))
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
 					common.pjoin('tmp', 'chk' + common.elf_suffix),
-					common.pjoin(prob['path'], path, str(i) + '.in'),
+					common.pjoin('tmp', 'in'),
 					common.pjoin('tmp', 'out'),
-					common.pjoin(prob['path'], path, str(i) + '.ans')
+					common.pjoin('tmp', 'ans')
 				))
 				try:
 					arbiter_out = ('/' if common.system != 'Windows' else '') + 'tmp/_eval.score'
@@ -175,7 +181,7 @@ def test(prob):
 			else:
 				ret = os.system('%s %s %s > log' % (
 					common.diff_tool,
-					common.pjoin(prob['path'], path, str(i) + '.ans'),
+					common.pjoin('tmp', 'ans'),
 					common.pjoin('tmp', 'out')
 				))
 				if ret == 0:
@@ -220,11 +226,12 @@ def test_problem(prob):
 		common.error('No `users` in conf.json of problem `%s`, try to use `python -m load users`.')
 		return
 	with open(common.pjoin('result', prob['route']) + '.csv', 'w') as fres:
-		fres.write('%s,%s%s,summary,sample\n' % (
+		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
-			','.join(map(str, prob['test cases'])),
+			','.join(prob['test cases']),
 			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob['data'])) \
-				if 'packed' in prob and prob['packed'] else ''
+				if 'packed' in prob and prob['packed'] else '',
+			','.join(prob['sample cases'])
 		))
 		for user, algos in prob['users'].items():
 			if (not prob['all'] and not common.any_prefix(common.rjoin(prob['route'], user))):
@@ -248,7 +255,9 @@ def test_problem(prob):
 						pass
 				tc = len(prob['test cases'])
 				if 'packed' in prob and prob['packed']:
-					score_map = {prob['test cases'][i] : i for i in range(tc)}
+					score_map = {}
+					for i in range(tc):
+						score_map[prob['test cases'][i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]

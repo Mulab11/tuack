@@ -72,33 +72,24 @@ def memory2bytes(st):
 	sp = st.split(' ')
 	un = (units[sp[1]] if len(sp) == 2 else 1)
 	return int(float(sp[0]) * un)
-	
-'''
-def set_default(prob, name):
-	if 'name' not in prob:
-		prob['name'] = name
-	if 'test cases' not in prob:
-		prob['test cases'] = sum((len(datum['cases']) for datum in prob['data']))
-	if 'packed' in prob and prob['packed']:
-		num_unscored = 0
-		total_score = 0.0
-		for datum in prob['data']:
-			if 'score' in datum:
-				total_score += datum['score']
-			else:
-				num_unscored += 1
-		if num_unscored == 0:
-			return
-		item_score = (100. - total_score) / num_unscored
-		for datum in prob['data']:
-			if 'score' not in datum:
-				datum['score'] = item_score
-'''
 
 pjoin = lambda *args : os.path.join(*args).rstrip('/').rstrip('\\')
 rjoin = lambda *args : '/'.join(args).strip('/')
 
+natsort_warned = None
+
 def set_default_problem(conf, path = None):
+	global natsort_warned
+	try:
+		if not natsort_warned:
+			check_install('natsort')
+		import natsort
+		sorter = lambda inp : natsort.natsorted(inp, alg = natsort.ns.IGNORECASE)
+	except:
+		if not natsort_warned:
+			print(u'【警告】natsort用于给测试点名称排序，不使用的话可能会出现10排在2前面的情况。')
+			natsort_warned = True
+		sorter = sorted
 	conf['all'] = True
 	if 'title' not in conf and 'cnname' in conf:
 		conf['title'] = {'zh-cn' : conf['cnname']}
@@ -108,7 +99,7 @@ def set_default_problem(conf, path = None):
 		tc = set()
 		for datum in conf['data']:
 			tc |= set(datum['cases'])
-		conf['test cases'] = sorted(map(str, list(tc)))
+		conf['test cases'] = sorter(map(str, list(tc)))
 	if 'samples' not in conf:
 		if 'sample count' in conf:
 			conf['samples'] = [{'cases' : list(range(1, conf['sample count'] + 1))}]
@@ -117,10 +108,7 @@ def set_default_problem(conf, path = None):
 	tc = set()
 	for datum in conf['samples']:
 		tc |= set(datum['cases'])
-	try:
-		conf['sample cases'] = sorted(list(tc))
-	except:
-		conf['sample cases'] = sorted(map(str, list(tc)))
+	conf['sample cases'] = sorter(map(str, list(tc)))
 	if 'name' not in conf:
 		conf['name'] = path
 	if 'packed' in conf and conf['packed']:
@@ -149,24 +137,6 @@ def set_default_contest(conf, path = None):
 	if 'name' not in conf:
 		conf['name'] = path
 	return conf
-	
-'''
-def load_problems():
-	problem_names = json.load(open('probs.json'))
-	probs = {}
-	for day, names in problem_names.items():
-		problems = []
-		for name in names:
-			try:
-				problem = json.loads(open(os.path.join(day, name, 'prob.json'), 'rb').read().decode('utf-8'))
-				set_default(problem, name)
-				problems.append(problem)
-			except Exception as e:
-				print('At %s/%s.' % (day, name))
-				raise e
-		probs[day] = problems
-	return probs
-'''
 
 def extend_merge(base, ext):
 	for key, val in ext.items():
@@ -338,13 +308,15 @@ def xopen_file(path):
 		subprocess.call(["xdg-open", path])
 	
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args, do_zip, do_encript
 	works = []
 	args = []
 	langs = ['zh-cn']
 	sub_set = None
 	start_file = True
 	do_pack = True
+	do_zip = False
+	do_encript = False
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -361,6 +333,11 @@ def deal_args():
 			start_file = False
 		elif sys.argv[i] == '-k':
 			do_pack = False
+		elif sys.argv[i] == '-z':
+			do_zip = True
+		elif sys.argv[i] == '-e':
+			do_zip = True
+			do_encript = True
 		elif sys.argv[i] == '-l':
 			i += 1
 			langs = set(sys.argv[i].split(','))
@@ -397,4 +374,143 @@ def init():
 		return False
 	conf = load_json()
 	#print(json.dumps(conf))
+	try:
+		check_install('git')
+		check_install('git_lfs')
+	except:
+		pass
 	return True
+
+def default_lang(item):
+	if 'zh-cn' in item:
+		return item['zh-cn']
+	elif 'en' in item:
+		return item['en']
+	elif len(item) > 1:
+		for val in item.values():
+			return val
+	else:
+		return 'Unknown'
+	
+def run_r(cmd, path):
+	for f in os.listdir(path):
+		cpath = pjoin(path, f)
+		if os.path.isfile(cpath):
+			cmd(cpath)
+		else:
+			run_r(cmd, cpath)
+
+def check_install(pack):
+	def check_import(pack, extra_info = '', pack_name = None):
+		try:
+			__import__(pack)
+		except Exception as e:
+			print(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
+			if system == 'Windows':
+				print(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
+			if system == 'Linux':
+				print(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
+			raise e
+	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
+	check_jinja2 = lambda : check_import('jinja2')
+	check_natsort = lambda : check_import('natsort')
+	def check_pandoc():
+		ret = os.system('pandoc -v')
+		if ret != 0:
+			print(u'格式转换工具pandoc没有安装。')
+			if system == 'Windows':
+				print(u'Windows用户去官方网站下载安装，安装好后把pandoc.exe所在路径添加到环境变量PATH中。')
+			if system == 'Linux':
+				print(u'Ubuntu下用 sudo apt install pandoc 安装。')
+			raise Exception('pandoc not found')
+	def check_xelatex():
+		ret = os.system('xelatex --version')
+		if ret != 0:
+			print(u'TeX渲染工具XeLaTeX没有安装。')
+			if system == 'Windows':
+				print(u'Windows下可以先安装MiKTeX，在首次运行的时候会再提示安装后续文件。')
+			if system == 'Linux':
+				print(u'Ubuntu下先用 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra 安装工具；')
+				print(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
+				print(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
+				print(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
+			raise Exception('xelatex not found')
+	def check_git():
+		ret = os.system('git --version')
+		if ret != 0:
+			print(u'版本管理工具git没有安装，如果工程用git维护则你的修改可能无法成功提交。')
+			print(u'一个可能的安装教程见这里：')
+			print(u'https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git')
+			if system == 'Windows':
+				print(u'Windows下有多种不同的git版本，大家可以多交流好用的版本。')
+			print(u'git入门可以参看这里：')
+			print(u'http://rogerdudler.github.io/git-guide/index.zh.html')
+			print(u'一般推荐用ssh方式克隆仓库，并用公私钥保证安全，添加密钥的方式一般仓库的git网页上能找到。')
+			raise Exception('git not found')
+	def check_git_lfs():
+		ret = os.system('git lfs')
+		if ret != 0:
+			print(u'因为有些评测数据比较大，所以一般要求用git lfs大文件系统（Large File System）管理评测数据（in/ans）')
+			print(u'一个可能的安装教程见这里：')
+			print(u'https://git-lfs.github.com/')
+			print(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
+			print(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
+			raise Exception('git lfs not found')
+	def get_sys_env():
+		return '$'.join([
+			os.environ[key]
+			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
+			if key in os.environ
+		])
+		
+	global tool_conf
+	try:
+		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+	except:
+		tool_conf = {}
+	sys_env = get_sys_env()
+	if sys_env not in tool_conf:
+		tool_conf[sys_env] = {}
+	if 'installed' not in tool_conf[sys_env]:
+		tool_conf[sys_env]['installed'] = {}
+	if pack in tool_conf[sys_env]['installed'] and tool_conf[sys_env]['installed'][pack]:
+		return True
+	eval('check_' + pack)()
+	tool_conf[sys_env]['installed'][pack] = True
+	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
+	return True
+
+def change_eol(path, eol):
+	import uuid
+	ufname = str(uuid.uuid4())
+	space_end = False
+	is_text = True
+	with open(ufname, 'wb') as f:
+		try:
+			for idx, line in enumerate(open(path, 'rb')):
+				line = line.rstrip(b'\r\n')
+				f.write(line + eol)
+				if not space_end and (line.endswith(b' ') or line.endswith(b'\t')):
+					print(u'【警告】文件`%s`第%d行末尾有空白符。' % (path, idx + 1))
+					space_end = True
+				for code in ['utf-8', 'gbk']:
+					try:
+						if '\0' in line.decode(code):
+							raise Exception('`\\0` in line')
+						break
+					except:
+						pass
+				else:
+					is_text = False
+					print(u'【信息】文件`%s`不是文本文件。' % path)
+					break
+		except:
+			is_test = False
+	if is_text:
+		os.remove(path)
+		os.rename(ufname, path)
+	else:
+		os.remove(ufname)
+
+unix2dos = lambda path : change_eol(path, b'\r\n')
+dos2unix = lambda path : change_eol(path, b'\n')

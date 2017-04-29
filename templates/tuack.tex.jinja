@@ -4,7 +4,7 @@
 
 \thispagestyle{Cover}
 
-\ifdefined \precautions		%%For NOIP
+\ifdefined \precautions
 
 	\begin{center}
 		\centerline{\erhao \bf \thetitle} \par
@@ -17,16 +17,18 @@
 		\ifdefined\theday
 			{\kai \erhao \theday \par}
 		\fi
-		\ifdefined\time
-			{\hei \xiaosan \time \par}
+		\ifdefined\thetime
+			{\hei \xiaosan \thetime \par}
 		\fi
 	\end{center}
 
-\else						%%For contests other than NOIP
+\else
 
 	\null
 	\begin{center}
-		\centerline{\yihao \bf \thetitle} \par
+		\ifdefined\thetitle
+			\centerline{\yihao \bf \thetitle} \par
+		\fi
 		\ifdefined\subtitle
 			{\yihao \hei \subtitle \par} \vskip 1em
 		\fi
@@ -36,8 +38,8 @@
 		\ifdefined\theday
 			{\kai \xiaoyi \theday \par} \vskip 1em 
 		\fi
-		\ifdefined\time
-			{\hei \sanhao \time \par}
+		\ifdefined\thetime
+			{\hei \sanhao \thetime \par}
 		\fi
 	\end{center}
 	\vskip 1em
@@ -58,7 +60,7 @@
 	\hline
 		题目名称
 		{%- for prob in probs -%}
-			& {{ prob['cnname'] }}
+			& {{ prob.title['zh-cn'] }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
