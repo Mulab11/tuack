@@ -86,15 +86,43 @@ def file_name(comp, prob, name):
 		return name
 	
 def table(path, name, temp, context, options):
-	log.info(u'渲染表格`%s`，参数%s' % (common.pjoin(path, name + '.json'), str(options)))
-	common.copy(path, name + '.json', os.path.join('tmp', 'table.json'))
-	res = get_template('table.json').render(context, options = options)
-	try:
-		table = json.loads(res)
-	except Exception as e:
-		open(os.path.join('tmp', 'table.tmp.json'), 'w').write(res)
-		log.info('You can find the json file with error in tmp/table.tmp.json')
-		raise e
+	for suf in ['.py', '.json']:
+		try:
+			common.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
+			log.info(u'渲染表格`%s`，参数%s' % (common.pjoin(path, name + suf), str(options)))
+			break
+		except common.NoFileException as e:
+			pass
+	else:
+		log.error(u'找不到表格`%s.*`' % common.pjoin(path, name))
+	if suf == '.json':
+		res = get_template('table.json').render(context, options = options)
+		try:
+			table = json.loads(res)
+		except Exception as e:
+			open(os.path.join('tmp', 'table.tmp.json'), 'w').write(res)
+			log.error(u'json文件错误`tmp/table.tmp.json`')
+			raise e
+		os.remove(os.path.join('tmp', 'table.json'))
+	elif suf == '.py':
+		def merge_ver(table):
+			ret = [row for row in table]
+			last = ret[-1]
+			for i in range(len(table) - 2, 0, -1):
+				for j in range(len(last)):
+					if last[j] == ret[i][j]:
+						last[j] = None
+				last = ret[i]
+			return ret
+		code = 'def render(context, options, merge_ver):\n'
+		code += '\tglobal val\n'
+		code += '\tfor key, val in context.items():\n'
+		code += '\t\texec(\'%s = val\' % key, globals())\n'
+		for line in open(common.pjoin('tmp', 'table.py'), 'rb'):
+			code += '\t' + line.decode('utf-8').rstrip() + '\n'
+		namespace = {}
+		exec(code, namespace)
+		table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
 	for i in range(len(table) - 2, -1, -1):
@@ -103,7 +131,6 @@ def table(path, name, temp, context, options):
 			if table[i + 1][j] == None:
 				cnt[i][j] += cnt[i + 1][j]
 	ret = get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
-	os.remove(os.path.join('tmp', 'table.json'))
 	return ret
 	
 def secondary(s, sp, work):

@@ -501,9 +501,36 @@ ${{ tools.hn(1000000) }}$
 
 ### 表格
 
-表格当然可以使用原生的 markdown 或是上文提到的两轮渲染进行，但考虑到题目中表格的特殊性，我们提供一种方式用 json 描述表格。
-具体将 json 的模板放在 `tables` 目录下，用 `名称.json` 命名，下例为 `data.json`（同样，不含任何模板语法就是一个json），使用 null 表示和上一行合并单元格。
+表格当然可以使用原生的 markdown 或是上文提到的两轮渲染进行，但考虑到题目中表格的特殊性，我们提供两种方式让你更加方便地造表格：
+
+#### Python
+
+将 python 的代码放在 `tables` 目录下，用 `名称.py` 命名，下例为 `data.py`。
+
+```python
+ret = [["测试点","$x$","$n$","$\\sum n^k$","完全二叉","$T$"]]
+for datum in prob['data']:
+	args = datum['args']
+	row = [
+		','.join(map(str, datum['cases'])),
+		"$= %s$" % tools.hn(args[0]),
+		"$\\le %s$" % tools.hn(args[1]),
+		"$\\sum n^{%s} \\le %s$" % (tools.hn(args[2]), tools.hn(args[5])),
+		"Yes" if args[3] != 0 else "No",
+		"$\\le %s$" % tools.hn(args[4])
+	]
+	ret.append(row)
+common.log.debug(u'输出调试信息')
+return merge_ver(ret)
+```
+
+你需要将表格存成一个每个元素都是str的二维list，注意需要每行长度相同。在这个文件中你也可以使用各种功能，例如common.log，tools，prob，io_style，comp等。这个文件中有一个新加的函数 `merge_ver`，调用它可以将竖直方向上相同的格子合并。
+
+#### JSON
+
+将 json 的模板放在 `tables` 目录下，用 `名称.json` 命名，下例为 `data.json`（同样，不含任何模板语法就是一个json），使用 null 表示和上一行合并单元格。
 因此可以写成类似于下面的格式：
+
 ```js
 [	
 	["测试点", "$n, m$"]
@@ -552,4 +579,4 @@ ${{ tools.hn(1000000) }}$
 目前支持的参数包括：
 
 *    `width` ：宽度比例，应当是一个list，将会按这个比例分配表格每一列的宽度。对于tex如果没有这个参数将使用和内容等长的总宽度，可能会塞不满一行，也可能超过纸面的宽度；如果使用了这个参数，那么最宽宽度将使用纸面的最大宽度。
-*   `font size`：表格整体字号大小，用于实在写不下的情况。
+*    `font size`：表格整体字号大小，用于实在写不下的情况。
