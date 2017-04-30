@@ -128,7 +128,7 @@
 				{%- endif -%}
 			{%- else -%}
 				{%- if prob['type'] != 'output' -%}
-					标准输入
+					标准输出
 				{%- else -%}
 					{\ttfamily *.out }
 				{%- endif -%}
@@ -286,7 +286,7 @@
 	\clearpage
 
 	\begin{center}
-		\section{ {{probs[i].title['zh-cn']}}（{{probs[i]['name']}}） }
+		\section{ {{probs[i].tr('title')}}（{{probs[i]['name']}}） }
 	\end{center}
 	
 	{{ problems[i] }}

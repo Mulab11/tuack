@@ -134,8 +134,21 @@ class Configure(dict):
 			raise Exception('Can\'t translate this object to a Configure.')
 		self.folder = self['folder']
 		self.parent = None
+		self.lang = None
 		self.path = path
 		self.sub = []
+	
+	def tr(self, key):
+		val = self[key]
+		if type(val) != dict:
+			return val
+		if lang and lang in val:
+			return val[lang]
+		if self.lang and self.lang in val:
+			return val[self.lang]
+		for k, v in val.items():
+			return v
+		return None
 
 	def __contains__(self, key):
 		return super(Configure, self).__contains__(key + '+') or super(Configure, self).__contains__(key) or (self.parent and key in self.parent)
@@ -429,10 +442,11 @@ def xopen_file(path):
 		subprocess.call(["xdg-open", path])
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args, do_zip, do_encript
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript
 	works = []
 	args = []
-	langs = ['zh-cn']
+	langs = [None]
+	lang = None
 	sub_set = None
 	start_file = True
 	do_pack = True

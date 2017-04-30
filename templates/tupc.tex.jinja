@@ -1,0 +1,61 @@
+{% extends 'template_base.tex.jinja' %}
+
+{% block cover %}
+
+\thispagestyle{Cover}
+\begin{center}
+	\ifdefined\thetitle
+		{\hei \yihao \thetitle \par}
+	\fi
+	\ifdefined\subtitle
+		{\hei \yihao \subtitle \par}
+	\fi
+	\ifdefined\subsubtitle
+		{\hei \yihao \subsubtitle \par}
+	\fi \vskip 1em 
+	\ifdefined\theday
+		{\kai \chuhao \theday \par} \vskip 1em 
+	\fi
+	\ifdefined\thetime
+		{\hei \sanhao \thetime \par}
+	\fi
+\end{center}
+
+\setcounter{tocdepth}{1}
+
+\tableofcontents
+
+{% endblock %}
+
+{% block statements %}
+
+{% for i in range(problems.__len__()) %}
+	\clearpage
+	\begin{center}
+		\section{ 
+			{%- if 'number' in probs[i] -%}
+				{{ tools.chr(tools.ord('A') + probs[i].number) }}
+			{%- else -%}
+				{{ tools.chr(tools.ord('A') + i) }}
+			{%- endif -%} . ~
+			{{- probs[i].tr('title') -}} ~~/~~ 
+			{{- probs[i]['name'].capitalize() -}}
+		}
+	\end{center}
+	
+{% if probs[i].lang == 'zh-cn' %}
+	\renewcommand{\sqbr}[1]{【#1】}
+	\titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
+{% else %}
+	\renewcommand{\sqbr}[1]{ \textbf{ #1 } }
+	\titleformat{\subsection}{\hei\sanhao}{}{0em}{\sqbr}
+{% endif %}
+
+	
+	{{ problems[i] }}
+
+{% endfor %}
+
+{% endblock %}
+
+\end{document}

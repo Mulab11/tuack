@@ -1,0 +1,125 @@
+{% extends "problem.md.jinja" %}
+
+{% block input_file %}
+	{%- if io_style == 'stdio' -%}
+		从标准输入读入数据。
+	{%- elif io_style == 'fio' -%}
+		从文件 *{{ prob['name'] }}.in* 中读入数据。
+	{%- endif -%}
+{% endblock %}
+
+{% block output_file %}
+	{%- if io_style == 'stdio' -%}
+		输出到标准输出。
+	{%- elif io_style == 'fio' -%}
+		输出到文件 *{{ prob['name'] }}.out* 中。
+	{%- endif -%}
+{% endblock %}
+
+{%- block user_path -%}
+	{%- if comp == 'uoj' -%}
+		[下载目录](/download.php?type=problem&id={{ prob['uoj id'] }})
+	{%- elif comp == 'noi' -%}
+		选手目录
+	{%- else -%}
+		目录
+	{%- endif -%}
+{%- endblock -%}
+
+
+{% block sample_text -%}
+{% block title_sample %}
+{% if comp == 'uoj' -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}
+{%- endif %}
+{% endblock %}
+
+{% block sample_input_text %}
+{% if comp == 'uoj' -%}
+### 输入
+{%- else -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入
+{%- endif %}
+{% if 'show space' in vars %}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') + '"') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{% else %}
+```
+{{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
+```
+{% endif %}
+{% endblock %}
+{% block sample_output_text %}
+{% if comp == 'uoj' -%}
+### 输出
+{%- else -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出
+{%- endif %}
+{% if 'show space' in vars %}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') + '"') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{% else %}
+```
+{{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
+```
+{% endif %}
+{%- endblock -%}
+{%- endblock %}
+
+
+{% block title_sample_description -%}
+	{%- if comp == 'uoj' -%}
+### 说明
+	{%- else -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}说明
+	{%- endif -%}
+{%- endblock %}
+
+{% block sample_file -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}
+
+见{{ self.user_path() }}下的 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
+{%- endblock %}
+
+{% block title %}
+
+{% if comp == 'tupc' %}
+**时间限制：** {{ prob['time limit'] }} 秒
+
+**内存限制：** {{ prob['memory limit'] }}
+{% endif %}
+
+{%- if comp == 'tuoj' -%}
+{%- if prob['type'] != 'output' -%}
+**时间限制：** {{ prob['time limit'] }} 秒
+
+**内存限制：** {{ prob['memory limit'] }}
+
+{% endif -%}
+**相关文件：** {{ self.user_path() }}
+
+{% if prob['type'] == 'output' -%}
+**这是一道提交答案题**
+
+{% elif prob['type'] != 'program' -%}
+**这是一道交互题**
+
+{% endif -%}
+{%- elif comp == 'noi' -%}
+{%- elif comp == 'ccpc' -%}
+时间限制： {{ tools.float(prob['time limit']) }} 秒
+{%- elif comp == 'ccc' -%}
+{%- if prob['type'] != 'output' -%}
+Time limit: {{ tools.ceil(prob['time limit']) }} s
+
+Memory limit: {{ prob['memory limit'] }}
+
+{% endif -%}
+{% if prob['type'] == 'output' -%}
+This is an output-only problem. You should submit an output file for each given input file instead of source code.
+
+{% endif -%}
+{%- endif -%}
+{% endblock %}

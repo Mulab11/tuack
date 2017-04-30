@@ -26,7 +26,6 @@
 	{%- endif -%}
 {%- endblock -%}
 
-
 {% block sample_text -%}
 {% block title_sample %}
 {% if comp == 'uoj' -%}
@@ -37,10 +36,8 @@
 {% block sample_input_text %}
 {% if comp == 'uoj' -%}
 ### 输入
-{%- elif comp == 'noi' or comp == 'ccpc' -%}
+{%- else -%}
 ## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输入
-{% elif comp == 'ccc' %}
-## Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
@@ -55,10 +52,8 @@
 {% block sample_output_text %}
 {% if comp == 'uoj' -%}
 ### 输出
-{%- elif comp == 'noi' or comp == 'ccpc' -%}
+{%- else -%}
 ## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}输出
-{% elif comp == 'ccc' %}
-## Output for Input Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
@@ -76,24 +71,28 @@
 {% block title_sample_description -%}
 	{%- if comp == 'uoj' -%}
 ### 说明
-	{%- elif comp == 'noi' or comp == 'ccpc' -%}
-## 样例{{ vars['sample_id'] }}说明
-	{% elif comp == 'ccc' %}
-## Explanation of the Sample {{ vars['sample_id'] if 'sample_id' in vars else '' }}
+	{%- else -%}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}说明
 	{%- endif -%}
 {%- endblock %}
 
 {% block sample_file -%}
-## 样例{{vars['sample_id']}}
+## 样例{{ vars['sample_id'] if 'sample_id' in vars else '' }}
 
 见{{ self.user_path() }}下的 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in') }}* 与 *{{ file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}*。
 {%- endblock %}
 
 {% block title %}
 
+{% if comp == 'tupc' %}
+**Time Limit: ** {{ prob['time limit'] }} Second(s)
+
+**Memory Limit: ** {{ prob['memory limit'] }}
+{% endif %}
+
 {%- if comp == 'tuoj' -%}
 {%- if prob['type'] != 'output' -%}
-**时间限制：** {{ tools.ceil(prob['time limit']) }} 秒
+**时间限制：** {{ prob['time limit'] }} 秒
 
 **内存限制：** {{ prob['memory limit'] }}
 

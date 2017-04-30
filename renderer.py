@@ -28,34 +28,40 @@ work_class = {
 	'noi' : {'noi'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
-	'tuoj' : {'tuoj-tex', 'tuoj-html'},
-	'tuoj-tex' : {'tuoj-tex'},
-	'tuoj-html' : {'tuoj-html'},
+	'tupc' : {'tupc'},
+	'tuoj-pc' : {'tupc', 'tuoj'},
+	'tuoi' : {'tuoi'},
+	'tuoj-oi' : {'tuoi', 'tuoj'},
+	'tuoj' : {'tuoj'},
 	'ccc' : {'ccc-tex', 'ccc-html'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-html' : {'ccc-html'},
-	'tex' : {'noi', 'ccpc', 'tuoj-tex', 'ccc-tex'},
-	'html' : {'uoj', 'tuoj-html', 'ccc-html'}
+	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
+	'html' : {'uoj', 'tuoj', 'ccc-html'}
 }
 io_styles = {
 	'noi' : 'fio',
 	'ccpc' : 'stdio',
 	'uoj' : 'stdio',
 	'tuoj' : 'stdio',
-	'ccc' : 'stdio'
+	'ccc' : 'stdio',
+	'tuoi' : 'stdio',
+	'tupc' : 'stdio'
 }
 base_templates = {
-	'noi' : 'tuack',
-	'tuoj' : 'tuack',
+	'noi' : 'tuoi',
+	'tuoi' : 'tuoi',
+	'tupc' : 'tupc',
 	'ccpc' : 'ccpc',
 	'ccc' : 'ccc'
 }
 work_list = {
-	'noi' : lambda : tex('noi'),
 	'ccpc' : lambda : tex('ccpc'),
 	'uoj' : lambda : html('uoj'),
-	'tuoj-tex' : lambda : tex('tuoj'),
-	'tuoj-html' : lambda : html('tuoj'),
+	'tupc' : lambda : tex('tupc'),
+	'tuoi' : lambda : tex('tuoi'),
+	'noi' : lambda : tex('noi'),
+	'tuoj' : lambda : html('tuoj'),
 	'ccc-tex' :  lambda : tex('ccc'),
 	'ccc-html' : lambda : html('ccc')
 }
@@ -63,10 +69,9 @@ work_list = {
 secondary_dict = {}
 
 def get_template(fname):
-	env = jinja2.Environment(
+	return jinja2.Environment(
 		loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_']
-	)
-	return env.get_template(fname)
+	).get_template(fname)
 
 def init():
 	common.mkdir('statements')
@@ -78,7 +83,7 @@ def final():
 	shutil.rmtree('tmp', ignore_errors = True)
 
 def file_name(comp, prob, name):
-	if comp == 'noi':
+	if comp == 'oi':
 		return prob['name'] + '/' + name
 	elif comp == 'uoj':
 		return name
@@ -132,7 +137,7 @@ def table(path, name, temp, context, options):
 				cnt[i][j] += cnt[i + 1][j]
 	ret = get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
 	return ret
-	
+
 def secondary(s, sp, work):
 	if sp != None:
 		if type(sp) == str:
@@ -150,7 +155,7 @@ def secondary(s, sp, work):
 		return id
 	else:
 		return ' {{ ' + s + ' }} '
-	
+
 def tex(comp):
 	common.check_install('pandoc')
 	common.check_install('xelatex')
@@ -163,7 +168,7 @@ def tex(comp):
 			return
 		for prob in probs:
 			log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-			for source, lang in (
+			for source, prob.lang in (
 				(common.pjoin(prob.path, 'statement', 'zh-cn.md'), 'zh-cn'),
 				(common.pjoin(prob.path, 'statement', 'en.md'), 'en'),
 				(common.pjoin(prob.path, 'description.md'), 'zh-cn')
@@ -187,11 +192,10 @@ def tex(comp):
 				'resource' : lambda name : os.path.join('..', prob.path, 'resources', name).replace('\\', '/'),
 				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
 				'precautions' : prec,
-				'json' : json,
-				'lang' : lang
+				'json' : json
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
-				.write(get_template('problem_base.md.jinja')
+				.write(get_template('problem_%s.md.jinja' % prob.lang)
 					.render(context)
 					.encode('utf-8')
 				)
@@ -265,7 +269,7 @@ def tex(comp):
 	else:
 		result_path = os.path.join('statements', comp, common.conf['name'] + '.pdf')
 		render(common.conf, None, result_path)
-		
+
 def html(comp):
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
@@ -274,7 +278,7 @@ def html(comp):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob.path, 'resources'), path)
-		for source, lang in (
+		for source, prob.lang in (
 			(common.pjoin(prob.path, 'statement', 'zh-cn.md'), 'zh-cn'),
 			(common.pjoin(prob.path, 'statement', 'en.md'), 'en'),
 			(common.pjoin(prob.path, 'description.md'), 'zh-cn')
@@ -295,11 +299,10 @@ def html(comp):
 			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
 			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
-			'json' : json,
-			'lang' : lang
+			'json' : json
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
-			.write(get_template('problem_base.md.jinja')
+			.write(get_template('problem_%s.md.jinja' % prob.lang)
 				.render(context)
 				.encode('utf-8')
 			)
@@ -316,7 +319,6 @@ def html(comp):
 
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
-	base_template = base_templates[comp]
 	if common.conf.folder == 'contest':
 		for day in common.days():
 			if not os.path.exists(common.pjoin('statements', comp, day.route)):

@@ -127,7 +127,7 @@ python -m tester
 可以在根目录下运行下列命令生成对应的题面：
 
 ```bash
-python -m renderer noi,tuoj-html
+python -m renderer noi,tuoj
 ```
 
 表示生成noi和tuoj-html风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
@@ -136,8 +136,8 @@ python -m renderer noi,tuoj-html
 
 目前支持两类题面：
 
--   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoj-tex`，`noi`，`ccpc`，`ccc-tex`。
--   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj-html`，`ccc-html`，`uoj`（似乎这个现在有bug）。
+-   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoi`，`tupc`，`noi`，`ccpc`，`ccc-tex`。
+-   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj`，`ccc-html`，`uoj`（似乎这个现在有bug）。
 
 题面的书写后文将有详细说明。
 

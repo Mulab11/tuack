@@ -16,6 +16,10 @@
 	\def\subtitle{ {{contest.subtitle['zh-cn']}} }
 {% endif %}
 
+{% if contest and 'subsubtitle' in contest and 'zh-cn' in contest.subsubtitle %}
+	\def\subsubtitle{ {{contest.subsubtitle['zh-cn']}} }
+{% endif %}
+
 {% if contest and 'short title' in contest and 'zh-cn' in contest['short title'] %}
 	\def\engtitle{ {{contest['short title']['zh-cn']}} }
 {% endif %}
@@ -26,7 +30,7 @@
 
 {% if day and 'start time' in day and 'end time' in day %}
 	\def\thetime{
-		{% if comp == 'noi' or comp == 'ccpc' %}比赛{% else %}测试{% endif %}时间：
+		时间：
 		{{ tools.time_range(day['start time'], day['end time'], '年', '月', '日').replace('~', '$\\sim$').replace(' ', '~') }}
 	}
 {% endif %}
