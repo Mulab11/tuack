@@ -132,25 +132,17 @@ def tex(comp):
 			return
 		for prob in probs:
 			print('rendering %s %s' % (comp, prob['route']))
-			try:
-				common.copy(
-					os.path.join(prob['path'], 'statement'),
-					'zh-cn.md',
-					os.path.join('tmp', 'problem.md.jinja')
-				)
-			except:
-				try:
-					common.copy(
-						os.path.join(prob['path'], 'statement'),
-						'en.md',
-						os.path.join('tmp', 'problem.md.jinja')
-					)
-				except:
-					common.copy(
-						prob['path'],
-						'description.md',
-						os.path.join('tmp', 'problem.md.jinja')
-					)
+			for source in (
+				common.pjoin(prob['path'], 'statement', 'zh-cn.md'),
+				common.pjoin(prob['path'], 'statement', 'en.md'),
+				common.pjoin(prob['path'], 'description.md')
+			):
+				if os.path.exists(source):
+					break
+			else:
+				print(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
+				raise Exception('No md file found.')
+			shutil.copy(source, common.pjoin('tmp', 'problem.md.jinja'))
 			context = {
 				'prob' : prob,
 				'day' : conf if conf['folder'] == 'day' else None,
@@ -251,25 +243,17 @@ def html(comp):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob['path'], 'resources'), path)
-		try:
-			common.copy(
-				os.path.join(prob['path'], 'statement'),
-				'zh-cn.md',
-				os.path.join('tmp', 'problem.md.jinja')
-			)
-		except:
-			try:
-				common.copy(
-					os.path.join(prob['path'], 'statement'),
-					'en.md',
-					os.path.join('tmp', 'problem.md.jinja')
-				)
-			except:
-				common.copy(
-					prob['path'],
-					'description.md',
-					os.path.join('tmp', 'problem.md.jinja')
-				)
+		for source in (
+			common.pjoin(prob['path'], 'statement', 'zh-cn.md'),
+			common.pjoin(prob['path'], 'statement', 'en.md'),
+			common.pjoin(prob['path'], 'description.md')
+		):
+			if os.path.exists(source):
+				break
+		else:
+			print(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
+			raise Exception('No md file found.')
+		shutil.copy(source, common.pjoin('tmp', 'problem.md.jinja'))
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
