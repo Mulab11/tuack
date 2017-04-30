@@ -162,7 +162,7 @@ def tex(comp):
 			log.info('Nothing to do for %s' % conf.route)
 			return
 		for prob in probs:
-			log.info(u'渲染题面 %s %s' % (comp, prob.route))
+			log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
 			for source, lang in (
 				(common.pjoin(prob.path, 'statement', 'zh-cn.md'), 'zh-cn'),
 				(common.pjoin(prob.path, 'statement', 'en.md'), 'en'),
@@ -213,7 +213,7 @@ def tex(comp):
 			)
 			tex_problems.append(res)
 				
-		log.info('rendering %s %s' % (comp, conf.route))
+		log.info(u'渲染比赛日题面 %s %s' % (comp, conf.route))
 		context.pop('prob')
 		context.pop('file_name')
 		context.pop('down_file')
@@ -268,7 +268,7 @@ def tex(comp):
 		
 def html(comp):
 	def render(prob):
-		log.info('rendering %s %s' % (comp, prob.route))
+		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
 		path = os.path.join('statements', comp, prob.route)
 		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)

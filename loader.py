@@ -151,7 +151,7 @@ def tsinsen_oj():
 work_list = {
 	'tsinsen-oj' : tsinsen_oj
 }
-	
+
 if __name__ == '__main__':
 	if common.init() and len(common.args) != 0:
 		for common.work in common.works:

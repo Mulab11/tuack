@@ -266,8 +266,16 @@ def packed_score(scores, times, reports, score_map, prob):
 	
 def test_problem(prob):
 	if 'users' not in prob:
-		log.error(u'题目`%s`的conf.json缺少`users`字段，使用`python -m loader users`搜索源代码。')
+		log.warning(u'题目`%s`缺少`users`字段，使用`python -m generator code`搜索源代码。' % prob.route)
 		return
+	if 'data' not in prob or len(prob.test_cases) == 0:
+		log.warning(u'题目`%s`缺少`data`字段，使用`python -m generator data`在文件夹`%s`下搜索测试数据。' % (
+			prob.route, common.pjoin(prob.path, 'data')
+		))
+	if 'samples' not in prob or len(prob.sample_cases) == 0:
+		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m generator samples`在文件夹`%s`下搜索样例数据。' % (
+			prob.route, common.pjoin(prob.path, 'down')
+		))
 	with open(common.pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
@@ -300,7 +308,7 @@ def test_problem(prob):
 				if 'packed' in prob and prob['packed']:
 					score_map = {}
 					for i in range(tc):
-						score_map[prob['test cases'][i]] = i
+						score_map[prob.test_cases[i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]
@@ -335,8 +343,11 @@ def test_progs():
 		if not os.path.exists(path):
 			os.makedirs(path)
 	for prob in common.probs():
-		test_problem(prob)
-	
+		try:
+			test_problem(prob)
+		except FileNotFoundError as e:
+			log.error(e)
+
 if __name__ == '__main__':
 	if common.init():
 		common.work = 'test'
