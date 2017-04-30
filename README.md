@@ -589,3 +589,45 @@ return merge_ver(ret)
 	{% endfor %}
 ]
 ```
+
+## 一些问题的解决方案
+
+### 输出信息
+
+因为大家会用五花八门的环境，所以轮子难免会遇到各种问题。例如在Windows下的Git-Bash会出现编码问题：
+
+```
+[I]▒ű▒G:\oi_tools\tester.py▒▒▒▒▒▒·▒▒G:\oi_tools▒▒▒▒▒▒[]▒▒▒▒ʼ▒▒2017-05-01 01:36:14.047870▒▒
+[W]▒▒Ŀ``ȱ▒▒`users`▒ֶΣ▒ʹ▒▒`python -m generator code`▒▒▒▒Դ▒▒▒롣
+```
+
+为了尽可能让不同环境都好用，脚本会在oi_tools的目录下自动生成一个 `conf.json` ，会有类似于下面的东西：
+
+```
+"Windows_NT$...$C:/.../Git/usr/bin/bash$py30501f0": {
+  "bash_log": {
+    "encoding": "utf-8",
+    "format": "[%(levelname).2s]%(message)s",
+    "level": 40
+  },
+  "file_log": {
+    "mode": "w",
+    "path": "hehe.log"
+  },
+  "installed": {
+    "git": true,
+    "git_lfs": true,
+    "natsort": true
+  }
+}
+```
+
+上述问题可以通过把 `bash_log` 的 `encoding` 改成 `utf-8` 解决。此外 log 还支持一些其他功能，例如这套配置的意思是用2个（默认1个）字母表示信息的种类，只输出error和critical（等级不小于40），log文件采用w而不是a模式输出，输出文件名为hehe.log。关于logging的更多信息可以参看[这里](https://docs.python.org/2/library/logging.html)。
+
+上面还记了哪些工具是检测到已经安装的，必要时你可以手工修改。（例如你就不安装git又不喜欢它一直警告你）
+
+注意首行是区分当前所处环境的字段，包含操作系统版本、bash版本、python版本等。
+
+### pandoc的timer问题
+
+@吕欣

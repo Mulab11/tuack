@@ -44,32 +44,8 @@ copied_data = set()
 no_compiling = False
 path = os.path.dirname(os.path.realpath(__file__))
 
-'''
-def infom(info):
-	frep.write('[I]' + info + '\n')
-
-def warning(info):
-	frep.write('[W]' + info + '\n')
-
-def error(info):
-	frep.write('[E]' + info + '\n')
-
-def fatal(info):
-	frep.write('[E]' + info + '\n')
-	frep.close()
-	sys.exit(info)
-'''
-
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-file_log = logging.FileHandler('tuack.log')
-file_log.setLevel(logging.INFO)
-bash_log = logging.StreamHandler()
-bash_log.setLevel(logging.DEBUG)
-file_log.setFormatter(logging.Formatter('[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'))
-bash_log.setFormatter(logging.Formatter('[%(levelname).1s]%(message)s'))
-log.addHandler(file_log)
-log.addHandler(bash_log)
 
 class NoFileException(Exception):
 	pass
@@ -523,9 +499,43 @@ def deal_args():
 		i += 1
 	return True
 
+def custom_conf():
+	get_tool_conf()
+	c = env_conf['file_log'] if 'file_log' in env_conf else {}
+	file_log = logging.FileHandler(
+		c['path'] if 'path' in c else 'tuack.log',
+		mode = c['mode'] if 'mode' in c else 'a',
+		encoding = c['encoding'] if 'encoding' in c else None
+	)
+	file_log.setLevel(c['level'] if 'level' in c else logging.INFO)
+	file_log.setFormatter(logging.Formatter(
+		c['format'] if 'format' in c else '[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'
+	))
+	log.addHandler(file_log)
+	
+	c = env_conf['bash_log'] if 'bash_log' in env_conf else {}
+	if 'encoding' in c:
+		class MyStream(object):
+			def __init__(self, stream):
+				self.stream = stream
+			def write(self, s):
+				self.stream.buffer.write(s.encode(c['encoding']))
+				self.stream.flush()
+			def flush(self):
+				self.stream.flush()
+		bash_log = logging.StreamHandler(MyStream(sys.stdout))
+	else:
+		bash_log = logging.StreamHandler()
+	bash_log.setLevel(c['level'] if 'level' in c else logging.DEBUG)
+	bash_log.setFormatter(logging.Formatter(
+		c['format'] if 'format' in c else '[%(levelname).1s]%(message)s'
+	))
+	log.addHandler(bash_log)
+	
 def init():
 	import __main__
 	global conf
+	custom_conf()
 	if not deal_args():
 		return False
 	conf = load_json()
@@ -555,6 +565,24 @@ def run_r(cmd, path):
 			cmd(cpath)
 		else:
 			run_r(cmd, cpath)
+	
+def get_tool_conf():
+	def get_sys_env():
+		return '$'.join([
+			os.environ[key]
+			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
+			if key in os.environ
+		] + ['py%x' % sys.hexversion])
+	global env_conf
+	try:
+		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+	except:
+		tool_conf = {}
+	sys_env = get_sys_env()
+	if sys_env not in tool_conf:
+		tool_conf[sys_env] = {}
+	env_conf = tool_conf[sys_env]
+	return tool_conf
 
 def check_install(pack):
 	def check_import(pack, extra_info = '', pack_name = None):
@@ -614,27 +642,15 @@ def check_install(pack):
 			log.info(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
 			log.info(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
 			raise Exception('git lfs not found')
-	def get_sys_env():
-		return '$'.join([
-			os.environ[key]
-			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
-			if key in os.environ
-		] + ['py%x' % sys.hexversion])
 
-	global tool_conf
-	try:
-		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
-	except:
-		tool_conf = {}
-	sys_env = get_sys_env()
-	if sys_env not in tool_conf:
-		tool_conf[sys_env] = {}
-	if 'installed' not in tool_conf[sys_env]:
-		tool_conf[sys_env]['installed'] = {}
-	if pack in tool_conf[sys_env]['installed'] and tool_conf[sys_env]['installed'][pack]:
+	tool_conf = get_tool_conf()
+	if 'installed' not in env_conf:
+		env_conf['installed'] = {}
+	if pack in env_conf['installed'] and env_conf['installed'][pack]:
 		return True
 	eval('check_' + pack)()
-	tool_conf[sys_env]['installed'][pack] = True
+	env_conf['installed'][pack] = True
+	
 	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 
