@@ -147,4 +147,15 @@ if __name__ == '__main__':
 		for common.work in common.works:
 			work_list[common.work]()
 	else:
-		pass
+		log.info(u'这个工具用于快速建立一道题目。')
+		log.info(u'支持的工作：')
+		log.info(u'  contest  在当前目录下生成一场比赛，不支持参数。')
+		log.info(u'  day      无参数表示在当前目录下生成一个比赛日，比赛日可以是独立的工程；')
+		log.info(u'           有参数表示在当前比赛下依次生成名叫参数1，参数2，…的比赛日，')
+		log.info(u'           有参数必须保证当前目录是比赛。')
+		log.info(u'  problem  无参数表示在当前目录下生成一道题目，题目可以是独立的工程；')
+		log.info(u'           有参数表示在当前比赛日下依次生成名叫参数1，参数2，…的题目，')
+		log.info(u'           有参数必须保证当前目录是比赛日。')
+		log.info(u'  data     在所有题目工程的data文件夹中搜索数据并添加到配置文件。')
+		log.info(u'  samples  在所有题目工程的down文件夹中搜索样例并添加到配置文件。')
+		log.info(u'  code     在所有题目工程的非数据文件夹中搜索源代码并添加到配置文件。')

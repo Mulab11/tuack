@@ -128,19 +128,19 @@ def tsinsen_oj():
 		common.fatal('Must load to a problem')
 	status = None
 	for line in open(common.args[0], 'rb'):
-		if not status:			# É¶¶¼Ã»ÓĞ
+		if not status:			# å•¥éƒ½æ²¡æœ‰
 			try:
 				buffer = eval(line.decode('utf-8').strip()[:-1])()
 			except Exception as e:
 				common.warning(str(e))
 				buffer = Base()
 			status = True
-		elif status == True:	# ¶Áµ½ÁËµÈºÅµÄĞĞ£¬»¹Ã»¶Áµ½±ê¼Ç¿ªÊ¼µÄĞĞ
+		elif status == True:	# è¯»åˆ°äº†ç­‰å·çš„è¡Œï¼Œè¿˜æ²¡è¯»åˆ°æ ‡è®°å¼€å§‹çš„è¡Œ
 			status = line
-		elif status == line:	# ¶Áµ½ÁË±ê¼Ç½áÊøµÄĞĞ
+		elif status == line:	# è¯»åˆ°äº†æ ‡è®°ç»“æŸçš„è¡Œ
 			buffer.close()
 			status = None
-		else:					# ¶Áµ½ÁË±ê¼Ç¿ªÊ¼µÄĞĞ£¬»¹Ã»¶Áµ½±ê¼Ç½áÊøµÄĞĞ
+		else:					# è¯»åˆ°äº†æ ‡è®°å¼€å§‹çš„è¡Œï¼Œè¿˜æ²¡è¯»åˆ°æ ‡è®°ç»“æŸçš„è¡Œ
 			buffer.write(line)
 	if len(new_tc) > 0:
 		if 'data' not in common.conf:
@@ -157,4 +157,6 @@ if __name__ == '__main__':
 		for common.work in common.works:
 			work_list[common.work]()
 	else:
-		pass
+		log.info(u'è¿™ä¸ªå·¥å…·ç”¨äºå¯¼å…¥å…¶ä»–ç±»å‹çš„å·¥ç¨‹ï¼Œå‚æ•°1å¿…é¡»æ˜¯æ¥æºè·¯å¾„ã€‚')
+		log.info(u'æ”¯æŒçš„å·¥ä½œï¼š%s' % ','.join(work_list.keys()))
+

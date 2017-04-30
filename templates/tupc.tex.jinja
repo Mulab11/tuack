@@ -43,7 +43,7 @@
 		}
 	\end{center}
 	
-{% if probs[i].lang == 'zh-cn' %}
+{% if probs[i].lang() == 'zh-cn' %}
 	\renewcommand{\sqbr}[1]{【#1】}
 	\titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
 {% else %}

@@ -132,6 +132,8 @@ python -m renderer noi,tuoj
 
 表示生成noi和tuoj-html风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
 
+如果要生成特定语言的题面，使用 `-l` 加上用逗号隔开的多种语言，例如 `-l zh-cn,en`。
+
 生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`），没有安装的话运行时会提示安装方式。
 
 目前支持两类题面：
@@ -295,7 +297,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 ```js
 {
 	"folder" : "problem",
-  	"type" : "program",			//program传统，output提交答案，alternately交互
+  	"type" : "program",			//program传统，output提交答案，alternating交互
 	"name" : "excellent",		//建议加上题目名称，没有的话默认是文件夹名字
 	"title" : {					//现在标题要区分语言，原来的中文名称cnname停用
 		"zh-cn" : "优秀的拆分"
@@ -441,10 +443,16 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 ### 外部变量和小工具
 
-通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的中文名，可以用下列写法（两种方法等价）：
+通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的名称，可以用下列写法（两种方法等价）：
 ```
-{{ prob['title']['zh-cn'] }}
-{{ prob.cnname['zh-cn'] }}
+{{ prob['name'] }}
+{{ prob.name }}
+```
+
+对于有多种语言的变量，可以用这样的方式访问（会根据具体的语言选择合适的值）：
+
+```
+{{ prob.tr('title') }}
 ```
 
 获取当前的渲染环境，可以用变量 `comp`（会被赋值为 `noi`、`uoj` 等），输入输出方式用变量 `io_style`（会被赋值为 `fio`、`stdio` 等）。

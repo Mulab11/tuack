@@ -134,9 +134,12 @@ class Configure(dict):
 			raise Exception('Can\'t translate this object to a Configure.')
 		self.folder = self['folder']
 		self.parent = None
-		self.lang = None
+		self.language = None
 		self.path = path
 		self.sub = []
+		
+	def lang(self):
+		return self.language
 	
 	def tr(self, key):
 		val = self[key]
@@ -144,8 +147,8 @@ class Configure(dict):
 			return val
 		if lang and lang in val:
 			return val[lang]
-		if self.lang and self.lang in val:
-			return val[self.lang]
+		if self.lang() and self.lang() in val:
+			return val[self.lang()]
 		for k, v in val.items():
 			return v
 		return None
@@ -245,6 +248,28 @@ class Datum(dict):
 		return Memory(self['memory limit']) if 'memory limit' in self else self.prob.ml()
 
 class Problem(Configure):
+	def statement(self, cur_lang = None):
+		if not cur_lang and lang:
+			cur_lang = lang
+		if cur_lang:
+			source = pjoin(self.path, 'statement', cur_lang + '.md')
+			if os.path.exists(source):
+				self.language = cur_lang
+				return source
+		for source, self.language in (
+			(pjoin(self.path, 'statement', 'zh-cn.md'), 'zh-cn'),
+			(pjoin(self.path, 'statement', 'en.md'), 'en'),
+			(pjoin(self.path, 'description.md'), None)
+		):
+			if os.path.exists(source):
+				return source
+		raise NoFileException('No md file found.')
+	def lang(self):
+		try:
+			self.statement()
+			return self.language
+		except NoFileException as e:
+			return None
 	def __init__(self, *args):
 		super(Problem, self).__init__(*args)
 	def set_default(self, path = None):
@@ -477,10 +502,18 @@ def deal_args():
 			i += 1
 			langs = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
-			print('Options:')
-			print('\t-i PATH: Specify a path to work. Otherwise, use current path.')
-			print('\t-s: Do not open result files when finished.')
-			print('\t-p day0/sleep,day2: Only do those work for day0/sleep and day2.')
+			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
+			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
+			log.info(u'只有有逗号的项目可以用逗号获得多个结果，逗号前后不能有空白符。')
+			log.info(u'这套工具的大多数脚本都可以在比赛、比赛日和题目目录下运行。')
+			log.info(u'选项：')
+			log.info(u'  -i PATH             指定PATH作为工作路径，否则使用当前路径。')
+			log.info(u'  -s                  对于有输出的文件的操作，输出完以后不自动打开文件。')
+			log.info(u'  -p day0/sleep,day2  只对day0/sleep和day2进行本次操作；此路径是基于当前文件夹的，')
+			log.info(u'                      例如：在比赛日目录如day1下，则可以直接指定题目如exam；')
+			log.info(u'                      对于tester，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
+			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
+			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
 			return False
 		else:
 			if len(works) == 0:
@@ -537,6 +570,7 @@ def check_install(pack):
 	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
 	check_jinja2 = lambda : check_import('jinja2')
 	check_natsort = lambda : check_import('natsort')
+	check_gettext = lambda : check_import('gettext')
 	def check_pandoc():
 		ret = os.system('pandoc -v')
 		if ret != 0:

@@ -1,37 +1,39 @@
 \documentclass{tuack}
 
+\def\thecontent { {{_('Content')}} }
+
 {% block base %}{% endblock %}
 
 \begin{document}
 
-{% if contest and 'title' in contest and 'zh-cn' in contest.title %}
-	\title{ {{contest.title['zh-cn']}} }
-	\def\mytitle{ {{contest.title['zh-cn']}} }
+{% if contest and 'title' in contest %}
+	\title{ {{contest.tr('title')}} }
+	\def\mytitle{ {{contest.tr('title')}} }
 {% else %}
 	\title{ 预览输出 }
 	\def\mytitle{ 预览输出 }
 {% endif %}
 
-{% if contest and 'subtitle' in contest and 'zh-cn' in contest.subtitle %}
-	\def\subtitle{ {{contest.subtitle['zh-cn']}} }
+{% if contest and 'subtitle' in contest %}
+	\def\subtitle{ {{contest.tr('subtitle')}} }
 {% endif %}
 
-{% if contest and 'subsubtitle' in contest and 'zh-cn' in contest.subsubtitle %}
-	\def\subsubtitle{ {{contest.subsubtitle['zh-cn']}} }
+{% if contest and 'subsubtitle' in contest %}
+	\def\subsubtitle{ {{contest.tr('subsubtitle')}} }
 {% endif %}
 
-{% if contest and 'short title' in contest and 'zh-cn' in contest['short title'] %}
-	\def\engtitle{ {{contest['short title']['zh-cn']}} }
+{% if contest and 'short title' in contest %}
+	\def\engtitle{ {{contest.tr('short title')}} }
 {% endif %}
 
-{% if day and 'title' in day and 'zh-cn' in day.title %}
-	\def\theday{ {{day.title['zh-cn']}} }
+{% if day and 'title' in day %}
+	\def\theday{ {{day.tr('title')}} }
 {% endif %}
 
 {% if day and 'start time' in day and 'end time' in day %}
 	\def\thetime{
-		时间：
-		{{ tools.time_range(day['start time'], day['end time'], '年', '月', '日').replace('~', '$\\sim$').replace(' ', '~') }}
+		{{ _('Time:') }}
+		{{ tools.time_range(day['start time'], day['end time'], _('year'), _('month'), _('day')).replace('~', '$\\sim$').replace(' ', '~') }}
 	}
 {% endif %}
 
@@ -57,12 +59,19 @@
 \lhead{\parbox{\textwidth}{\textnormal{
 	\footnotesize \mytitle
 	\ifdefined\subtitle
-		\subtitle
+		\!\subtitle
 	\fi
 }}}
 \chead{}
 \lfoot{}
-\cfoot{\parbox{\textwidth}{\centering \footnotesize 第 \thepage{} 页 ~~~~ 共 \pageref{LastPage} 页}}
+\cfoot{\parbox{\textwidth}{
+	\centering \footnotesize {
+{% if not common.lang or common.lang == 'zh-cn' -%}
+	第 \thepage{} 页 ~~~~ 共 \pageref{LastPage} 页
+{%- elif common.lang == 'en' -%}
+	page \thepage{} / \pageref{LastPage}
+{%- endif -%}
+} } }
 \rfoot{}
 
 {% endblock %}

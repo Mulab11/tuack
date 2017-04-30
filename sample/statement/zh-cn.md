@@ -1,8 +1,18 @@
 {{ self.title() }}
 
-## 问题描述
+## {{ _('Backgroud') }}
+
+这样的子标题是带国际化的，如果你的标签不是常用的标签，并且不需要国际化的话，你可以直接写成这样：
+
+```
+## 题目背景
+```
+
+If you want an english statement file, just copy this file as `en.md` and replace any Chinese text into English.
 
 现在子标题都不加方括号 `【】` 了。
+
+## {{ _('Description') }}
 
 **要强调的东西**这么写。
 
@@ -43,7 +53,7 @@ int main(int argc, char** argv);
 
 可选的参数有 `html`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-html`，`tuoj-tex`，`tuoj-html`。
 
-## 输入格式
+## {{ _('Input Format') }}
 
 {{ self.input_file() }}
 
@@ -51,7 +61,7 @@ int main(int argc, char** argv);
 
 输入第一行包含一个正整数 $n$，保证 $n \le {{ tools.hn(prob.args['n']) }}$。←这是引用 `conf.json` 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `$10^9$`，`1,000,000,007`。
 
-## 输出格式
+## {{ _('Output Format') }}
 
 {{ self.output_file() }}
 
@@ -66,7 +76,11 @@ int main(int argc, char** argv);
 {% do vars.__setitem__('sample_id', 2) -%}
 {{ self.sample_file() }}
 
-## 子任务
+## {{ _('Hint') }}
+
+这里是一个非常温馨的提示。
+
+## {{ _('Subtasks') }}
 
 同样不建议用markdown原生的表格，使用下列方式渲染一个表格，其中表格存放在试题目录的 `tables` 子目录下。
 

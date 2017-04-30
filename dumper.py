@@ -328,4 +328,5 @@ if __name__ == '__main__':
 		for common.work in common.works:
 			work_list[common.work]()
 	else:
-		pass
+		log.info(u'这个工具用于导出成其他类型的工程。')
+		log.info(u'支持的工作：%s' % ','.join(work_list.keys()))

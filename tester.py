@@ -356,4 +356,4 @@ if __name__ == '__main__':
 			packer.test()
 		test_progs()
 	else:
-		pass
+		log.info(u'这是测试出题人数据和程序的测试器，测试器没有细分的工作。')

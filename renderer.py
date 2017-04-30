@@ -67,11 +67,29 @@ work_list = {
 }
 
 secondary_dict = {}
+env = None
 
-def get_template(fname):
-	return jinja2.Environment(
-		loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')), extensions=['jinja2.ext.do', 'jinja2.ext.with_']
-	).get_template(fname)
+def get_template(fname, lang = None):
+	global env
+	if common.lang:
+		lang = common.lang
+	if not lang:
+		lang = 'zh-cn'
+	if env == None or common.system == 'Darwin' or (lang and env['lang'] != lang):
+		env = {
+			'env' : jinja2.Environment(
+				loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')),
+				extensions = ['jinja2.ext.do', 'jinja2.ext.with_', 'jinja2.ext.i18n']
+			),
+			'lang' : lang
+		}
+		import gettext
+		try:
+			tra = gettext.translation('lang', os.getcwd() + '/tmp', [env['lang']])
+			env['env'].install_gettext_translations(tra)
+		except FileNotFoundError as e:
+			log.warning(u'没有%s这种语言的翻译表可用。' % lang)
+	return env['env'].get_template(fname)
 
 def init():
 	common.mkdir('statements')
@@ -101,7 +119,7 @@ def table(path, name, temp, context, options):
 	else:
 		log.error(u'找不到表格`%s.*`' % common.pjoin(path, name))
 	if suf == '.json':
-		res = get_template('table.json').render(context, options = options)
+		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
 			table = json.loads(res)
 		except Exception as e:
@@ -135,7 +153,7 @@ def table(path, name, temp, context, options):
 		for j in range(min(len(table[i]), len(table[i + 1]))):
 			if table[i + 1][j] == None:
 				cnt[i][j] += cnt[i + 1][j]
-	ret = get_template(temp).render(context, table = table, cnt = cnt, width = max_len, options = options)
+	ret = get_template(temp, context['prob'].lang()).render(context, table = table, cnt = cnt, width = max_len, options = options)
 	return ret
 
 def secondary(s, sp, work):
@@ -159,6 +177,7 @@ def secondary(s, sp, work):
 def tex(comp):
 	common.check_install('pandoc')
 	common.check_install('xelatex')
+	common.check_install('gettext')
 	def render(conf, contest, path):
 		tex_problems = []
 		day_name = conf['name'] if conf.folder == 'day' else '测试'
@@ -168,17 +187,11 @@ def tex(comp):
 			return
 		for prob in probs:
 			log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-			for source, prob.lang in (
-				(common.pjoin(prob.path, 'statement', 'zh-cn.md'), 'zh-cn'),
-				(common.pjoin(prob.path, 'statement', 'en.md'), 'en'),
-				(common.pjoin(prob.path, 'description.md'), 'zh-cn')
-			):
-				if os.path.exists(source):
-					break
-			else:
+			try:
+				shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
+			except common.NoFileException as e:
 				log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
-				raise common.NoFileException('No md file found.')
-			shutil.copy(source, common.pjoin('tmp', 'problem.md.jinja'))
+				continue
 			context = {
 				'prob' : prob,
 				'day' : conf if conf.folder == 'day' else None,
@@ -195,7 +208,7 @@ def tex(comp):
 				'json' : json
 			}
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
-				.write(get_template('problem_%s.md.jinja' % prob.lang)
+				.write(get_template('problem_base.md.jinja', prob.lang())
 					.render(context)
 					.encode('utf-8')
 				)
@@ -210,9 +223,9 @@ def tex(comp):
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
 				tex.encode('utf-8')
 			)
-			res = get_template('problem.tex.jinja').render(
+			res = get_template('problem.tex.jinja', prob.lang()).render(
 				context,
-				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja').render(context),
+				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', prob.lang()).render(context),
 				table = lambda name, options = {} : table(os.path.join(prob.path, 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
@@ -264,10 +277,10 @@ def tex(comp):
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 	if common.conf.folder != 'problem':
 		for day in common.days():
-			result_path = os.path.join('statements', comp, day['name'] + '.pdf')
+			result_path = os.path.join('statements', comp, day['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
 			render(day, common.conf if common.conf.folder == 'contest' else None, result_path)
 	else:
-		result_path = os.path.join('statements', comp, common.conf['name'] + '.pdf')
+		result_path = os.path.join('statements', comp, common.conf['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
 		render(common.conf, None, result_path)
 
 def html(comp):
@@ -278,17 +291,11 @@ def html(comp):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob.path, 'resources'), path)
-		for source, prob.lang in (
-			(common.pjoin(prob.path, 'statement', 'zh-cn.md'), 'zh-cn'),
-			(common.pjoin(prob.path, 'statement', 'en.md'), 'en'),
-			(common.pjoin(prob.path, 'description.md'), 'zh-cn')
-		):
-			if os.path.exists(source):
-				break
-		else:
+		try:
+			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
+		except common.NoFileException as e:
 			log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
-			raise common.NoFileException('No md file found.')
-		shutil.copy(source, common.pjoin('tmp', 'problem.md.jinja'))
+			return
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
@@ -302,20 +309,21 @@ def html(comp):
 			'json' : json
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
-			.write(get_template('problem_%s.md.jinja' % prob.lang)
+			.write(get_template('problem_base.md.jinja', prob.lang())
 				.render(context)
 				.encode('utf-8')
 			)
-		open(path + '.md', 'wb') \
-			.write(get_template('problem.md')
+		result_file = path + ('-' + common.lang if common.lang else '') + '.md'
+		open(result_file, 'wb') \
+			.write(get_template('problem.md', prob.lang())
 				.render(
 					context,
-					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja').render(context),
+					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
 					table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
 		if common.start_file:
-			common.xopen_file(path + '.md')
+			common.xopen_file(result_file)
 
 	common.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
@@ -331,7 +339,8 @@ if __name__ == '__main__':
 		common.check_install('jinja2')
 		init()
 		for common.work in common.works:
-			work_list[common.work]()
+			for common.lang in common.langs:
+				work_list[common.work]()
 		final()
 	else:
-		pass
+		log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
