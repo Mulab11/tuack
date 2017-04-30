@@ -93,10 +93,57 @@ def run_linux(name, tl, ml, input = None, output = None):
 			t = 0.
 	return ret, t
 
+def runner_mac(name, que, ml, input = None, output = None):
+	pro = subprocess.Popen(
+		'ulimit -v %d; (time -p ./%s %s %s) 2> timer' % (
+			common.memory2bytes(ml) // 1024,
+			name,
+			'< %s' % input if input else '',
+			'> %s' % output if output else '',
+		),
+		shell = True,
+		preexec_fn = os.setsid
+	)
+	que.put(pro.pid)
+	ret = pro.wait()
+	que.put(ret)
+
+def run_mac(name, tl, ml, input = None, output = None):
+	que = Queue()
+	pro = Process(target = runner_mac, args = (name, que, ml, input, output))
+	pro.start()
+	pro.join(tl * common.time_multiplier)
+	if que.empty():
+		common.fatal('Runner broken.')
+	else:
+		pid = que.get()
+		if que.empty():
+			ret = 'Time out.'
+			os.killpg(os.getpgid(pid), signal.SIGTERM)
+			t = 0.
+		else:
+			ret = que.get()
+			if ret == 0:
+				try:
+					with open('timer') as f:
+						f.readline()
+						s = f.readline()
+						t = float(s.split()[-1])
+				except:
+					common.warning('Timer broken.')
+					t = 0.
+				ret = None
+			else:
+				ret = 'Runtime error %d.' % ret
+				t = 0.
+	return ret, t
+
 if common.system == 'Linux':
 	run = run_linux
 elif common.system == 'Windows':
 	run = run_windows
+elif common.system == 'Darwin':
+	run = run_mac
 	
 def compile(prob):
 	for lang, args in prob['compile'].items():
@@ -275,9 +322,11 @@ def test_problem(prob):
 	if common.start_file:
 		if common.system == 'Windows':
 			os.startfile(common.pjoin('result', prob.route) + '.csv')
-		else:
+		if common.system == 'Linux':
 			subprocess.call(["xdg-open", common.pjoin('result', prob.route) + '.csv'])
-				
+		if common.system == 'Darwin':
+			subprocess.call(["open", common.pjoin('result', prob.route) + '.csv'])
+
 def test_progs():
 	if common.conf.folder != 'problem' and not os.path.exists('result'):
 		os.makedirs('result')
