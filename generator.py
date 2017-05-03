@@ -18,7 +18,9 @@ import platform
 import common
 from common import log
 
-def find_all_data(kind, folder, key):
+def find_all_data(kind, folder, key, conf = None):
+	if not conf:
+		conf = common.conf
 	def find_data(path = ''):
 		full_path = common.pjoin(prob.path, folder, path)
 		for f in os.listdir(full_path):
@@ -42,8 +44,8 @@ def find_all_data(kind, folder, key):
 			except Exception as e:
 				ret.append(i)
 		return ret
-	for prob in common.probs():
-		log.info(u'在题目`%s`下搜索%s数据。' % (key, prob.route))
+	for prob in conf.probs():
+		log.info(u'在题目`%s`下搜索%s数据。' % (prob.route, key))
 		new_data = set()
 		exist_data = set(map(str, prob.__getattribute__(key)))
 		find_data()
@@ -89,7 +91,7 @@ def find_all_code():
 				prob['users'].pop(f)
 		common.save_json(prob)
 
-def new_dir(folder):
+def new_dir(folder, args = None):
 	def copy(src, tgt = None):
 		if not tgt:
 			tgt = src
@@ -100,14 +102,16 @@ def new_dir(folder):
 				common.pjoin(path, tgt)
 			)
 
-	if len(common.args) == 0:
+	if not args:
+		args = common.args
+	if len(args) == 0:
 		dirs = ['.']
 	else:
 		if not common.conf:
 			log.error(u'当前文件夹下没有找到合法的`conf.json`文件。')
 			log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
 			return
-		dirs = common.args
+		dirs = args
 	for path in dirs:
 		if not os.path.exists(path):
 			os.makedirs(path)
@@ -125,17 +129,64 @@ def new_dir(folder):
 			conf['name'] = path
 			conf.path = path
 			common.save_json(conf)
-	if len(common.args) != 0:
-		common.conf['subdir'] = sorted(list(set(common.conf['subdir'] + common.args)))
+	if len(args) != 0:
+		common.conf['subdir'] = sorted(list(set(common.conf['subdir'] + args)))
 		common.save_json(common.conf)
 
+def upgrade():
+	if common.conf:	#是conf.json格式的老版本
+		def upgrade_r(conf):
+			def upgrade_None(conf):
+				log.info(u'将`%s`从None版本升级到0版本。' % conf.route)
+				conf['version'] = 0
+				if conf.folder == 'problem':
+					for folder, cases, key in [('data', 'test cases', 'data'), ('down', 'sample count', 'samples')]:
+						if cases in conf:
+							cnt = conf.pop(cases)
+							for i in range(1, cnt + 1):
+								for suf in ['.in', '.ans']:
+									try:
+										ff = common.pjoin(conf.path, folder, conf['name'] + str(i) + suf)
+										ft = common.pjoin(conf.path, folder, str(i) + suf)
+										os.rename(ff, ft)
+									except FileNotFoundError as e:
+										if os.path.exists(ft):
+											log.info('`%s`已经改名，跳过重命名。' % ft)
+										else:
+											log.error('`%s`和`%s`都找不到，可能你的文件命名错误。' % (ff, ft))
+							work_list[key](conf)
+			def upgrade_0(conf):
+				log.info(u'`%s`是最新版本。' % conf.route)
+			eval('upgrade_' + str(conf['version']))(conf)
+			for sub in conf.sub:
+				upgrade_r(sub)
+		upgrade_r(common.conf)
+		common.save_json(common.conf)
+	else:			#是prob(s).json格式的老版本
+		if not os.path.exists('probs.json'):
+			log.error(u'找不到`probs.json`。')
+			return
+		old_json = json.loads(open('probs.json', 'rb').read().decode('utf-8'))
+		new_dir('contest', [])
+		common.conf = common.load_json()
+		common.conf.pop('version')
+		new_dir('day', common.sorter()(old_json.keys()))
+		common.conf = common.load_json()
+		for day in common.conf.sub:
+			day.pop('version')
+			day['subdir'] += [prob for prob in old_json[day['name']]]
+		common.save_json(common.conf)
+		common.conf = common.load_json()
+		upgrade()
+
 work_list = {
-	'data' : lambda : find_all_data('data', 'data', 'test_cases'),
-	'samples' : lambda : find_all_data('samples', 'down', 'sample_cases'),
+	'data' : lambda conf = None: find_all_data('data', 'data', 'test_cases', conf),
+	'samples' : lambda conf = None: find_all_data('samples', 'down', 'sample_cases', conf),
 	'code' : find_all_code,
 	'contest' : lambda : new_dir('contest'),
 	'day' : lambda : new_dir('day'),
-	'problem' : lambda : new_dir('problem')
+	'problem' : lambda : new_dir('problem'),
+	'upgrade' : upgrade
 }
 
 if __name__ == '__main__':
@@ -150,6 +201,7 @@ if __name__ == '__main__':
 	else:
 		log.info(u'这个工具用于快速建立一道题目。')
 		log.info(u'支持的工作：')
+		log.info(u'  upgrade  升级老版本工程到现在版本的工程。')
 		log.info(u'  contest  在当前目录下生成一场比赛，不支持参数。')
 		log.info(u'  day      无参数表示在当前目录下生成一个比赛日，比赛日可以是独立的工程；')
 		log.info(u'           有参数表示在当前比赛下依次生成名叫参数1，参数2，…的比赛日，')

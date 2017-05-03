@@ -119,6 +119,7 @@ def table(path, name, temp, context, options):
 	else:
 		log.error(u'找不到表格`%s.*`' % common.pjoin(path, name))
 	if suf == '.json':
+		log.debug(context['prob']['data'])
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
 			table = json.loads(res)

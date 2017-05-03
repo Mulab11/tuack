@@ -253,7 +253,7 @@ class Problem(Configure):
 		super(Problem, self).set_default(path)
 		if 'title' not in self and 'cnname' in self:
 			self['title'] = {'zh-cn' : self.pop('cnname')}
-		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample cases', 'sample_cases', 'down')]:
+		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down')]:
 			tc = set()
 			if data in self:
 				for datum in self.__getattribute__(data)():
@@ -261,11 +261,12 @@ class Problem(Configure):
 			else:
 				self[data] = []
 			if cases in self and type(self[cases]) == int:
-				to_dp = lambda i : DataPath({'case' : str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
-				self[data] = [{'cases' : [
-					to_dp(i) for i in range(1, self.pop(cases) + 1) \
-					if to_dp(i) not in tc
-				]}]
+				log.warning(u'`%s`字段不再使用，使用`python -m generator upgrade`升级。' % cases)
+				#to_dp = lambda i : DataPath({'case' : self['name'] + str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
+				#self[data] = [{'cases' : [
+				#	to_dp(i) for i in range(1, self.pop(cases) + 1) \
+				#	if to_dp(i) not in tc
+				#]}]
 			self.__setattr__(attr, sorter()(list(tc)))
 
 		if self['packed']:
