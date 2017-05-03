@@ -535,9 +535,9 @@ def custom_conf():
 	
 def init():
 	import __main__
-	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	global conf
 	custom_conf()
+	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	if not deal_args():
 		return False
 	conf = load_json()
@@ -596,9 +596,9 @@ def check_install(pack):
 			if system == 'Linux':
 				log.info(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
 			raise e
-	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside', logging.WARNING)
+	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
 	check_jinja2 = lambda : check_import('jinja2')
-	check_natsort = lambda : check_import('natsort')
+	check_natsort = lambda : check_import('natsort', level = logging.WARNING)
 	check_gettext = lambda : check_import('gettext')
 	def check_pandoc():
 		ret = os.system('pandoc -v')

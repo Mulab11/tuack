@@ -82,8 +82,8 @@
 {{ 
 	_('See *%(in)s* and *%(ans)s* in the %(path)s.') % {
 		'path' : self.user_path(),
-		'in' : file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
-		'ans' : file_name(('ex_' if comp == 'uoj' else '') + prob['name'] + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
+		'in' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp != 'tuoj' else '') + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
+		'ans' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp != 'tuoj' else '') + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
 	}
 }}
 {%- endblock %}

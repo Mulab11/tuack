@@ -306,6 +306,7 @@ def html(comp):
 			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
 			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
+			'comp' : comp,
 			'json' : json
 		}
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
