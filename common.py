@@ -693,6 +693,7 @@ dos2unix = lambda path : change_eol(path, b'\n')
 def run_exc(func):
 	try:
 		func()
+		log.info(u'好厉害 这个脚本跑完了呢')
 	except Exception as e:
 		log.error(e)
 		log.info(traceback.format_exc())
