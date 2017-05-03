@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import logging
+import traceback
 
 work = None
 system = platform.system()
@@ -358,11 +359,11 @@ def load_json(path = '.', route = None):
 					]
 				return conf
 		except Exception as e:
-			log.error('Error at json configure file `%s`.' % pjoin(path, name))
+			log.error(u'文件`%s`错误或子目录下文件错误。' % pjoin(path, name))
+			log.info(e)
 			raise e
 	else:
-		log.error('Can\'t find configure json file at `%s`.' % path)
-		raise NoFileException('Can\'t find configure json file at `%s`.' % path)
+		raise NoFileException(u'路径`%s`下找不到conf.json。' % path)
 
 def del_redundance(conf, red):
 	for key in red:
@@ -534,6 +535,7 @@ def custom_conf():
 	
 def init():
 	import __main__
+	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	global conf
 	custom_conf()
 	if not deal_args():
@@ -544,7 +546,6 @@ def init():
 		check_install('git_lfs')
 	except:
 		pass
-	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	return True
 
 def tr(item):
@@ -585,17 +586,17 @@ def get_tool_conf():
 	return tool_conf
 
 def check_install(pack):
-	def check_import(pack, extra_info = '', pack_name = None):
+	def check_import(pack, extra_info = '', pack_name = None, level = logging.ERROR):
 		try:
 			__import__(pack)
 		except Exception as e:
-			log.error(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
+			log.log(level, u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
 			if system == 'Windows':
 				log.info(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
 			if system == 'Linux':
 				log.info(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
 			raise e
-	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
+	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside', logging.WARNING)
 	check_jinja2 = lambda : check_import('jinja2')
 	check_natsort = lambda : check_import('natsort')
 	check_gettext = lambda : check_import('gettext')
@@ -688,3 +689,10 @@ def change_eol(path, eol):
 
 unix2dos = lambda path : change_eol(path, b'\r\n')
 dos2unix = lambda path : change_eol(path, b'\n')
+
+def run_exc(func):
+	try:
+		func()
+	except Exception as e:
+		log.error(e)
+		log.info(traceback.format_exc())

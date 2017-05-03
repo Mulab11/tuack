@@ -21,7 +21,7 @@ from common import log
 def tsinsen_oj():
 	new_tc = []
 	
-	class Base:
+	class Base(object):
 		def __init__(self):
 			pass
 		def write(self, text):
@@ -82,26 +82,26 @@ def tsinsen_oj():
 	
 	class TimeLimit(Conf):
 		def __init__(self):
-			super().__init__('time limit')
+			super(TimeLimit, self).__init__('time limit')
 		def close(self):
 			self.buff = self.buff.strip()[:-1]
-			super().close()
+			super(TimeLimit, self).close()
 	
 	class MemoryLimit(Conf):
 		def __init__(self):
-			super().__init__('memory limit')
+			super(MemoryLimit, self).__init__('memory limit')
 		def close(self):
 			if len(self.buff) >= 2:
 				s = self.buff.strip().decode('utf-8')
 				sp = 1 if '0' <= s[-2] <= '9' else 2
 				self.buff = (s[:-sp] + ' ' + s[-sp:]).encode('utf-8')
-			super().close()
+			super(MemoryLimit, self).close()
 	
 	class Solution(File):
 		def __init__(self):
-			super().__init__('tsinsen-oj', 'std', 'std.cpp')
+			super(Solution, self).__init__('tsinsen-oj', 'std', 'std.cpp')
 		def close(self):
-			super().close()
+			super(Solution, self).close()
 			if 'users' not in common.conf:
 				common.conf['users'] = {}
 			if 'tsinsen-oj' not in common.conf['users']:
@@ -116,23 +116,24 @@ def tsinsen_oj():
 				if str(i) not in tc:
 					name = i
 			new_tc.append(name)
-			common.conf['test cases'].append(name)
+			common.conf.test_cases.append(name)
 			InData.last_in = name
-			super().__init__('data', '%d.in' % name)
+			super(InData, self).__init__('data', '%d.in' % name)
 			
 	class OutData(File):
 		def __init__(self):
-			super().__init__('data', '%d.out' % InData.last_in)
+			super(OutData, self).__init__('data', '%d.out' % InData.last_in)
 
 	if common.conf.folder != 'problem':
-		common.fatal('Must load to a problem')
+		log.error(u'只能导入到一个problem的工程中。')
+		return
 	status = None
 	for line in open(common.args[0], 'rb'):
 		if not status:			# 啥都没有
 			try:
 				buffer = eval(line.decode('utf-8').strip()[:-1])()
 			except Exception as e:
-				common.warning(str(e))
+				log.warning(str(e))
 				buffer = Base()
 			status = True
 		elif status == True:	# 读到了等号的行，还没读到标记开始的行
@@ -153,10 +154,13 @@ work_list = {
 }
 
 if __name__ == '__main__':
-	if common.init() and len(common.args) != 0:
-		for common.work in common.works:
-			work_list[common.work]()
-	else:
-		log.info(u'这个工具用于导入其他类型的工程，参数1必须是来源路径。')
-		log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
-
+	try:
+		if common.init() and len(common.args) != 0:
+			for common.work in common.works:
+				common.run_exc(work_list[common.work])
+		else:
+			log.info(u'这个工具用于导入其他类型的工程，参数1必须是来源路径。')
+			log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
+	except common.NoFileException as e:
+		log.error(e)
+		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

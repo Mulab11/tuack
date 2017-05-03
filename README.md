@@ -630,4 +630,4 @@ return merge_ver(ret)
 
 ### pandoc的timer问题
 
-@吕欣
+@王聿中

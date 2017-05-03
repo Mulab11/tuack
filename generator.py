@@ -104,8 +104,9 @@ def new_dir(folder):
 		dirs = ['.']
 	else:
 		if not common.conf:
-			log.error(u'当前文件夹下没有 `conf.json` 文件。')
-			raise common.NoFileException('No `conf.json` in this directory.')
+			log.error(u'当前文件夹下没有找到合法的`conf.json`文件。')
+			log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+			return
 		dirs = common.args
 	for path in dirs:
 		if not os.path.exists(path):
@@ -120,7 +121,7 @@ def new_dir(folder):
 			for f in os.listdir(common.pjoin(common.path, 'sample', 'statement')):
 				copy(common.pjoin('statement', f), common.pjoin('statement', f))
 		if path != '.':
-			conf = json.loads(open(common.pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+			conf = common.load_json(path)
 			conf['name'] = path
 			conf.path = path
 			common.save_json(conf)
@@ -140,12 +141,12 @@ work_list = {
 if __name__ == '__main__':
 	try:
 		result = common.init()
-	except common.NoJsonException as e:
+	except common.NoFileException as e:
 		common.conf = None
 		result = True
 	if result:
 		for common.work in common.works:
-			work_list[common.work]()
+			common.run_exc(work_list[common.work])
 	else:
 		log.info(u'这个工具用于快速建立一道题目。')
 		log.info(u'支持的工作：')
