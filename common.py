@@ -437,15 +437,20 @@ def copy(source, name, target):
 	return True
 
 def xopen_file(path):
-	if system == 'Windows':
-		os.startfile(path)
-	elif system == 'Darwin':
-		subprocess.call(["open", path])
-	else:
-		subprocess.call(["xdg-open", path])
+	try:
+		if system == 'Windows':
+			os.startfile(path)
+		elif system == 'Darwin':
+			subprocess.call(["open", path])
+		else:
+			subprocess.call(["xdg-open", path])
+	except Exception as e:
+		log.warning(u'打开文件`%s`失败。' % path)
+		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render
+	do_render = True
 	works = []
 	args = []
 	langs = [None]
@@ -473,6 +478,8 @@ def deal_args():
 			do_pack = False
 		elif sys.argv[i] == '-z':
 			do_zip = True
+		elif sys.argv[i] == '-r':
+			do_render = False
 		elif sys.argv[i] == '-e':
 			do_zip = True
 			do_encript = True
@@ -492,6 +499,7 @@ def deal_args():
 			log.info(u'                      对于tester，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
 			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
 			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
+			log.info(u'  -r                  对于dumper，不先尝试渲染题面。')
 			return False
 		else:
 			if len(works) == 0:

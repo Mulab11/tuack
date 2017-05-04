@@ -33,11 +33,13 @@ work_class = {
 	'tuoi' : {'tuoi'},
 	'tuoj-oi' : {'tuoi', 'tuoj'},
 	'tuoj' : {'tuoj'},
-	'ccc' : {'ccc-tex', 'ccc-html'},
+	'ccc' : {'ccc-tex', 'ccc-md'},
 	'ccc-tex' : {'ccc-tex'},
-	'ccc-html' : {'ccc-html'},
+	'ccc-md' : {'ccc-md'},
+	'tsinsen-oj' : {'tsinsen-oj'},
 	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
-	'html' : {'uoj', 'tuoj', 'ccc-html'}
+	'md' : {'uoj', 'tuoj', 'ccc-md'},
+	'html' : {'tsinsen-oj'}
 }
 io_styles = {
 	'noi' : 'fio',
@@ -46,7 +48,8 @@ io_styles = {
 	'tuoj' : 'stdio',
 	'ccc' : 'stdio',
 	'tuoi' : 'stdio',
-	'tupc' : 'stdio'
+	'tupc' : 'stdio',
+	'tsinsen-oj' : 'stdio'
 }
 base_templates = {
 	'noi' : 'tuoi',
@@ -57,13 +60,14 @@ base_templates = {
 }
 work_list = {
 	'ccpc' : lambda : tex('ccpc'),
-	'uoj' : lambda : html('uoj'),
+	'uoj' : lambda : md('uoj'),
 	'tupc' : lambda : tex('tupc'),
 	'tuoi' : lambda : tex('tuoi'),
 	'noi' : lambda : tex('noi'),
-	'tuoj' : lambda : html('tuoj'),
+	'tuoj' : lambda : md('tuoj'),
 	'ccc-tex' :  lambda : tex('ccc'),
-	'ccc-html' : lambda : html('ccc')
+	'ccc-md' : lambda : md('ccc'),
+	'tsinsen-oj' : lambda : html('tsinsen-oj')
 }
 
 secondary_dict = {}
@@ -119,7 +123,6 @@ def table(path, name, temp, context, options):
 	else:
 		log.error(u'找不到表格`%s.*`' % common.pjoin(path, name))
 	if suf == '.json':
-		log.debug(context['prob']['data'])
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
 			table = json.loads(res)
@@ -168,7 +171,7 @@ def secondary(s, sp, work):
 				break
 		if not in_set:
 			return ''
-	if work == 'tex':
+	if work == 'tex' or work == 'html':
 		id = str(uuid.uuid4())
 		secondary_dict[id] = s
 		return id
@@ -284,7 +287,7 @@ def tex(comp):
 		result_path = os.path.join('statements', comp, common.conf['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
 		render(common.conf, None, result_path)
 
-def html(comp):
+def md(comp):
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
 		path = os.path.join('statements', comp, prob.route)
@@ -306,7 +309,7 @@ def html(comp):
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
-			'render' : lambda s, sp = None : secondary(s, sp, 'uoj'),
+			'render' : lambda s, sp = None : secondary(s, sp, 'md'),
 			'comp' : comp,
 			'json' : json
 		}
@@ -333,6 +336,78 @@ def html(comp):
 		for day in common.days():
 			if not os.path.exists(common.pjoin('statements', comp, day.route)):
 				os.makedirs(common.pjoin('statements', comp, day.route))
+	for prob in common.probs():
+		render(prob)
+		
+def html(comp):
+	common.check_install('pandoc')
+	def render(prob):
+		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
+		path = os.path.join('statements', comp, prob.route)
+		if os.path.exists(os.path.join(prob.path, 'resources')):
+			shutil.rmtree(path, ignore_errors = True)
+			time.sleep(0.1)
+			shutil.copytree(os.path.join(prob.path, 'resources'), path)
+		try:
+			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
+		except common.NoFileException as e:
+			log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
+			return
+		time.sleep(0.1)
+		context = {
+			'prob' : prob,
+			'io_style' : io_style,
+			'tools' : tools,
+			'common' : common,
+			'file_name' : lambda name : file_name(comp, prob, name),
+			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
+			'resource' : lambda name : prob['name'] + '/' + name,
+			'render' : lambda s, sp = None : secondary(s, sp, 'html'),
+			'comp' : comp,
+			'json' : json
+		}
+		if comp == 'tsinsen-oj' and 'tsinsen_files' in dir(prob):
+			context['resource'] = lambda name : '/RequireFile.do?fid=%s' % prob.tsinsen_files[name]
+		open(os.path.join('tmp', 'problem.1.md'), 'wb') \
+			.write(get_template('problem_base.md.jinja', prob.lang())
+				.render(context)
+				.encode('utf-8')
+			)
+		with open(os.path.join('tmp', 'problem.2.md'), 'wb') as f:
+			for line in open(os.path.join('tmp', 'problem.1.md'), 'rb'):
+				if line.startswith(b'##'):
+					line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
+				f.write(line)
+		txt = open(os.path.join('tmp', 'problem.2.md'), 'rb').read().decode('utf-8')
+		for key, val in secondary_dict.items():
+			txt = txt.replace(key, '{{ ' + val + ' }}')
+		open(os.path.join('tmp', 'problem.3.md'), 'wb').write(
+			txt.encode('utf-8')
+		)
+		open(common.pjoin('tmp', 'problem.4.md'), 'wb') \
+			.write(get_template('problem.3.md', prob.lang())
+				.render(
+					context,
+					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
+					table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
+				).encode('utf-8')
+			)
+		result_file = path + ('-' + common.lang if common.lang else '') + '.html'
+		os.system('pandoc %s -o %s' % (
+			os.path.join('tmp', 'problem.4.md'),
+			result_file
+		))
+		if common.start_file:
+			common.xopen_file(result_file)
+
+	common.mkdir(os.path.join('statements', comp))
+	io_style = io_styles[comp]
+	if common.conf.folder == 'contest':
+		for day in common.days():
+			if not os.path.exists(common.pjoin('statements', comp, day.route)):
+				os.makedirs(common.pjoin('statements', comp, day.route))
+	if comp == 'tsinsen-oj':
+		log.warning(u'如果你使用了resource，你可能需要使用dumper才能获得正确上传清橙的文件。')
 	for prob in common.probs():
 		render(prob)
 

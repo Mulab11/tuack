@@ -329,12 +329,7 @@ def test_problem(prob):
 				for title, line in [(user, scores), (algo, times), ('', reports)]:
 					fres.write('%s,%s\n' % (title, ','.join(line)))
 	if common.start_file:
-		if common.system == 'Windows':
-			os.startfile(common.pjoin('result', prob.route) + '.csv')
-		if common.system == 'Linux':
-			subprocess.call(["xdg-open", common.pjoin('result', prob.route) + '.csv'])
-		if common.system == 'Darwin':
-			subprocess.call(["open", common.pjoin('result', prob.route) + '.csv'])
+		common.xopen_file(common.pjoin('result', prob.route) + '.csv')
 
 def test_progs():
 	if common.conf.folder != 'problem' and not os.path.exists('result'):
@@ -346,7 +341,7 @@ def test_progs():
 	for prob in common.probs():
 		try:
 			test_problem(prob)
-		except FileNotFoundError as e:
+		except Exception as e:
 			log.error(e)
 
 if __name__ == '__main__':

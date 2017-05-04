@@ -19,6 +19,8 @@
 {%- block user_path -%}
 	{%- if comp == 'uoj' -%}
 		[{{ _('download files') }}](/download.php?type=problem&id={{ prob['uoj id'] }})
+	{%- elif comp == 'tsinsen-oj' -%}
+		{{ _('download files') }}
 	{%- elif comp == 'noi' -%}
 		{{ _('user\'s home path') }}
 	{%- else -%}
@@ -82,8 +84,8 @@
 {{ 
 	_('See *%(in)s* and *%(ans)s* in the %(path)s.') % {
 		'path' : self.user_path(),
-		'in' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp != 'tuoj' else '') + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
-		'ans' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp != 'tuoj' else '') + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
+		'in' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
+		'ans' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
 	}
 }}
 {%- endblock %}

@@ -92,7 +92,7 @@ python -m loader 类型 来源路径
 python -m dumper 类型1,类型2,...
 ```
 
-本功能开发中，目前支持的类型有：`lemon`，`arbiter`（spj都还没做），`down`（这个是arbiter的下发，之后将整合进arbiter，待删）。
+本功能开发中，目前支持的类型有：`lemon`，`arbiter`（spj都还没做），`tsinsen-oj`，`down`（这个是arbiter的下发，之后将整合进arbiter，待删）。
 
 老版的oi_tools有一个导出工具 `packer`，此项功能目前弃用，将会更新合并至 `dumper`（用于输出成其他题目存储格式的工具，目前开发中），下面将列举出它的用法。但因为并没有维护这段代码，因此不保证能够成功运行。
 
@@ -130,16 +130,17 @@ python -m tester
 python -m renderer noi,tuoj
 ```
 
-表示生成noi和tuoj-html风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
+表示生成noi和tuoj-md风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
 
 如果要生成特定语言的题面，使用 `-l` 加上用逗号隔开的多种语言，例如 `-l zh-cn,en`。
 
 生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`），没有安装的话运行时会提示安装方式。
 
-目前支持两类题面：
+目前支持三类题面：
 
 -   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoi`，`tupc`，`noi`，`ccpc`，`ccc-tex`。
--   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj`，`ccc-html`，`uoj`（似乎这个现在有bug）。
+-   `md`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj`，`ccc-md`，`uoj`（似乎这个现在有bug）。
+-   `html`：会生成带`$`括起来的MathJAX公式的html，需要安装 `pandoc`。具体的风格有：`tsinsen-oj`。
 
 题面的书写后文将有详细说明。
 
@@ -380,9 +381,10 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 注意：**不要在题面里直接插入任何markdown的原生表格**。因为markdown表格的方言相当多，加上我们建议**所有参数全部来源于同一个地方**，因此请尽量按照后文的“表格”。
 
-目前两种输出类型渲染的步骤为：
+目前三种输出类型渲染的步骤为：
 * `tex`：md+jinja+\*jinja → md+jinja → tex+jinja → tex → pdf；
-* `html`：md+jinja+\*jinja → md+jinja → md+html。
+* `md`：md+jinja+\*jinja → md+jinja → md+html；
+* `html`：md+jinja+\*jinja → md+jinja → md+html → html。
 
 其中\*jinja表示经过jinja渲染会变成jinja模板的代码。
 
@@ -443,11 +445,12 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 ### 外部变量和小工具
 
-通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的名称，可以用下列写法（两种方法等价）：
+通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的名称，可以用下列写法：
 ```
 {{ prob['name'] }}
 {{ prob.name }}
 ```
+注意，在jinja中，这两种方法大多数时候是等价的。但有一种例外，即字段name和prob的一个方法同名，此时并不是访问这个字段，而是访问这个方法。因此推荐用第一种写法。
 
 对于有多种语言的变量，可以用这样的方式访问（会根据具体的语言选择合适的值）：
 

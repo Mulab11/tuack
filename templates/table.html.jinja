@@ -9,13 +9,12 @@
 			{%- for j in range(table[i].__len__()) -%}
 				{%- if table[i][j] -%}
 					<
-						{%- if first_row -%}
+						{%- if first_row and comp != 'tsinsen-oj' -%}
 							th
 						{%- else -%}
 							td
-						{%- endif %}
-					rowspan="{{- cnt[i][j] -}}">{{ table[i][j] }}<
-						{%- if first_row -%}
+						{%- endif %} rowspan="{{- cnt[i][j] -}}">{{ table[i][j] }}<
+						{%- if first_row and comp != 'tsinsen-oj' -%}
 							/th
 						{%- else -%}
 							/td

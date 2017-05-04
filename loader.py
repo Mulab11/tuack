@@ -35,7 +35,10 @@ def tsinsen_oj():
 		def write(self, text):
 			self.buff += text
 		def close(self):
-			cur = self.buff.decode('utf-8').strip()
+			if type(self.buff) == bytes:
+				cur = self.buff.decode('utf-8').strip()
+			else:
+				cur = self.buff
 			for name in reversed(self.names[1:]):
 				if not name:
 					cur = [cur]
@@ -64,16 +67,29 @@ def tsinsen_oj():
 			self.fname = common.pjoin(*names)
 			self.buff = b''
 		def write(self, text):
-			self.buff += text
+			self.buff += text.strip() + b'\n'
 		def close(self):
 			ret = json.dumps(json.dumps(self.buff.decode('utf-8'))).encode('utf-8')
 			f = open(self.fname, 'wb')
 			f.write(b'{{ self.title() }}\n')
 			f.write(b'{{ render(%s, \'html\') }}\n' % ret)
 			f.close()
+	class FileName(Base):
+		last_name = None
+		def write(self, text):
+			FileName.last_name = text.decode('utf-8').rstrip('\n\r')
+	class Base64File(Base):
+		def __init__(self):
+			self.buff = b''
+		def write(self, text):
+			self.buff += text
+		def close(self):
+			import base64
+			if not os.path.exists('resources'):
+				os.makedirs('resources')
+			open(common.pjoin('resources', FileName.last_name), 'wb').write(base64.b64decode(self.buff))
 	Title = lambda : Conf('title', 'zh-cn')
 	CheckPoint = lambda : Conf('key words')
-	Checkers = Base
 	TestMethod = Base
 	InputFileName = Base
 	OutputFileName = Base
@@ -84,7 +100,7 @@ def tsinsen_oj():
 		def __init__(self):
 			super(TimeLimit, self).__init__('time limit')
 		def close(self):
-			self.buff = self.buff.strip()[:-1]
+			self.buff = float(self.buff.strip()[:-1])
 			super(TimeLimit, self).close()
 	
 	class MemoryLimit(Conf):
@@ -123,6 +139,17 @@ def tsinsen_oj():
 	class OutData(File):
 		def __init__(self):
 			super(OutData, self).__init__('data', '%d.out' % InData.last_in)
+			
+	class Checkers(File):
+		fname = ('data', 'chk', 'chk.cpp')
+		def __init__(self):
+			super(Checkers, self).__init__(*Checkers.fname)
+		def close(self):
+			super(Checkers, self).close()
+			if os.path.getsize(common.pjoin(*Checkers.fname)) < 10:
+				shutil.rmtree(common.pjoin(*Checkers.fname[:2]), ignore_errors = True)
+	import re
+	key_re = re.compile('(\w*)\((\w*)\)')
 
 	if common.conf.folder != 'problem':
 		log.error(u'只能导入到一个problem的工程中。')
@@ -131,9 +158,21 @@ def tsinsen_oj():
 	for line in open(common.args[0], 'rb'):
 		if not status:			# 啥都没有
 			try:
-				buffer = eval(line.decode('utf-8').strip()[:-1])()
+				key = line.decode('utf-8').strip()[:-1]
+				m = key_re.match(key)
+				if m:
+					if m.group(1) == 'File':
+						log.warning(u'题面含有文件，请在题面中手工查找字符串`%s`并进行相应修改，该文件保存在`resources/%s`。' % (
+							m.group(2), FileName.last_name
+						))
+						buffer = Base64File()
+					else:
+						log.warning(u'无法解析关键词`%s`。' % key)
+				else:
+					buffer = eval(key)()
 			except Exception as e:
-				log.warning(str(e))
+				log.warning(u'无法解析关键词`%s`。' % key)
+				log.debug(e)
 				buffer = Base()
 			status = True
 		elif status == True:	# 读到了等号的行，还没读到标记开始的行

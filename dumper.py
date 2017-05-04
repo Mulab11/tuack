@@ -317,10 +317,118 @@ def arbiter(conf = None,daynum = 0):
 			shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
+def tsinsen_oj():
+	import random
+	hash_ch = list(map(
+		chr,
+		[ord('a') + i for i in range(26)] + \
+		[ord('A') + i for i in range(26)] + \
+		[ord('0') + i for i in range(10)]
+	))
+	hash = lambda l = 10 : ''.join([hash_ch[random.randint(0, len(hash_ch) - 1)] for i in range(l)])
+	if common.conf.folder != 'problem' and not os.path.exists('tsinsen-oj'):
+		os.makdedirs('tsinsen-oj')
+	for day in common.days():
+		p = common.pjoin('tsinsen-oj', day.route)
+		if not os.path.exists():
+			os.makedirs(p)
+	for prob in common.probs():
+		if os.path.exists(common.pjoin(prob.path, 'down')):
+			with zipfile.ZipFile(common.pjoin('tsinsen-oj', prob.route, 'down.zip'), 'w') as z:
+				common.run_r(lambda path : z.write(path), common.pjoin(prob.path, 'down'))
+			prob.tsinsen_down = hash(8)
+		else:
+			prob.tsinsen_down = None
+		files = {}
+		path = common.pjoin(prob.path, 'resources')
+		if os.path.exists(path):
+			common.run_r(lambda p : files.__setitem__(p[len(path) + 1:], hash(8)), path)
+		prob.tsinsen_files = files
+	if common.do_render:
+		import renderer
+		tmp = common.start_file
+		common.start_file = False
+		renderer.init()
+		renderer.html('tsinsen-oj')
+		renderer.final()
+		common.start_file = tmp
+	else:
+		log.warning(u'如果你使用了文件，不重新渲染题面会导致tsinsen的文件失效。')
+	
+	read_file = lambda path : open(path, 'rb').read().decode('utf-8')
+	
+	Title = lambda : prob.tr('title')
+	CheckPoint = lambda : prob['key words'] if 'key words' in prob else ''
+	TestMethod = lambda : 'DEFAULT'
+	InputFileName = lambda : ''
+	OutputFileName = lambda : ''
+	TimeLimit = lambda : '%.1fs' % prob['time limit']
+	MemoryLimit = lambda : '%.1fMB' % prob.memory_limit().MB
+	
+	def Checkers():
+		path = common.pjoin('data', 'chk', 'chk.cpp')
+		if os.path.exists(path):
+			return open(path, 'rb').read().decode('utf-8')
+		else:
+			return '\n'
+	def Description():
+		path = common.pjoin('statements', 'tsinsen-oj', prob.route + '.html')
+		if not os.path.exists(path):
+			log.warning(u'找不到题面，你可能需要自己手工添加题面。')
+			return ''
+		header = u'<p>下载目录：<img src="/RequireFile.do?fid=%s" alt="另存为图片下载" />（另存为图片下载）</p>\n' % prob.tsinsen_down
+		return header + read_file(path)
+	def Solution():
+		for user, codes in prob['users'].items():
+			for name, path in codes.items():
+				if name.startswith('std') or name.endswith('std') or name.endswith('std.cpp'):
+					return read_file(path)
+		for user, codes in prob['users'].items():
+			for name, path in codes.items():
+				return read_file(path)
+		return ''
+	def add_shell(name, func):
+		h = hash()
+		ret = '%s=\n' % name
+		ret += '======================%s\n' % h
+		res = func()
+		if not res.endswith('\n'):
+			res += '\n'
+		ret += res
+		ret += '======================%s\n' % h
+		return ret.encode('utf-8')
+	def to_base64(path):
+		import base64
+		s = base64.b64encode(open(path, 'rb').read()).decode('utf-8')
+		return '\n'.join(s[pos:pos+76] for pos in range(0, len(s), 76))
+	tokens = [
+		'Title', 'CheckPoint', 'Checkers', 'TestMethod', 'Description',
+		'InputFileName', 'OutputFileName', 'Solution', 'TimeLimit', 'MemoryLimit'
+	]
+	for prob in common.probs():
+		result_file = common.pjoin('tsinsen-oj', prob.route) + '.txt'
+		with open(result_file, 'wb') as f:
+			for token in tokens:
+				f.write(add_shell(token, eval(token)))
+			if prob['packed']:
+				log.warning(u'清橙OJ不支持打包评测和指定测试点分值，直接将所有测试点视为相同。')
+			for datum in prob.test_cases:
+				f.write(add_shell('InData', lambda : read_file(common.pjoin('data', datum + '.in'))))
+				f.write(add_shell('OutData', lambda : read_file(common.pjoin('data', datum + '.ans'))))
+			if prob.tsinsen_down:
+				f.write(add_shell('FileName', lambda : 'down.zip'))
+				f.write(add_shell('File(%s)' % prob.tsinsen_down, lambda : to_base64(common.pjoin('tsinsen-oj', prob.route, 'down.zip'))))
+			for key, val in prob.tsinsen_files.items():
+				f.write(add_shell('FileName', lambda : key.replace('/', '-').replace('\\', '-')))
+				f.write(add_shell('File(%s)' % val, lambda : to_base64(common.pjoin(prob.path, 'resources', key))))
+		if common.start_file:
+			common.xopen_file(result_file)
+
 work_list = {
 	'lemon' : lemon,
 	'arbiter' : arbiter,
-	'down' : down
+	'down' : down,
+	'tsinsen-oj' : tsinsen_oj
 }
 
 if __name__ == '__main__':
