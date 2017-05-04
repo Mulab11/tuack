@@ -38,6 +38,12 @@ git submodule update --init
 
 **所有基于文本的文件如果含有中文，必须用UTF-8编码。**
 
+所有的工具都可以加 `-h` 或 `--help` 来显示帮助，例如
+
+```bash
+python -m generator -h
+```
+
 ### 建立工程
 
 一般来讲，你可以用类似于下面的方式在当前目录下建立一场比赛的工程。
@@ -155,6 +161,8 @@ sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
 ```
 
 然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+
+注意在复制的时候不要直接从Ubuntu下直接访问Windows下的字体，应从Windows下先把字体拷贝到某个文件夹中，然后再copy到`/usr/share/fonts/win`下。涉及到某些链接的问题。
 
 MacOS下待研究。
 
