@@ -161,6 +161,8 @@ sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
 
 然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
 
+注意在复制的时候不要直接从Ubuntu下直接访问Windows下的字体，应从Windows下先把字体拷贝到某个文件夹中，然后再copy到`/usr/share/fonts/win`下。涉及到某些链接的问题。
+
 MacOS下待研究。
 
 ### 只对特定的题目进行操作
