@@ -237,7 +237,7 @@ def down(conf = None):
 				common.pjoin('down', prob.route, prob['name']+str(idx)+'.ans')
 			)
 
-def arbiter_info(info,filename):
+'''def arbiter_info(info,filename):
 	with open(filename, 'wb') as f:
 		for k, v in info.items():
 			f.write(('%s%s\n' % (k, v)).encode('gbk'))
@@ -308,15 +308,13 @@ def arbiter(conf = None,daynum = 0):
 		else:
 			casenum = 0
 			for case in prob.test_cases:
-				'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.in'))'''
 				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
-				'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.ans'))'''
 				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
 				casenum += 1
 				probinfo['MARK='+str(casenum)+'@'] = score_per_case
 			shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
-
+'''
 work_list = {
 	'lemon' : lemon,
 	'arbiter' : arbiter,
