@@ -105,7 +105,7 @@ def final():
 	shutil.rmtree('tmp', ignore_errors = True)
 
 def file_name(comp, prob, name):
-	if comp == 'oi':
+	if comp == 'noi':
 		return prob['name'] + '/' + name
 	elif comp == 'uoj':
 		return name

@@ -82,7 +82,7 @@
 ## {{ _('Sample') }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}
 
 {{ 
-	_('See *%(in)s* and *%(ans)s* in the %(path)s.') % {
+	_('See *%(path)s%(in)s* and *%(path)s%(ans)s* in the %(path)s.') % {
 		'path' : self.user_path(),
 		'in' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
 		'ans' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
