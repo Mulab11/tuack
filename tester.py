@@ -168,7 +168,7 @@ def test(prob):
 	if prob['type'] == 'program':
 		res = compile(prob)
 		if res:
-			for i in range(len(prob['test cases']) + prob['sample count']):
+			for i in range(len(prob.test_cases) + len(prob.sample_cases)):
 				scores.append(0.0)
 				times.append(0.0)
 				reports.append(res)
@@ -176,6 +176,7 @@ def test(prob):
 	all_cases = prob.test_cases + prob.sample_cases
 	for case in all_cases:
 		print('Case %s:%s  ' % (case['key'], case), end = '\r')
+		sys.stdout.flush()
 		shutil.copy(case.full() + '.in', common.pjoin('tmp', 'in'))
 		shutil.copy(case.full() + '.ans', common.pjoin('tmp', 'ans'))
 		for fname in ('in', 'ans'):
@@ -328,12 +329,7 @@ def test_problem(prob):
 				for title, line in [(user, scores), (algo, times), ('', reports)]:
 					fres.write('%s,%s\n' % (title, ','.join(line)))
 	if common.start_file:
-		if common.system == 'Windows':
-			os.startfile(common.pjoin('result', prob.route) + '.csv')
-		if common.system == 'Linux':
-			subprocess.call(["xdg-open", common.pjoin('result', prob.route) + '.csv'])
-		if common.system == 'Darwin':
-			subprocess.call(["open", common.pjoin('result', prob.route) + '.csv'])
+		common.xopen_file(common.pjoin('result', prob.route) + '.csv')
 
 def test_progs():
 	if common.conf.folder != 'problem' and not os.path.exists('result'):
@@ -345,15 +341,19 @@ def test_progs():
 	for prob in common.probs():
 		try:
 			test_problem(prob)
-		except FileNotFoundError as e:
+		except Exception as e:
 			log.error(e)
 
 if __name__ == '__main__':
-	if common.init():
-		common.work = 'test'
-		if common.do_pack:
-			import packer
-			packer.test()
-		test_progs()
-	else:
-		pass
+	try:
+		if common.init():
+			common.work = 'test'
+			if common.do_pack:
+				import packer
+				common.run_exc(packer.test)
+			common.run_exc(test_progs)
+		else:
+			log.info(u'这是测试出题人数据和程序的测试器，测试器没有细分的工作。')
+	except common.NoFileException as e:
+		log.error(e)
+		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

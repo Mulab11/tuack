@@ -200,7 +200,7 @@
 \newcommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 \renewcommand\tableofcontents{
-	{\xiaosan \bfseries 目~~录 \par}
+	{\xiaosan \bfseries \thecontent \par}
 	{\xiaosi \@starttoc{toc}}
 }
 

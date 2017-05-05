@@ -38,6 +38,12 @@ git submodule update --init
 
 **所有基于文本的文件如果含有中文，必须用UTF-8编码。**
 
+所有的工具都可以加 `-h` 或 `--help` 来显示帮助，例如
+
+```bash
+python -m generator -h
+```
+
 ### 建立工程
 
 一般来讲，你可以用类似于下面的方式在当前目录下建立一场比赛的工程。
@@ -92,7 +98,7 @@ python -m loader 类型 来源路径
 python -m dumper 类型1,类型2,...
 ```
 
-本功能开发中，目前支持的类型有：`lemon`，`arbiter`（spj都还没做），`down`（这个是arbiter的下发，之后将整合进arbiter，待删）。
+本功能开发中，目前支持的类型有：`lemon`，`arbiter`（spj都还没做），`tsinsen-oj`，`down`（这个是arbiter的下发，之后将整合进arbiter，待删）。
 
 老版的oi_tools有一个导出工具 `packer`，此项功能目前弃用，将会更新合并至 `dumper`（用于输出成其他题目存储格式的工具，目前开发中），下面将列举出它的用法。但因为并没有维护这段代码，因此不保证能够成功运行。
 
@@ -127,17 +133,20 @@ python -m tester
 可以在根目录下运行下列命令生成对应的题面：
 
 ```bash
-python -m renderer noi,tuoj-html
+python -m renderer noi,tuoj
 ```
 
-表示生成noi和tuoj-html风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
+表示生成noi和tuoj-md风格的题面，生成多种包之间用逗号隔开。生成好以后会自动打开，要想不自动打开则在后面加上 `-s`。
+
+如果要生成特定语言的题面，使用 `-l` 加上用逗号隔开的多种语言，例如 `-l zh-cn,en`。
 
 生成题面时，python必须安装 `jinja2` 包（`pip install jinja2`），没有安装的话运行时会提示安装方式。
 
-目前支持两类题面：
+目前支持三类题面：
 
--   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoj-tex`，`noi`，`ccpc`，`ccc-tex`。
--   `html`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj-html`，`ccc-html`，`uoj`（似乎这个现在有bug）。
+-   `tex`：最终会生成成PDF格式。需要安装 `pandoc` 和 `xelatex`。其中 `pandoc` Windows下直接搜官网下载，Ubuntu下直接 `apt install pandoc`； `xelatex` 的安装方式见下。具体的风格有：`tuoi`，`tupc`，`noi`，`ccpc`，`ccc-tex`。
+-   `md`：会生成带html标签的markdown。不需要特别安装东西。具体的风格有：`tuoj`，`ccc-md`，`uoj`（似乎这个现在有bug）。
+-   `html`：会生成带`$`括起来的MathJAX公式的html，需要安装 `pandoc`。具体的风格有：`tsinsen-oj`。
 
 题面的书写后文将有详细说明。
 
@@ -152,6 +161,8 @@ sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
 ```
 
 然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+
+注意在复制的时候不要直接从Ubuntu下直接访问Windows下的字体，应从Windows下先把字体拷贝到某个文件夹中，然后再copy到`/usr/share/fonts/win`下。涉及到某些链接的问题。
 
 MacOS下待研究。
 
@@ -295,7 +306,7 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 ```js
 {
 	"folder" : "problem",
-  	"type" : "program",			//program传统，output提交答案，alternately交互
+  	"type" : "program",			//program传统，output提交答案，alternating交互
 	"name" : "excellent",		//建议加上题目名称，没有的话默认是文件夹名字
 	"title" : {					//现在标题要区分语言，原来的中文名称cnname停用
 		"zh-cn" : "优秀的拆分"
@@ -378,9 +389,10 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 
 注意：**不要在题面里直接插入任何markdown的原生表格**。因为markdown表格的方言相当多，加上我们建议**所有参数全部来源于同一个地方**，因此请尽量按照后文的“表格”。
 
-目前两种输出类型渲染的步骤为：
+目前三种输出类型渲染的步骤为：
 * `tex`：md+jinja+\*jinja → md+jinja → tex+jinja → tex → pdf；
-* `html`：md+jinja+\*jinja → md+jinja → md+html。
+* `md`：md+jinja+\*jinja → md+jinja → md+html；
+* `html`：md+jinja+\*jinja → md+jinja → md+html → html。
 
 其中\*jinja表示经过jinja渲染会变成jinja模板的代码。
 
@@ -441,10 +453,17 @@ jinja2的安装用 `pip install jinja2`，jinja2本身的语法戳[这里](http:
 
 ### 外部变量和小工具
 
-通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的中文名，可以用下列写法（两种方法等价）：
+通过变量 `prob` 可以获取你在 `conf.json` 中的各项参数，例如要输出题目的名称，可以用下列写法：
 ```
-{{ prob['title']['zh-cn'] }}
-{{ prob.cnname['zh-cn'] }}
+{{ prob['name'] }}
+{{ prob.name }}
+```
+注意，在jinja中，这两种方法大多数时候是等价的。但有一种例外，即字段name和prob的一个方法同名，此时并不是访问这个字段，而是访问这个方法。因此推荐用第一种写法。
+
+对于有多种语言的变量，可以用这样的方式访问（会根据具体的语言选择合适的值）：
+
+```
+{{ prob.tr('title') }}
 ```
 
 获取当前的渲染环境，可以用变量 `comp`（会被赋值为 `noi`、`uoj` 等），输入输出方式用变量 `io_style`（会被赋值为 `fio`、`stdio` 等）。
@@ -581,3 +600,45 @@ return merge_ver(ret)
 	{% endfor %}
 ]
 ```
+
+## 一些问题的解决方案
+
+### 输出信息
+
+因为大家会用五花八门的环境，所以轮子难免会遇到各种问题。例如在Windows下的Git-Bash会出现编码问题：
+
+```
+[I]▒ű▒G:\oi_tools\tester.py▒▒▒▒▒▒·▒▒G:\oi_tools▒▒▒▒▒▒[]▒▒▒▒ʼ▒▒2017-05-01 01:36:14.047870▒▒
+[W]▒▒Ŀ``ȱ▒▒`users`▒ֶΣ▒ʹ▒▒`python -m generator code`▒▒▒▒Դ▒▒▒롣
+```
+
+为了尽可能让不同环境都好用，脚本会在oi_tools的目录下自动生成一个 `conf.json` ，会有类似于下面的东西：
+
+```
+"Windows_NT$...$C:/.../Git/usr/bin/bash$py30501f0": {
+  "bash_log": {
+    "encoding": "utf-8",
+    "format": "[%(levelname).2s]%(message)s",
+    "level": 40
+  },
+  "file_log": {
+    "mode": "w",
+    "path": "hehe.log"
+  },
+  "installed": {
+    "git": true,
+    "git_lfs": true,
+    "natsort": true
+  }
+}
+```
+
+上述问题可以通过把 `bash_log` 的 `encoding` 改成 `utf-8` 解决。此外 log 还支持一些其他功能，例如这套配置的意思是用2个（默认1个）字母表示信息的种类，只输出error和critical（等级不小于40），log文件采用w而不是a模式输出，输出文件名为hehe.log。关于logging的更多信息可以参看[这里](https://docs.python.org/2/library/logging.html)。
+
+上面还记了哪些工具是检测到已经安装的，必要时你可以手工修改。（例如你就不安装git又不喜欢它一直警告你）
+
+注意首行是区分当前所处环境的字段，包含操作系统版本、bash版本、python版本等。
+
+### pandoc的timer问题
+
+@王聿中

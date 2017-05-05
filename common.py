@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import logging
+import traceback
 
 work = None
 system = platform.system()
@@ -44,32 +45,8 @@ copied_data = set()
 no_compiling = False
 path = os.path.dirname(os.path.realpath(__file__))
 
-'''
-def infom(info):
-	frep.write('[I]' + info + '\n')
-
-def warning(info):
-	frep.write('[W]' + info + '\n')
-
-def error(info):
-	frep.write('[E]' + info + '\n')
-
-def fatal(info):
-	frep.write('[E]' + info + '\n')
-	frep.close()
-	sys.exit(info)
-'''
-
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
-file_log = logging.FileHandler('tuack.log')
-file_log.setLevel(logging.INFO)
-bash_log = logging.StreamHandler()
-bash_log.setLevel(logging.DEBUG)
-file_log.setFormatter(logging.Formatter('[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'))
-bash_log.setFormatter(logging.Formatter('[%(levelname).1s]%(message)s'))
-log.addHandler(file_log)
-log.addHandler(bash_log)
 
 class NoFileException(Exception):
 	pass
@@ -134,8 +111,24 @@ class Configure(dict):
 			raise Exception('Can\'t translate this object to a Configure.')
 		self.folder = self['folder']
 		self.parent = None
+		self.language = None
 		self.path = path
 		self.sub = []
+		
+	def lang(self):
+		return self.language
+	
+	def tr(self, key):
+		val = self[key]
+		if type(val) != dict:
+			return val
+		if lang and lang in val:
+			return val[lang]
+		if self.lang() and self.lang() in val:
+			return val[self.lang()]
+		for k, v in val.items():
+			return v
+		return None
 
 	def __contains__(self, key):
 		return super(Configure, self).__contains__(key + '+') or super(Configure, self).__contains__(key) or (self.parent and key in self.parent)
@@ -232,13 +225,35 @@ class Datum(dict):
 		return Memory(self['memory limit']) if 'memory limit' in self else self.prob.ml()
 
 class Problem(Configure):
+	def statement(self, cur_lang = None):
+		if not cur_lang and lang:
+			cur_lang = lang
+		if cur_lang:
+			source = pjoin(self.path, 'statement', cur_lang + '.md')
+			if os.path.exists(source):
+				self.language = cur_lang
+				return source
+		for source, self.language in (
+			(pjoin(self.path, 'statement', 'zh-cn.md'), 'zh-cn'),
+			(pjoin(self.path, 'statement', 'en.md'), 'en'),
+			(pjoin(self.path, 'description.md'), None)
+		):
+			if os.path.exists(source):
+				return source
+		raise NoFileException('No md file found.')
+	def lang(self):
+		try:
+			self.statement()
+			return self.language
+		except NoFileException as e:
+			return None
 	def __init__(self, *args):
 		super(Problem, self).__init__(*args)
 	def set_default(self, path = None):
 		super(Problem, self).set_default(path)
 		if 'title' not in self and 'cnname' in self:
 			self['title'] = {'zh-cn' : self.pop('cnname')}
-		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample cases', 'sample_cases', 'down')]:
+		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down')]:
 			tc = set()
 			if data in self:
 				for datum in self.__getattribute__(data)():
@@ -246,11 +261,12 @@ class Problem(Configure):
 			else:
 				self[data] = []
 			if cases in self and type(self[cases]) == int:
-				to_dp = lambda i : DataPath({'case' : str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
-				self[data] = [{'cases' : [
-					to_dp(i) for i in range(1, self.pop(cases) + 1) \
-					if to_dp(i) not in tc
-				]}]
+				log.warning(u'`%s`字段不再使用，使用`python -m generator upgrade`升级。' % cases)
+				#to_dp = lambda i : DataPath({'case' : self['name'] + str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
+				#self[data] = [{'cases' : [
+				#	to_dp(i) for i in range(1, self.pop(cases) + 1) \
+				#	if to_dp(i) not in tc
+				#]}]
 			self.__setattr__(attr, sorter()(list(tc)))
 
 		if self['packed']:
@@ -344,11 +360,11 @@ def load_json(path = '.', route = None):
 					]
 				return conf
 		except Exception as e:
-			log.error('Error at json configure file `%s`.' % pjoin(path, name))
+			log.error(u'文件`%s`错误或子目录下文件错误。' % pjoin(path, name))
+			log.info(e)
 			raise e
 	else:
-		log.error('Can\'t find configure json file at `%s`.' % path)
-		raise NoFileException('Can\'t find configure json file at `%s`.' % path)
+		raise NoFileException(u'路径`%s`下找不到conf.json。' % path)
 
 def del_redundance(conf, red):
 	for key in red:
@@ -421,18 +437,24 @@ def copy(source, name, target):
 	return True
 
 def xopen_file(path):
-	if system == 'Windows':
-		os.startfile(path)
-	elif system == 'Darwin':
-		subprocess.call(["open", path])
-	else:
-		subprocess.call(["xdg-open", path])
+	try:
+		if system == 'Windows':
+			os.startfile(path)
+		elif system == 'Darwin':
+			subprocess.call(["open", path])
+		else:
+			subprocess.call(["xdg-open", path])
+	except Exception as e:
+		log.warning(u'打开文件`%s`失败。' % path)
+		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, sub_set, out_system, args, do_zip, do_encript
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render
+	do_render = True
 	works = []
 	args = []
-	langs = ['zh-cn']
+	langs = [None]
+	lang = None
 	sub_set = None
 	start_file = True
 	do_pack = True
@@ -456,6 +478,8 @@ def deal_args():
 			do_pack = False
 		elif sys.argv[i] == '-z':
 			do_zip = True
+		elif sys.argv[i] == '-r':
+			do_render = False
 		elif sys.argv[i] == '-e':
 			do_zip = True
 			do_encript = True
@@ -463,10 +487,19 @@ def deal_args():
 			i += 1
 			langs = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
-			print('Options:')
-			print('\t-i PATH: Specify a path to work. Otherwise, use current path.')
-			print('\t-s: Do not open result files when finished.')
-			print('\t-p day0/sleep,day2: Only do those work for day0/sleep and day2.')
+			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
+			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
+			log.info(u'只有有逗号的项目可以用逗号获得多个结果，逗号前后不能有空白符。')
+			log.info(u'这套工具的大多数脚本都可以在比赛、比赛日和题目目录下运行。')
+			log.info(u'选项：')
+			log.info(u'  -i PATH             指定PATH作为工作路径，否则使用当前路径。')
+			log.info(u'  -s                  对于有输出的文件的操作，输出完以后不自动打开文件。')
+			log.info(u'  -p day0/sleep,day2  只对day0/sleep和day2进行本次操作；此路径是基于当前文件夹的，')
+			log.info(u'                      例如：在比赛日目录如day1下，则可以直接指定题目如exam；')
+			log.info(u'                      对于tester，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
+			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
+			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
+			log.info(u'  -r                  对于dumper，不先尝试渲染题面。')
 			return False
 		else:
 			if len(works) == 0:
@@ -476,9 +509,44 @@ def deal_args():
 		i += 1
 	return True
 
+def custom_conf():
+	get_tool_conf()
+	c = env_conf['file_log'] if 'file_log' in env_conf else {}
+	file_log = logging.FileHandler(
+		c['path'] if 'path' in c else 'tuack.log',
+		mode = c['mode'] if 'mode' in c else 'a',
+		encoding = c['encoding'] if 'encoding' in c else None
+	)
+	file_log.setLevel(c['level'] if 'level' in c else logging.INFO)
+	file_log.setFormatter(logging.Formatter(
+		c['format'] if 'format' in c else '[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'
+	))
+	log.addHandler(file_log)
+	
+	c = env_conf['bash_log'] if 'bash_log' in env_conf else {}
+	if 'encoding' in c:
+		class MyStream(object):
+			def __init__(self, stream):
+				self.stream = stream
+			def write(self, s):
+				self.stream.buffer.write(s.encode(c['encoding']))
+				self.stream.flush()
+			def flush(self):
+				self.stream.flush()
+		bash_log = logging.StreamHandler(MyStream(sys.stdout))
+	else:
+		bash_log = logging.StreamHandler()
+	bash_log.setLevel(c['level'] if 'level' in c else logging.DEBUG)
+	bash_log.setFormatter(logging.Formatter(
+		c['format'] if 'format' in c else '[%(levelname).1s]%(message)s'
+	))
+	log.addHandler(bash_log)
+	
 def init():
 	import __main__
 	global conf
+	custom_conf()
+	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	if not deal_args():
 		return False
 	conf = load_json()
@@ -487,7 +555,6 @@ def init():
 		check_install('git_lfs')
 	except:
 		pass
-	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	return True
 
 def tr(item):
@@ -508,13 +575,31 @@ def run_r(cmd, path):
 			cmd(cpath)
 		else:
 			run_r(cmd, cpath)
+	
+def get_tool_conf():
+	def get_sys_env():
+		return '$'.join([
+			os.environ[key]
+			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
+			if key in os.environ
+		] + ['py%x' % sys.hexversion])
+	global env_conf
+	try:
+		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+	except:
+		tool_conf = {}
+	sys_env = get_sys_env()
+	if sys_env not in tool_conf:
+		tool_conf[sys_env] = {}
+	env_conf = tool_conf[sys_env]
+	return tool_conf
 
 def check_install(pack):
-	def check_import(pack, extra_info = '', pack_name = None):
+	def check_import(pack, extra_info = '', pack_name = None, level = logging.ERROR):
 		try:
 			__import__(pack)
 		except Exception as e:
-			log.error(u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
+			log.log(level, u'python包%s没有安装，使用 pip install %s 安装。%s' % (pack, pack_name if pack_name else pack, extra_info))
 			if system == 'Windows':
 				log.info(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
 			if system == 'Linux':
@@ -522,7 +607,8 @@ def check_install(pack):
 			raise e
 	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
 	check_jinja2 = lambda : check_import('jinja2')
-	check_natsort = lambda : check_import('natsort')
+	check_natsort = lambda : check_import('natsort', level = logging.WARNING)
+	check_gettext = lambda : check_import('gettext')
 	def check_pandoc():
 		ret = os.system('pandoc -v')
 		if ret != 0:
@@ -566,27 +652,15 @@ def check_install(pack):
 			log.info(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
 			log.info(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
 			raise Exception('git lfs not found')
-	def get_sys_env():
-		return '$'.join([
-			os.environ[key]
-			for key in ['OS', 'SESSIONNAME', 'USERNAME', 'COMPUTERNAME', 'USERDOMAIN', 'USER', 'SHELL', 'SESSION'] \
-			if key in os.environ
-		] + ['py%x' % sys.hexversion])
 
-	global tool_conf
-	try:
-		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
-	except:
-		tool_conf = {}
-	sys_env = get_sys_env()
-	if sys_env not in tool_conf:
-		tool_conf[sys_env] = {}
-	if 'installed' not in tool_conf[sys_env]:
-		tool_conf[sys_env]['installed'] = {}
-	if pack in tool_conf[sys_env]['installed'] and tool_conf[sys_env]['installed'][pack]:
+	tool_conf = get_tool_conf()
+	if 'installed' not in env_conf:
+		env_conf['installed'] = {}
+	if pack in env_conf['installed'] and env_conf['installed'][pack]:
 		return True
 	eval('check_' + pack)()
-	tool_conf[sys_env]['installed'][pack] = True
+	env_conf['installed'][pack] = True
+	
 	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 
@@ -624,3 +698,11 @@ def change_eol(path, eol):
 
 unix2dos = lambda path : change_eol(path, b'\r\n')
 dos2unix = lambda path : change_eol(path, b'\n')
+
+def run_exc(func):
+	try:
+		func()
+		log.info(u'好厉害 这个脚本跑完了呢')
+	except Exception as e:
+		log.error(e)
+		log.info(traceback.format_exc())

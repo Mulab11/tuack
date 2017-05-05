@@ -21,7 +21,7 @@ from common import log
 def tsinsen_oj():
 	new_tc = []
 	
-	class Base:
+	class Base(object):
 		def __init__(self):
 			pass
 		def write(self, text):
@@ -35,7 +35,10 @@ def tsinsen_oj():
 		def write(self, text):
 			self.buff += text
 		def close(self):
-			cur = self.buff.decode('utf-8').strip()
+			if type(self.buff) == bytes:
+				cur = self.buff.decode('utf-8').strip()
+			else:
+				cur = self.buff
 			for name in reversed(self.names[1:]):
 				if not name:
 					cur = [cur]
@@ -64,16 +67,29 @@ def tsinsen_oj():
 			self.fname = common.pjoin(*names)
 			self.buff = b''
 		def write(self, text):
-			self.buff += text
+			self.buff += text.strip() + b'\n'
 		def close(self):
 			ret = json.dumps(json.dumps(self.buff.decode('utf-8'))).encode('utf-8')
 			f = open(self.fname, 'wb')
 			f.write(b'{{ self.title() }}\n')
 			f.write(b'{{ render(%s, \'html\') }}\n' % ret)
 			f.close()
+	class FileName(Base):
+		last_name = None
+		def write(self, text):
+			FileName.last_name = text.decode('utf-8').rstrip('\n\r')
+	class Base64File(Base):
+		def __init__(self):
+			self.buff = b''
+		def write(self, text):
+			self.buff += text
+		def close(self):
+			import base64
+			if not os.path.exists('resources'):
+				os.makedirs('resources')
+			open(common.pjoin('resources', FileName.last_name), 'wb').write(base64.b64decode(self.buff))
 	Title = lambda : Conf('title', 'zh-cn')
 	CheckPoint = lambda : Conf('key words')
-	Checkers = Base
 	TestMethod = Base
 	InputFileName = Base
 	OutputFileName = Base
@@ -82,26 +98,26 @@ def tsinsen_oj():
 	
 	class TimeLimit(Conf):
 		def __init__(self):
-			super().__init__('time limit')
+			super(TimeLimit, self).__init__('time limit')
 		def close(self):
-			self.buff = self.buff.strip()[:-1]
-			super().close()
+			self.buff = float(self.buff.strip()[:-1])
+			super(TimeLimit, self).close()
 	
 	class MemoryLimit(Conf):
 		def __init__(self):
-			super().__init__('memory limit')
+			super(MemoryLimit, self).__init__('memory limit')
 		def close(self):
 			if len(self.buff) >= 2:
 				s = self.buff.strip().decode('utf-8')
 				sp = 1 if '0' <= s[-2] <= '9' else 2
 				self.buff = (s[:-sp] + ' ' + s[-sp:]).encode('utf-8')
-			super().close()
+			super(MemoryLimit, self).close()
 	
 	class Solution(File):
 		def __init__(self):
-			super().__init__('tsinsen-oj', 'std', 'std.cpp')
+			super(Solution, self).__init__('tsinsen-oj', 'std', 'std.cpp')
 		def close(self):
-			super().close()
+			super(Solution, self).close()
 			if 'users' not in common.conf:
 				common.conf['users'] = {}
 			if 'tsinsen-oj' not in common.conf['users']:
@@ -116,31 +132,55 @@ def tsinsen_oj():
 				if str(i) not in tc:
 					name = i
 			new_tc.append(name)
-			common.conf['test cases'].append(name)
+			common.conf.test_cases.append(name)
 			InData.last_in = name
-			super().__init__('data', '%d.in' % name)
+			super(InData, self).__init__('data', '%d.in' % name)
 			
 	class OutData(File):
 		def __init__(self):
-			super().__init__('data', '%d.out' % InData.last_in)
+			super(OutData, self).__init__('data', '%d.out' % InData.last_in)
+			
+	class Checkers(File):
+		fname = ('data', 'chk', 'chk.cpp')
+		def __init__(self):
+			super(Checkers, self).__init__(*Checkers.fname)
+		def close(self):
+			super(Checkers, self).close()
+			if os.path.getsize(common.pjoin(*Checkers.fname)) < 10:
+				shutil.rmtree(common.pjoin(*Checkers.fname[:2]), ignore_errors = True)
+	import re
+	key_re = re.compile('(\w*)\((\w*)\)')
 
 	if common.conf.folder != 'problem':
-		common.fatal('Must load to a problem')
+		log.error(u'只能导入到一个problem的工程中。')
+		return
 	status = None
 	for line in open(common.args[0], 'rb'):
-		if not status:			# ɶ��û��
+		if not status:			# 啥都没有
 			try:
-				buffer = eval(line.decode('utf-8').strip()[:-1])()
+				key = line.decode('utf-8').strip()[:-1]
+				m = key_re.match(key)
+				if m:
+					if m.group(1) == 'File':
+						log.warning(u'题面含有文件，请在题面中手工查找字符串`%s`并进行相应修改，该文件保存在`resources/%s`。' % (
+							m.group(2), FileName.last_name
+						))
+						buffer = Base64File()
+					else:
+						log.warning(u'无法解析关键词`%s`。' % key)
+				else:
+					buffer = eval(key)()
 			except Exception as e:
-				common.warning(str(e))
+				log.warning(u'无法解析关键词`%s`。' % key)
+				log.debug(e)
 				buffer = Base()
 			status = True
-		elif status == True:	# �����˵Ⱥŵ��У���û������ǿ�ʼ����
+		elif status == True:	# 读到了等号的行，还没读到标记开始的行
 			status = line
-		elif status == line:	# �����˱�ǽ�������
+		elif status == line:	# 读到了标记结束的行
 			buffer.close()
 			status = None
-		else:					# �����˱�ǿ�ʼ���У���û������ǽ�������
+		else:					# 读到了标记开始的行，还没读到标记结束的行
 			buffer.write(line)
 	if len(new_tc) > 0:
 		if 'data' not in common.conf:
@@ -153,8 +193,13 @@ work_list = {
 }
 
 if __name__ == '__main__':
-	if common.init() and len(common.args) != 0:
-		for common.work in common.works:
-			work_list[common.work]()
-	else:
-		pass
+	try:
+		if common.init() and len(common.args) != 0:
+			for common.work in common.works:
+				common.run_exc(work_list[common.work])
+		else:
+			log.info(u'这个工具用于导入其他类型的工程，参数1必须是来源路径。')
+			log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
+	except common.NoFileException as e:
+		log.error(e)
+		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
