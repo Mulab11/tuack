@@ -187,6 +187,17 @@ sudo tlmgr install environ
 sudo tlmgr install trimspaces
 ```
 
+然后你可能需要安装以下字体.
+
+```
+SimHei.ttf
+SimSun.ttf
+KaiTi.ttf
+Consolas.ttf
+```
+
+这个字体自己 google 一下下载下来安装就好了.
+
 ### 只对特定的题目进行操作
 
 前面几个工具都可以使用类似于 `-p day1,day2` 和 `-p day1/excellent,day2/drink,day1/grid` 来指定特定的天数或题目。对于 `tester`，还可以指定评测用户或是算法。例如：
