@@ -160,7 +160,7 @@ Ubuntu下先运行下列命令：
 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
 ```
 
-然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
+然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。如果你不方便复制字体，[这里](https://cloud.thusaac.org/index.php/s/vWQX9kEpCMZ8JGF)有一个字体包。注意：里面大多数字体是没有用的，但是作者太懒了；要是你有兴趣帮忙删除一些字体的话请联系作者。
 
 注意在复制的时候不要直接从Ubuntu下直接访问Windows下的字体，应从Windows下先把字体拷贝到某个文件夹中，然后再copy到`/usr/share/fonts/win`下。涉及到某些链接的问题。
 
@@ -379,6 +379,8 @@ lectures	//有讲座的活动（WC、APIO等），讲座的东西（包括集训
 但是我们推荐将所有数据的参数全部放在这里，题面的书写工具提供了获取这些参数的方法，你的数据生成器一般也有方法读取这个json文件（虽然C++也有相关的轮子，但如果不会的话你可以用python读了传给C++），未来我们还会将这些参数传给val。
 
 注意在这些json文件中，经过程序处理的中文会转成unicode字符串如 `\u7b2c\u4e00\u8bd5`，这除了你看不懂以外并不影响什么，你仍然可以在json中用utf-8格式写中文，甚至在一个字符串中混用这样的字符串和中文。
+
+建议使用比较兼容的方式书写chk，具体某些评测平台的接口见 `samples/chk.cpp`。
 
 ## 题面的书写
 
