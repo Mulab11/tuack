@@ -249,6 +249,7 @@ class Problem(Configure):
 			return None
 	def __init__(self, *args):
 		super(Problem, self).__init__(*args)
+		self.chk = None
 	def set_default(self, path = None):
 		super(Problem, self).set_default(path)
 		if 'title' not in self and 'cnname' in self:
@@ -424,13 +425,13 @@ def copy(source, name, target):
 			os.chdir(pjoin(source, name))
 			cpp_file = name + '.cpp'
 			elf_file = name + elf_suffix
-			if os.system('g++ %s -o %s -O2' % (cpp_file, elf_file)) != 0:
+			if os.system('g++ %s -o %s -O2 -std=c++14 -Wall' % (cpp_file, elf_file)) != 0:
 				os.chdir(ret)
-				error('Can\'t compile \'%s\'' % pjoin(full_source, cpp_file))
+				log.error('`%s`编译失败。' % pjoin(full_source, cpp_file))
 				return True
 			else:
 				os.chdir(ret)
-				infom('\'%s\' compile succeeded.' % pjoin(full_source, cpp_file))
+				log.info('`%s`编译成功。' % pjoin(full_source, cpp_file))
 			shutil.move(pjoin(full_source, elf_file), target)
 	else:
 		shutil.copy(full_source, target)
@@ -545,10 +546,10 @@ def custom_conf():
 def init():
 	import __main__
 	global conf
-	custom_conf()
-	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	if not deal_args():
 		return False
+	custom_conf()
+	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	conf = load_json()
 	try:
 		check_install('git')

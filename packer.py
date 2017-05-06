@@ -32,7 +32,7 @@ def find_doc(path, name):
 def test_copy_problem_files(prob):
 	data_path = os.path.join(prob.path, 'data')
 	try:
-		copy(data_path, 'chk', os.path.join(output_folder, prob.route))
+		copy(data_path, 'chk', common.pjoin(output_folder, prob.route))
 		prob.chk = True
 	except Exception as e:
 		prob.chk = False
@@ -256,8 +256,10 @@ def test():
 	global output_folder
 	common.no_compiling = False
 	output_folder = 'bin'
-	if common.conf['folder'] != 'problem':
+	if common.conf.folder != 'bin':
 		remkdir('bin')
+		for day in common.days():
+			remkdir(common.pjoin('bin', day.route))
 	copy_files('test_')
 	
 def pc2():

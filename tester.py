@@ -201,7 +201,7 @@ def test(prob):
 				ret = 'Output file does not exist.'
 				time = 0.0
 				score = 0.0
-			elif 'chk' in prob and prob['chk']:
+			elif prob.chk:
 				shutil.copy(common.pjoin('bin', prob.route), common.pjoin('tmp', 'chk' + common.elf_suffix))
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
 					common.pjoin('tmp', 'chk' + common.elf_suffix),

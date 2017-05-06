@@ -51,7 +51,7 @@ int main(int argc, char** argv);
 
 上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `noi` 表示只在生成 NOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
 
-可选的参数有 `html`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-html`，`tuoj-tex`，`tuoj-html`。
+可选的参数有 `html`，`md`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-md`，`tuoi`，`tupc`。
 
 ## {{ _('Input Format') }}
 
