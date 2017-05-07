@@ -546,9 +546,9 @@ def custom_conf():
 def init():
 	import __main__
 	global conf
+	custom_conf()
 	if not deal_args():
 		return False
-	custom_conf()
 	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 	conf = load_json()
 	try:
