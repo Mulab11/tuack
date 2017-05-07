@@ -163,7 +163,7 @@ def arbiter(conf = None,daynum = 0):
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
 	arbiter_info(dayinfo,common.pjoin('arbiter',conf['name']+'.info'))
-	for probnum, prob in enumerate(common.probs(conf), start = 1):
+	for probnum, prob in enumerate(conf.sub, start = 1):
 		print(prob['name'])
 		probinfo = {}
 		probinfo['TITLE='] = ''
