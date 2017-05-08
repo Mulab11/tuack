@@ -16,7 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import common
-from common import log
+from common import log, pjoin, rjoin
 
 def run_windows(name, tl, ml, input = None, output = None):
 	'''
@@ -96,7 +96,7 @@ def run_linux(name, tl, ml, input = None, output = None):
 def runner_mac(name, que, ml, input = None, output = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; (time -p ./%s %s %s) 2> timer' % (
-			common.memory2bytes(ml) // 1024,
+			common.Memory(ml).KB,
 			name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
@@ -147,7 +147,7 @@ elif common.system == 'Darwin':
 	
 def compile(prob):
 	for lang, args in prob['compile'].items():
-		if os.path.exists(common.pjoin('tmp', prob['name'] + '.' + lang)):
+		if os.path.exists(pjoin('tmp', prob['name'] + '.' + lang)):
 			os.chdir('tmp')
 			ret = subprocess.call(
 				common.compilers[lang](prob['name'], args, common.macros[common.work]),
@@ -177,37 +177,37 @@ def test(prob):
 	for case in all_cases:
 		print('Case %s:%s  ' % (case['key'], case), end = '\r')
 		sys.stdout.flush()
-		shutil.copy(case.full() + '.in', common.pjoin('tmp', 'in'))
-		shutil.copy(case.full() + '.ans', common.pjoin('tmp', 'ans'))
+		shutil.copy(case.full() + '.in', pjoin('tmp', 'in'))
+		shutil.copy(case.full() + '.ans', pjoin('tmp', 'ans'))
 		for fname in ('in', 'ans'):
 			if common.system == 'Windows':
-				common.unix2dos(common.pjoin('tmp', fname))
+				common.unix2dos(pjoin('tmp', fname))
 			else:
-				common.dos2unix(common.pjoin('tmp', fname))
+				common.dos2unix(pjoin('tmp', fname))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
 			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
 			os.chdir('..')
 		else:
-			if os.path.exists(common.pjoin('tmp', case['case'] + '.out')):
-				shutil.copy(common.pjoin('tmp', case['case'] + '.out'), common.pjoin('tmp', 'out'))
+			if os.path.exists(pjoin('tmp', case['case'] + '.out')):
+				shutil.copy(pjoin('tmp', case['case'] + '.out'), pjoin('tmp', 'out'))
 				ret = None
 				time = 0.0
 			else:
 				ret = 'Output file does not exist.'
 				time = 0.0
 		if not ret:
-			if not os.path.exists(common.pjoin('tmp', 'out')):
+			if not os.path.exists(pjoin('tmp', 'out')):
 				ret = 'Output file does not exist.'
 				time = 0.0
 				score = 0.0
 			elif prob.chk:
-				shutil.copy(common.pjoin('bin', prob.route), common.pjoin('tmp', 'chk' + common.elf_suffix))
+				shutil.copy(pjoin('bin', prob.route), pjoin('tmp', 'chk' + common.elf_suffix))
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
-					common.pjoin('tmp', 'chk' + common.elf_suffix),
-					common.pjoin('tmp', 'in'),
-					common.pjoin('tmp', 'out'),
-					common.pjoin('tmp', 'ans')
+					pjoin('tmp', 'chk' + common.elf_suffix),
+					pjoin('tmp', 'in'),
+					pjoin('tmp', 'out'),
+					pjoin('tmp', 'ans')
 				))
 				try:
 					arbiter_out = ('/' if common.system != 'Windows' else '') + 'tmp/_eval.score'
@@ -225,8 +225,8 @@ def test(prob):
 			else:
 				ret = os.system('%s %s %s > log' % (
 					common.diff_tool,
-					common.pjoin('tmp', 'ans'),
-					common.pjoin('tmp', 'out')
+					pjoin('tmp', 'ans'),
+					pjoin('tmp', 'out')
 				))
 				if ret == 0:
 					score = 1.0
@@ -242,9 +242,9 @@ def test(prob):
 		else:
 			score = 0.0
 			report = ret
-		while os.path.exists(common.pjoin('tmp', prob['name'] + '.out')):
+		while os.path.exists(pjoin('tmp', prob['name'] + '.out')):
 			try:
-				os.remove(common.pjoin('tmp', prob['name'] + '.out'))
+				os.remove(pjoin('tmp', prob['name'] + '.out'))
 			except:
 				pass
 		scores.append(score)
@@ -272,11 +272,11 @@ def test_problem(prob):
 		return
 	if 'data' not in prob or len(prob.test_cases) == 0:
 		log.warning(u'题目`%s`缺少`data`字段，使用`python -m generator data`在文件夹`%s`下搜索测试数据。' % (
-			prob.route, common.pjoin(prob.path, 'data')
+			prob.route, pjoin(prob.path, 'data')
 		))
 	if 'samples' not in prob or len(prob.sample_cases) == 0:
 		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m generator samples`在文件夹`%s`下搜索样例数据。' % (
-			prob.route, common.pjoin(prob.path, 'down')
+			prob.route, pjoin(prob.path, 'down')
 		))
 	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
@@ -284,7 +284,7 @@ def test_problem(prob):
 		u'是' if prob['packed'] else u'不是',
 		(u'（共%d个包）' % len(prob.data()) if len(prob.data()) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
 	))
-	with open(common.pjoin('result', prob.route) + '.csv', 'w') as fres:
+	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
 			','.join(prob.test_cases),
@@ -293,18 +293,18 @@ def test_problem(prob):
 			','.join(prob.sample_cases)
 		))
 		for user, algos in prob.users().items():
-			if (not prob.all and not common.any_prefix(common.rjoin(prob.route, user))):
+			if (not prob.all and not common.any_prefix(rjoin(prob.route, user))):
 				continue
 			for algo, path in algos.items():
-				if (not prob.all and not common.any_prefix(common.rjoin(prob.route, user, algo))):
+				if (not prob.all and not common.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				if os.path.exists('tmp'):
 					shutil.rmtree('tmp')
 				if prob['type'] == 'program':
 					os.makedirs('tmp')
-					shutil.copy(path, common.pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
+					shutil.copy(path, pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
 				else:
-					shutil.copytree(common.pjoin(prob['name'], user, algo), 'tmp')
+					shutil.copytree(pjoin(prob['name'], user, algo), 'tmp')
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob)
 				while os.path.exists('tmp'):
@@ -336,13 +336,13 @@ def test_problem(prob):
 				for title, line in [(user, scores), (algo, times), ('', reports)]:
 					fres.write('%s,%s\n' % (title, ','.join(line)))
 	if common.start_file:
-		common.xopen_file(common.pjoin('result', prob.route) + '.csv')
+		common.xopen_file(pjoin('result', prob.route) + '.csv')
 
 def test_progs():
 	if common.conf.folder != 'problem' and not os.path.exists('result'):
 		os.makedirs('result')
 	for day in common.days():
-		path = common.pjoin('result', day.route)
+		path = pjoin('result', day.route)
 		if not os.path.exists(path):
 			os.makedirs(path)
 	for prob in common.probs():

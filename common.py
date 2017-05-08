@@ -427,11 +427,11 @@ def copy(source, name, target):
 			elf_file = name + elf_suffix
 			if os.system('g++ %s -o %s -O2 -std=c++14 -Wall' % (cpp_file, elf_file)) != 0:
 				os.chdir(ret)
-				log.error('`%s`编译失败。' % pjoin(full_source, cpp_file))
+				log.error(u'`%s`编译失败。' % pjoin(full_source, cpp_file))
 				return True
 			else:
 				os.chdir(ret)
-				log.info('`%s`编译成功。' % pjoin(full_source, cpp_file))
+				log.info(u'`%s`编译成功。' % pjoin(full_source, cpp_file))
 			shutil.move(pjoin(full_source, elf_file), target)
 	else:
 		shutil.copy(full_source, target)
