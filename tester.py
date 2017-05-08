@@ -216,10 +216,10 @@ def test(prob):
 					score = float(f.readline()) * 0.1
 					f.close()
 					shutil.remove(arbiter_out)
-				except FileNotFoundError as e:
+				except Exception as e:
 					try:
 						report = open('tmp/info').read().strip()
-					except FileNotFoundError as e:
+					except Exception as e:
 						report = ''
 					score = float(open('tmp/score').readline()) * .01
 			else:
@@ -266,6 +266,7 @@ def packed_score(scores, times, reports, score_map, prob):
 	return (pscore, ptime, preport)
 	
 def test_problem(prob):
+	log.info(u'尝试评测题目`%s`。' % prob.route)
 	if 'users' not in prob:
 		log.warning(u'题目`%s`缺少`users`字段，使用`python -m generator code`搜索源代码。' % prob.route)
 		return
@@ -277,6 +278,12 @@ def test_problem(prob):
 		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m generator samples`在文件夹`%s`下搜索样例数据。' % (
 			prob.route, common.pjoin(prob.path, 'down')
 		))
+	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
+		len(prob.sample_cases),
+		len(prob.test_cases),
+		u'是' if prob['packed'] else u'不是',
+		(u'（共%d个包）' % len(prob.data()) if len(prob.data()) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
+	))
 	with open(common.pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
