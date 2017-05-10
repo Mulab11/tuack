@@ -250,6 +250,8 @@ class Problem(Configure):
 	def __init__(self, *args):
 		super(Problem, self).__init__(*args)
 		self.chk = None
+		self.data = self.get_data('data')
+		self.samples = self.get_data('samples')
 	def set_default(self, path = None):
 		super(Problem, self).set_default(path)
 		if 'title' not in self and 'cnname' in self:
@@ -257,7 +259,7 @@ class Problem(Configure):
 		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down')]:
 			tc = set()
 			if data in self:
-				for datum in self.__getattribute__(data)():
+				for datum in self.__getattribute__(data):
 					tc |= set(datum['cases'])
 			else:
 				self[data] = []
@@ -273,16 +275,17 @@ class Problem(Configure):
 		if self['packed']:
 			num_unscored = 0
 			total_score = 0.0
-			for datum in self['data']:
+			for datum in self.data:
 				if 'score' in datum:
+					datum.score = datum['score']
 					total_score += datum['score']
 				else:
 					num_unscored += 1
 			if num_unscored != 0:
 				item_score = (100. - total_score) / num_unscored
-				for datum in self['data']:
+				for datum in self.data:
 					if 'score' not in datum:
-						datum['score'] = item_score
+						datum.score = item_score
 
 	def extend_pathed(self, path):
 		if path.startswith(':'):
@@ -323,12 +326,6 @@ class Problem(Configure):
 			return ret
 		return self.getitem(key, data_pathed)
 
-	def data(self):
-		return self.get_data('data')
-
-	def samples(self):
-		return self.get_data('samples')
-		
 	def ml(self):
 		return Memory(self['memory limit'])
 		

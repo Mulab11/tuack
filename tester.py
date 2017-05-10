@@ -256,10 +256,10 @@ def packed_score(scores, times, reports, score_map, prob):
 	pscore = []
 	ptime = []
 	preport = []
-	for datum in prob.data():
-		pscore.append(datum['score'] * min((scores[score_map[i]] for i in datum['cases'])))
+	for datum in prob.data:
+		pscore.append(datum.score * min((scores[score_map[i]] for i in datum['cases'])))
 		ptime.append(sum((times[score_map[i]] for i in datum['cases'] if scores[score_map[i]] > 0)))
-		preport.append('Total %.1f' % datum['score'])
+		preport.append('Total %.1f' % datum.score)
 	pscore.append(sum(pscore))
 	ptime.append(sum(ptime))
 	preport.append('')
@@ -282,13 +282,13 @@ def test_problem(prob):
 		len(prob.sample_cases),
 		len(prob.test_cases),
 		u'是' if prob['packed'] else u'不是',
-		(u'（共%d个包）' % len(prob.data()) if len(prob.data()) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
+		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
 	))
 	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
 			','.join(prob.test_cases),
-			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob.data())) \
+			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob.data)) \
 				if prob['packed'] else '',
 			','.join(prob.sample_cases)
 		))
