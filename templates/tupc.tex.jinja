@@ -40,7 +40,7 @@
 			{%- endif -%} . ~
 			{{- probs[i].tr('title') -}} 
 			~~/~~ 
-			{% if probs[i].lang == 'en' %}
+			{% if probs[i].lang() == 'en' %}
 			{{- probs[i]['name'] -}}
 			{% else %}
 			{{- probs[i]['name'].capitalize() -}}
