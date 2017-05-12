@@ -2,44 +2,44 @@
 
 {% block input_file %}
 	{%- if io_style == 'stdio' -%}
-		{{ 'Read from the standard input.' }}
+		{{ _('Read from the standard input.') }}
 	{%- elif io_style == 'fio' -%}
-		{{ 'Read from the file *%s.in*.' % prob['name'] }}
+		{{ _('Read from the file *%s.in*.') % prob['name'] }}
 	{%- endif -%}
 {% endblock %}
 
 {% block output_file %}
 	{%- if io_style == 'stdio' -%}
-		{{ 'Write to the standard output.' }}
+		{{ _('Write to the standard output.') }}
 	{%- elif io_style == 'fio' -%}
-		{{ 'Write to the file *%s.out*.' % prob['name'] }}
+		{{ _('Write to the file *%s.out*.') % prob['name'] }}
 	{%- endif -%}
 {% endblock %}
 
 {%- block user_path -%}
 	{%- if comp == 'uoj' -%}
-		[{{ 'download files' }}](/download.php?type=problem&id={{ prob['uoj id'] }})
+		[{{ _('download files') }}](/download.php?type=problem&id={{ prob['uoj id'] }})
 	{%- elif comp == 'tsinsen-oj' -%}
-		{{ 'download files' }}
+		{{ _('download files') }}
 	{%- elif comp == 'noi' -%}
-		{{ 'user\'s home path' }}
+		{{ _('user\'s home path') }}
 	{%- else -%}
-		{{ 'problem path' }}
+		{{ _('problem path') }}
 	{%- endif -%}
 {%- endblock -%}
 
 {% block sample_text -%}
 {% block title_sample %}
 {% if comp == 'uoj' -%}
-## {{ 'Sample' }} {{ vars['sample_id'] if 'sample_id' in vars else '' }}
+## {{ _('Sample') }} {{ vars['sample_id'] if 'sample_id' in vars else '' }}
 {%- endif %}
 {% endblock %}
 
 {% block sample_input_text %}
 {% if comp == 'uoj' -%}
-### {{ 'Input' }}
+### {{ _('Input') }}
 {%- else -%}
-## {{ 'Sample Input %s' % (vars['sample_id'] if 'sample_id' in vars else '') }}
+## {{ _('Sample Input %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
@@ -53,9 +53,9 @@
 {% endblock %}
 {% block sample_output_text %}
 {% if comp == 'uoj' -%}
-### {{ 'Output' }}
+### {{ _('Output') }}
 {%- else -%}
-## {{ 'Sample Output %s' % (vars['sample_id'] if 'sample_id' in vars else '') }}
+## {{ _('Sample Output %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
@@ -72,17 +72,17 @@
 
 {% block title_sample_description -%}
 	{%- if comp == 'uoj' -%}
-### {{ 'Explanation' }}
+### {{ _('Explanation') }}
 	{%- else -%}
-## {{ 'Sample' }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}{{ 'Explanation' }}
+## {{ _('Sample') }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}{{ _('Explanation') }}
 	{%- endif -%}
 {%- endblock %}
 
 {% block sample_file -%}
-## {{ 'Sample' }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}
+## {{ _('Sample') }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}
 
 {{ 
-	'See *%(in)s* and *%(ans)s* in the %(path)s.' % {
+	_('See *%(in)s* and *%(ans)s* in the %(path)s.') % {
 		'path' : self.user_path(),
 		'in' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if  'sample_id' in vars else '1') + '.in'),
 		'ans' : file_name(('ex_' if comp == 'uoj' else '') + (prob['name'] if comp == 'noi' else '') + (vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans')
@@ -93,17 +93,17 @@
 {% block title %}
 
 {% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc' or comp == 'ccpc') %}
-**{{ 'Time limit:' }}** {{ prob['time limit'] }} {{ 'second(s)' }} 
+**{{ _('Time limit:') }}** {{ prob['time limit'] }} {{ _('second(s)') }} 
 {% endif %}
 {% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc') %}
-**{{ 'Memory limit:' }}** {{ prob['memory limit'] }}
+**{{ _('Memory limit:') }}** {{ prob['memory limit'] }}
 {% endif %}
 {% if comp == 'tuoj' -%}
-**{{ 'Related files:' }}** {{ self.user_path() }}
+**{{ _('Related files:') }}** {{ self.user_path() }}
 {% endif %}
 {% if prob['type'] == 'output' %}
-**{{ 'This is an output-only problem.' }}**
+**{{ _('This is an output-only problem.') }}**
 {% elif prob['type'] != 'program' %}
-**{{ 'This is an alternating problem.' }}**
+**{{ _('This is an alternating problem.') }}**
 {% endif %}
 {% endblock %}

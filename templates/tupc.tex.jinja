@@ -38,7 +38,8 @@
 			{%- else -%}
 				{{ tools.chr(tools.ord('A') + i) }}
 			{%- endif -%} . ~
-			{{- probs[i].tr('title') -}}
+			{{- probs[i].tr('title') -}} ~~/~~ 
+			{{- probs[i]['name'].capitalize() -}}
 		}
 	\end{center}
 	
