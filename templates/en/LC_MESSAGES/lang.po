@@ -20,7 +20,7 @@ msgstr "Read from standard input."
 #从标准输入读入数据。"
 
 msgid "Sample"
-msgstr "Sample"
+msgstr "Sample "
 
 #样例"
 
