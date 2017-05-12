@@ -38,8 +38,13 @@
 			{%- else -%}
 				{{ tools.chr(tools.ord('A') + i) }}
 			{%- endif -%} . ~
-			{{- probs[i].tr('title') -}} ~~/~~ 
+			{{- probs[i].tr('title') -}} 
+			~~/~~ 
+			{% if probs[i].lang == 'en' %}
+			{{- probs[i]['name'] -}}
+			{% else %}
 			{{- probs[i]['name'].capitalize() -}}
+			{% endif %}
 		}
 	\end{center}
 	
