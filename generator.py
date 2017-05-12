@@ -48,8 +48,13 @@ def find_all_data(kind, folder, key, conf = None):
 		log.info(u'在题目`%s`下搜索%s数据。' % (prob.route, key))
 		new_data = set()
 		exist_data = set(map(str, prob.__getattribute__(key)))
-		find_data()
+		try:
+			find_data()
+		except Exception as e:
+			log.warning(e)
 		new_data = parse(new_data)
+		for datum in new_data:
+			log.info(u'发现新数据`%s`。' % (common.pjoin(prob.path, folder, datum)))
 		prob.__getattribute__(key).__iadd__(new_data)
 		if kind not in prob:
 			prob[kind] = []
@@ -67,6 +72,7 @@ def find_all_code():
 						continue
 					if common.rjoin(user, path, f) not in exist_code:
 						prob['users'][user][common.rjoin(path, f)] = common.rjoin(user, path, f)
+						log.info(u'发现新源代码`%s`。' % common.rjoin(user, path, f))
 					break
 			else:
 				if common.user_skip.match(f):
