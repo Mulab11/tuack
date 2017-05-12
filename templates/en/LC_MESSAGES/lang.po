@@ -15,91 +15,137 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 msgid "Read from the standard input."
-msgstr "从标准输入读入数据。"
+msgstr "Read from standard input."
+
+#从标准输入读入数据。"
 
 msgid "Sample"
-msgstr "样例"
+msgstr "Sample"
+
+#样例"
 
 msgid "Sample Input %s"
-msgstr "样例%s输入"
+msgstr "Sample Input %s"
+
+#样例%s输入"
 
 msgid "Input"
-msgstr "输入"
+msgstr "Input"
+
+#输入"
 
 msgid "Sample Output %s"
-msgstr "样例%s输出"
+msgstr "Sample Output %s"
+
+#样例%s输出"
 
 msgid "Output"
-msgstr "输出"
+msgstr "Output"
+
+#输出"
 
 msgid "Explanation"
-msgstr "解释"
+msgstr "Explanation"
+
+#解释"
 
 msgid "Sample Explanation %s"
-msgstr "样例%s解释"
+msgstr "Sample Explanation %s"
+
+#样例%s解释"
 
 msgid "Input Format"
-msgstr "输入格式"
+msgstr "Input Format"
+
+#输入格式"
 
 msgid "Output Format"
-msgstr "输出格式"
+msgstr "Output Format"
+
+#输出格式"
 
 msgid "Description"
 msgstr "Description"
 
 msgid "Background"
-msgstr "题目背景"
+msgstr "Background"
+
+#题目背景"
 
 msgid "Hint"
-msgstr "提示"
+msgstr "Hint"
+
+#提示"
 
 msgid "Subtasks"
-msgstr "子任务"
+msgstr "Subtasks"
+
+#子任务"
 
 msgid "Time limit:"
 msgstr "Time limit:"
 
 msgid "Time limit"
-msgstr "时间限制"
+msgstr "Time limit"
 
 msgid "Memory limit:"
 msgstr "Memory limit:"
 
 msgid "Memory limit"
-msgstr "空间限制"
+msgstr "Memory limit"
 
 msgid "second(s)"
 msgstr "second(s)"
 
 msgid "Read from the file *%s.in*."
-msgstr "从文件 *%s.in* 中读入数据。"
+msgstr "Read from the file *%s.in*."
+
+#msgstr "从文件 *%s.in* 中读入数据。"
 
 msgid "Write to the standard output."
-msgstr "输出到标准输出。"
+msgstr "Write to the standard output."
+
+#msgstr "输出到标准输出。"
 
 msgid "Write to the file *%s.out*."
-msgstr "输出到文件 *%s.out* 中。"
+msgstr "Write to the file *%s.out*."
+
+#msgstr "输出到文件 *%s.out* 中。"
 
 msgid "download files"
-msgstr "下载目录"
+msgstr "download files"
+
+#msgstr "下载目录"
 
 msgid "user's home path"
-msgstr "选手目录"
+msgstr "user's home path"
+
+#msgstr "选手目录"
 
 msgid "problem path"
-msgstr "题目目录"
+msgstr "problem path"
+
+#msgstr "题目目录"
 
 msgid "See *%(in)s* and *%(ans)s* in the %(path)s."
-msgstr "见%(path)s下的 *%(in)s* 与 *%(ans)s*。"
+msgstr "See *%(in)s* and *%(ans)s* in the %(path)s."
+
+#msgstr "见%(path)s下的 *%(in)s* 与 *%(ans)s*。"
 
 msgid "Related files:"
-msgstr "相关文件："
+msgstr "Related files:"
+
+#msgstr "相关文件："
 
 msgid "This is an output-only problem."
-msgstr "这是一道提交答案题。"
+msgstr "This is an output-only problem."
+
+#msgstr "这是一道提交答案题。"
 
 msgid "This is an alternating problem."
-msgstr "这是一道交互题。"
+msgstr "This is an alternating problem."
+
+#msgstr "这是一道交互题。"
 
 msgid "Time:"
 msgstr " "
