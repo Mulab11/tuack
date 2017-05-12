@@ -54,7 +54,7 @@ def find_all_data(kind, folder, key, conf = None):
 			log.warning(e)
 		new_data = parse(new_data)
 		for datum in new_data:
-			log.info(u'发现新数据`%s`。' % (common.pjoin(prob.path, folder, datum)))
+			log.info(u'发现新数据`%s`。' % (common.pjoin(prob.path, folder, str(datum))))
 		prob.__getattribute__(key).__iadd__(new_data)
 		if kind not in prob:
 			prob[kind] = []
