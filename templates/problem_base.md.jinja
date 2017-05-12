@@ -39,7 +39,7 @@
 {% if comp == 'uoj' -%}
 ### {{ _('Input') }}
 {%- else -%}
-## {{ _('Sample Input %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
+## {{ 'Sample Input %s' % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
@@ -55,7 +55,7 @@
 {% if comp == 'uoj' -%}
 ### {{ _('Output') }}
 {%- else -%}
-## {{ _('Sample Output %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
+## {{ 'Sample Output %s' % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
 {{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}

@@ -85,14 +85,14 @@ msgstr "Subtasks"
 msgid "Time limit:"
 msgstr "Time limit:"
 
-#msgid "Time limit"
-#msgstr "时间限制"
+msgid "Time limit"
+msgstr "Time limit"
 
 msgid "Memory limit:"
 msgstr "Memory limit:"
 
-#msgid "Memory limit"
-#msgstr "空间限制"
+msgid "Memory limit"
+msgstr "Memory limit"
 
 msgid "second(s)"
 msgstr "second(s)"
