@@ -203,12 +203,14 @@ def test(prob):
 				score = 0.0
 			elif prob.chk:
 				shutil.copy(pjoin('bin', prob.route), pjoin('tmp', 'chk' + common.elf_suffix))
+				open('100.0', 'w').write('100.0\n')
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
 					pjoin('tmp', 'chk' + common.elf_suffix),
 					pjoin('tmp', 'in'),
 					pjoin('tmp', 'out'),
 					pjoin('tmp', 'ans')
 				))
+				os.remove('100.0')
 				try:
 					arbiter_out = ('/' if common.system != 'Windows' else '') + 'tmp/_eval.score'
 					f = open(arbiter_out)
