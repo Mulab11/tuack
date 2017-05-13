@@ -26,7 +26,7 @@ diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
 elf_suffix = '' if system != 'Windows' else '.exe'
 problem_skip = re.compile(r'^(data|down|tables|resources|gen)$')
-user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check|make_data|make|generate|generator|makedata|.*\.test|.*\.dir)$')
+user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check|make_data|data_maker|data_make|make|generate|generator|makedata|spj|judge|.*\.test|.*\.dir)$')
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
