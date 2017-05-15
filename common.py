@@ -664,7 +664,7 @@ def check_install(pack):
 
 def change_eol(path, eol):
 	import uuid
-	ufname = str(uuid.uuid4())
+	ufname = str(uuid.uuid4()) + '.tmp'
 	space_end = False
 	is_text = True
 	with open(ufname, 'wb') as f:
