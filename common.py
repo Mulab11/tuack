@@ -37,7 +37,7 @@ macros = {
 	'uoj' : '-DONLINE_JUDGE',
 	'noi' : '-D__ARBITER__',
 	'release' : '',
-	'test' : '-D__OI_TESTER__'
+	'test' : '-D__TUACK__ -DONLINE_JUDGE'
 }
 
 frep = open('tester.log', 'a')
@@ -484,6 +484,9 @@ def deal_args():
 		elif sys.argv[i] == '-l':
 			i += 1
 			langs = set(sys.argv[i].split(','))
+		elif sys.argv[i] == '-t':
+			i += 1
+			time_multiplier = floag(sys.argv[i])
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
 			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
 			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
@@ -495,6 +498,7 @@ def deal_args():
 			log.info(u'  -p day0/sleep,day2  只对day0/sleep和day2进行本次操作；此路径是基于当前文件夹的，')
 			log.info(u'                      例如：在比赛日目录如day1下，则可以直接指定题目如exam；')
 			log.info(u'                      对于tester，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
+			log.info(u'  -t 6.0              对于tester，设置掐断时间为6.0*时间限制，用于对比不同程序的时限。')
 			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
 			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
 			log.info(u'  -r                  对于dumper，不先尝试渲染题面。')
