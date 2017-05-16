@@ -161,3 +161,12 @@ msgstr " "
 
 msgid "Content"
 msgstr "Content"
+
+msgid "This is an output-only problem. There are %d input files named *%s1.in* ~ *%s%d.in*."
+msgstr "This is an output-only problem. There are %d input files named *%s1.in* ~ *%s%d.in*."
+
+msgid "For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*."
+msgstr "For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*."
+
+msgid "Case related"
+msgstr "Case related"

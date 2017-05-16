@@ -166,7 +166,7 @@
 	\hline
 		每个测试点分值
 		{%- for prob in probs -%}
-			& {{ 100 // prob.test_cases.__len__() if prob.test_cases.__len__() > 0 else '??' }}
+			& {{ (100 // prob.test_cases.__len__() if prob.test_cases.__len__() > 0 else '??') if not prob.packed else _("Case related") }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline

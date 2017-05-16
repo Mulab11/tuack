@@ -1,18 +1,26 @@
 {% extends "problem.md.jinja" %}
 
 {% block input_file %}
-	{%- if io_style == 'stdio' -%}
-		{{ _('Read from the standard input.') }}
-	{%- elif io_style == 'fio' -%}
-		{{ _('Read from the file *%s.in*.') % prob['name'] }}
+	{%- if prob['type'] == 'output' -%}
+		{{ _('This is an output-only problem. There are %d input files named *%s1.in* ~ *%s%d.in*.') % (prob.test_cases.__len__(), prob['name'] if io_style == 'fio' else '', prob['name'] if io_style == 'fio' else '', prob.test_cases.__len__()) }}
+	{%- elif prob['type'] == 'program' -%}
+		{%- if io_style == 'stdio' -%}
+			{{ _('Read from the standard input.') }}
+		{%- elif io_style == 'fio' -%}
+			{{ _('Read from the file *%s.in*.') % prob['name'] }}
+		{%- endif -%}
 	{%- endif -%}
 {% endblock %}
 
 {% block output_file %}
-	{%- if io_style == 'stdio' -%}
-		{{ _('Write to the standard output.') }}
-	{%- elif io_style == 'fio' -%}
-		{{ _('Write to the file *%s.out*.') % prob['name'] }}
+	{%- if prob['type'] == 'output' -%}
+		{{ _('For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*.') % (prob['name'] if io_style == 'fio' else '', prob['name'] if io_style == 'fio' else '', prob.test_cases.__len__()) }}
+	{%- elif prob['type'] == 'program' -%}
+		{%- if io_style == 'stdio' -%}
+			{{ _('Write to the standard output.') }}
+		{%- elif io_style == 'fio' -%}
+			{{ _('Write to the file *%s.out*.') % prob['name'] }}
+		{%- endif -%}
 	{%- endif -%}
 {% endblock %}
 

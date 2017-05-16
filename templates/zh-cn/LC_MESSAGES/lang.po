@@ -115,3 +115,12 @@ msgstr "日"
 
 msgid "Content"
 msgstr "目~~录"
+
+msgid "This is an output-only problem. There are %d input files named *%s1.in* ~ *%s%d.in*."
+msgstr "这是一道提交答案题，共有%d组输入数据，这些数据命名为 *%s1.in* ~ *%s%d.in*。"
+
+msgid "For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*."
+msgstr "对于每组输入数据，你需要提交相应的输出文件 *%s1.out* ~ *%s%d.out*。"
+
+msgid "Case related"
+msgstr "非等分测试点"

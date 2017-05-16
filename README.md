@@ -157,7 +157,7 @@ Windows下可以安装MiKTeX，在首次运行的时候会再提示安装后续�
 Ubuntu下先运行下列命令：
 
 ```bash
-sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra
+sudo apt install texlive-xetex texlive-fonts-recommended texlive-latex-extra
 ```
 
 然后可能会因为缺少有些字体而报错，可以使用[这个方法](http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89)安装缺少的字体或是把win下的字体复制过来。
