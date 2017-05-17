@@ -208,7 +208,7 @@ def arbiter(conf = None,daynum = 0):
 				os.makedirs(common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				shutil.copy(codedir,common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
-		shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','filter',prob['name']+'_e'))
+		shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter','filter',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 def down(conf = None):
@@ -312,7 +312,7 @@ def arbiter(conf = None,daynum = 0):
 				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
 				casenum += 1
 				probinfo['MARK='+str(casenum)+'@'] = score_per_case
-			shutil.copy(common.pjoin(common.path,'sample','standard_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
+			shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
 		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
 '''
 
