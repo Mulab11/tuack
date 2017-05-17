@@ -7,7 +7,7 @@
 \ifdefined \precautions
 
 	\begin{center}
-		\centerline{\erhao \bf \thetitle} \par
+		\ifdefined\longtitle\centerline\fi{\erhao \bf \thetitle} \par
 		\ifdefined\engtitle
 			{\xiaoyi \hei \engtitle \par}
 		\fi
@@ -27,7 +27,7 @@
 	\null
 	\begin{center}
 		\ifdefined\thetitle
-			\centerline{\yihao \bf \thetitle} \par
+			\ifdefined\longtitle\centerline\fi{\yihao \bf \thetitle} \par
 		\fi
 		\ifdefined\subtitle
 			{\yihao \hei \subtitle \par} \vskip 1em

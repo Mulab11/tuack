@@ -9,6 +9,9 @@
 {% if contest and 'title' in contest %}
 	\title{ {{contest.tr('title')}} }
 	\def\mytitle{ {{contest.tr('title')}} }
+	{% if contest.tr('title').__len__() > 10 %}
+		\def\longtitle{ contest.tr('title') }
+	{% endif %}
 {% else %}
 	\title{ 预览输出 }
 	\def\mytitle{ 预览输出 }
