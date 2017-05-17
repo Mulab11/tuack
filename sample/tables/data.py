@@ -1,4 +1,4 @@
-ret = [["²âÊÔµã","$x$","$n$","$\\sum n^k$","ÍêÈ«¶ş²æ","$T$"]]
+ret = [["æµ‹è¯•ç‚¹","$x$","$n$","$\\sum n^k$","å®Œå…¨äºŒå‰","$T$"]]
 for datum in prob['data']:
     args = datum['args']
     row = [
@@ -10,5 +10,5 @@ for datum in prob['data']:
         "$\\le %s$" % tools.hn(args[4])
     ]
     ret.append(row)
-common.log.debug(u'Êä³öµ÷ÊÔĞÅÏ¢')
+common.log.debug(u'è¾“å‡ºè°ƒè¯•ä¿¡æ¯')
 return merge_ver(ret)
