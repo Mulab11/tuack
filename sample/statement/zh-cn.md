@@ -35,6 +35,8 @@ $$
 int main(int argc, char** argv);
 ```
 
+除公式内可以使用tex的部分语法外，不要直接使用任何html语法和tex语法。替代方案如下：
+
 不要用markdown自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
 
 {{ render("template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False)") }}
@@ -82,7 +84,7 @@ int main(int argc, char** argv);
 
 ## {{ _('Subtasks') }}
 
-同样不建议用markdown原生的表格，使用下列方式渲染一个表格，其中表格存放在试题目录的 `tables` 子目录下。
+不要使用markdown原生的表格，使用下列方式渲染一个表格，其中表格存放在试题目录的 `tables` 子目录下。
 
 {{ render("table('data')") }}
 

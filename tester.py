@@ -188,7 +188,7 @@ def test(prob):
 			os.chdir('tmp')
 			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
 			os.chdir('..')
-		else:
+		elif prob['type'] == 'output':
 			if os.path.exists(pjoin('tmp', case['case'] + '.out')):
 				shutil.copy(pjoin('tmp', case['case'] + '.out'), pjoin('tmp', 'out'))
 				ret = None
@@ -196,6 +196,9 @@ def test(prob):
 			else:
 				ret = 'Output file does not exist.'
 				time = 0.0
+		else:
+			log.error(u'错误的题目类型`%s`。' % prob['type'])
+			raise Exception('problem type error.')
 		if not ret:
 			if not os.path.exists(pjoin('tmp', 'out')):
 				ret = 'Output file does not exist.'
@@ -305,8 +308,8 @@ def test_problem(prob):
 				if prob['type'] == 'program':
 					os.makedirs('tmp')
 					shutil.copy(path, pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
-				else:
-					shutil.copytree(pjoin(prob['name'], user, algo), 'tmp')
+				elif prob['type'] == 'output':
+					shutil.copytree(path, 'tmp')
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob)
 				while os.path.exists('tmp'):
