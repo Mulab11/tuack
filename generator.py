@@ -80,6 +80,9 @@ def find_all_code():
 				find_code(user, common.rjoin(path, f))
 
 	for prob in common.probs():
+		if prob['type'] == 'output':
+			log.info(u'题目`%s`是提交答案题，跳过。' % prob.route)
+			continue
 		log.info(u'在题目`%s`下搜索源代码。' % prob.route)
 		if 'users' not in prob:
 			prob['users'] = {}

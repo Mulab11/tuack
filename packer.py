@@ -256,7 +256,7 @@ def test():
 	global output_folder
 	common.no_compiling = False
 	output_folder = 'bin'
-	if common.conf.folder != 'bin':
+	if common.conf.folder != 'problem':
 		remkdir('bin')
 		for day in common.days():
 			remkdir(common.pjoin('bin', day.route))
