@@ -187,6 +187,8 @@
 }
 
 \renewcommand{\sectionmark}[1]{\markright{#1}}
+\renewcommand{\subsectionmark}[1]{ }
+\renewcommand{\subsubsectionmark}[1]{ }
 \newcommand{\sqbr}[1]{【#1】}
 \titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
 
