@@ -253,8 +253,8 @@ def tex(comp):
 			raise e
 		log.info(u'开始使用xelatex渲染题面。')
 		os.chdir('tmp')
-		os.system('xelatex -quiet problems.tex')
-		os.system('xelatex -quiet problems.tex')
+		os.system('xelatex -interaction=batchmode problems.tex')
+		os.system('xelatex -interaction=batchmode problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
 		if common.start_file:
