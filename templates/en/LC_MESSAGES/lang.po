@@ -142,8 +142,8 @@ msgstr "This is an output-only problem."
 
 #msgstr "这是一道提交答案题。"
 
-msgid "This is an alternating problem."
-msgstr "This is an alternating problem."
+msgid "This is an interactive problem."
+msgstr "This is an interactive problem."
 
 #msgstr "这是一道交互题。"
 
