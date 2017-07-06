@@ -67,8 +67,11 @@ def js_hn(num):
 	return json.dumps(hn(num))[1:-1]
 
 def to_time(dttm):
-	return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S')
-	#return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S%z')	#python2 兼容性不好，暂时不用时区了
+	try:
+		return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S')
+		#return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S%z')	#python2 兼容性不好，暂时不用时区了
+	except Except as e:
+		return datetime.strptime(dttm[:-5], '%Y-%m-%d %H:%M:%S')
 	
 def time_range(start, end, year = '-', month = '-', day = ''):
 	st = datetime.strptime(start[:-5], '%Y-%m-%d %H:%M:%S')
