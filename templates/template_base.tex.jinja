@@ -36,7 +36,7 @@
 {% if day and 'start time' in day and 'end time' in day %}
 	\def\thetime{
 		{{ _('Time:') }}
-		{{ tools.time_range(day['start time'], day['end time'], _('year'), _('month'), _('day')).replace('~', '$\\sim$').replace(' ', '~') }}
+		{{ tools.time_range(day['start time'], day['end time'], _('year'), _('month'), _('day')).replace('~', '$\\sim$').replace(' ', ' ') }}
 	}
 {% endif %}
 
