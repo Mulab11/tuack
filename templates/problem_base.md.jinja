@@ -39,7 +39,7 @@
 {% block sample_text -%}
 {% block title_sample %}
 {% if comp == 'uoj' -%}
-## {{ _('Sample') }} {{ vars['sample_id'] if 'sample_id' in vars else '' }}
+## {{ _('Sample') }}{{ tools.num2chinese(vars['sample_id']) if 'sample_id' in vars else '' }}
 {%- endif %}
 {% endblock %}
 
@@ -87,7 +87,7 @@
 {%- endblock %}
 
 {% block sample_file -%}
-## {{ _('Sample') }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}
+## {{ _('Sample') }}{{ (tools.num2chinese(vars['sample_id']) if comp == 'uoj' else vars['sample_id']) if 'sample_id' in vars else '' }}
 
 {{ 
 	_('See *%(in)s* and *%(ans)s* in the %(path)s.') % {

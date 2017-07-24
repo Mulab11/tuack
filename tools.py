@@ -8,6 +8,7 @@ if sys.version_info >= (3, 0):
 else:
 	from __builtin__ import *
 import json
+from num2chinese import *
 
 def int_lg(num):
 	if num == 0:

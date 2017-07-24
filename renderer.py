@@ -287,6 +287,17 @@ def tex(comp):
 		result_path = os.path.join('statements', comp, common.conf['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
 		render(common.conf, None, result_path)
 
+def uoj_title(text):
+	in_quote = 0
+	result = []
+	for line in text.split(b'\n'):
+		if in_quote == 0 and line.startswith(b'#'):
+			result.append(b'#' + line)
+		else:
+			result.append(line)
+		in_quote ^= line.count(b'```') & 1
+	return b'\n'.join(result)
+
 def md(comp):
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
@@ -319,14 +330,14 @@ def md(comp):
 				.encode('utf-8')
 			)
 		result_file = path + ('-' + common.lang if common.lang else '') + '.md'
-		open(result_file, 'wb') \
-			.write(get_template('problem.md', prob.lang())
-				.render(
-					context,
-					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
-					table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
-				).encode('utf-8')
-			)
+		result_md = get_template('problem.md', prob.lang()).render(
+			context,
+			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
+			table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
+		).encode('utf-8')
+		if comp == 'uoj':
+			result_md = uoj_title(result_md)
+		open(result_file, 'wb').write(result_md)
 		if common.start_file:
 			common.xopen_file(result_file)
 
