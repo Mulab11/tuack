@@ -100,7 +100,7 @@ class Configure(dict):
 				ret[key] = val
 		return ret
 
-	def __init__(self, val, path = None):
+	def __init__(self, val, path = None, parent = None):
 		if type(val) == dict:
 			super(Configure, self).__init__(val)
 		elif type(val) == str:
@@ -110,7 +110,7 @@ class Configure(dict):
 		else:
 			raise Exception('Can\'t translate this object to a Configure.')
 		self.folder = self['folder']
-		self.parent = None
+		self.parent = parent
 		self.language = None
 		self.path = path
 		self.sub = []
@@ -258,7 +258,7 @@ class Problem(Configure):
 			self['title'] = {'zh-cn' : self.pop('cnname')}
 		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down')]:
 			tc = set()
-			if data in self:
+			if hasattr(self, data) and self.__getattribute__(data) != None:
 				for datum in self.__getattribute__(data):
 					tc |= set(datum['cases'])
 			else:
@@ -340,14 +340,15 @@ def load_json(path = '.', route = None):
 				conf = json.loads(open(full_path, 'rb').read().decode('utf-8'))
 				if 'folder' not in conf:
 					conf['folder'] = 'problem'
+				args = [conf, path]
 				if conf['folder'] == 'extend':
 					base_conf = load_json(pjoin(path, conf['base path']))
 					folder = base_conf.folder
+					args.append(base_conf)
 				else:
 					folder = conf['folder']
-				conf = eval(folder.capitalize())(conf, path)
+				conf = eval(folder.capitalize())(*args)
 				if conf['folder'] == 'extend':
-					conf.parent = base_conf
 					conf.folder = base_conf.folder
 				conf.set_default(os.path.basename(path))
 				conf.route = '' if route == None else rjoin(route, conf['name'])
