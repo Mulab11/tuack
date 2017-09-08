@@ -222,6 +222,7 @@ def tex(comp):
 				os.path.join('tmp', 'problem.tex')
 			))
 			tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
+			tex = tex.replace('{{', '{ {').replace('}}', '} }')	##强行修复pandoc搞出连续大括号与jinja冲突的问题
 			for key, val in secondary_dict.items():
 				tex = tex.replace(key, '{{ ' + val + ' }}')
 			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
