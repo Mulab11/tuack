@@ -448,7 +448,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render
+	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier
 	do_render = True
 	works = []
 	args = []
