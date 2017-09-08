@@ -487,7 +487,7 @@ def deal_args():
 			langs = set(sys.argv[i].split(','))
 		elif sys.argv[i] == '-t':
 			i += 1
-			time_multiplier = floag(sys.argv[i])
+			time_multiplier = float(sys.argv[i])
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
 			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
 			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
