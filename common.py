@@ -30,7 +30,7 @@ user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check|make_data|
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
-	# I don't know how to change stack size, add #define in pascal
+	# I don't know how to change stack size, nor add #define in pascal
 	'pas' : lambda name, args, macros = '': 'fpc %s.pas %s' % (name, args)
 }
 macros = {

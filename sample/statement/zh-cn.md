@@ -16,7 +16,7 @@ If you want an english statement file, just copy this file as `en.md` and replac
 
 **要强调的东西**这么写。
 
-行内的公式：$sin \left(a x + b \right)$。
+行内的公式：$\sin \left(a x + b \right)$。
 
 行间的公式：
 $$
@@ -47,11 +47,11 @@ int main(int argc, char** argv);
 
 如果有本工具不能提供的功能，需要直接使用 tex 或 html 代码的，请使用下列方式以免另外一种格式下出错。
 
-{{ render(json.dumps('\\clearpage'), 'noi') }}
+{{ render(json.dumps('\\clearpage'), 'tuoi') }}
 
 {{ render(json.dumps('<a href="http://oj.thusaac.org">TUOJ</a>'), 'html') }}
 
-上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `noi` 表示只在生成 NOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
+上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `tuoi` 表示只在生成 TUOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
 
 可选的参数有 `html`，`md`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-md`，`tuoi`，`tupc`。
 
@@ -72,6 +72,10 @@ int main(int argc, char** argv);
 {% set vars = {} -%}
 {%- do vars.__setitem__('sample_id', 1) -%}
 {{ self.sample_text() }}
+
+{{ self.title_sample_description() }}
+
+这是第一组数据的样例说明。
 
 下面是只提示存在第二组样例，但不渲染到题面中。
 
