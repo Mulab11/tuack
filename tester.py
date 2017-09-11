@@ -354,7 +354,7 @@ def test_progs():
 		try:
 			test_problem(prob)
 		except Exception as e:
-			log.error(e)
+			log.error('At line %d: %s' % (e.__traceback__.tb_lineno, str(e)))
 
 if __name__ == '__main__':
 	try:

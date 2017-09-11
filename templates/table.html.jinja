@@ -1,20 +1,29 @@
+{% if 'titled' not in options %}
+	{% do options.__setitem__('titled', True) %}
+{% endif %}
+
 <table class="table table-bordered"
 {%- if 'font size' in options -%}
 	style="font-size:{{options['font size']}}"
 {%- endif -%}
-><thead>
+>
+{%- if options['titled'] -%}
+	<thead>
+{%- else -%}
+	<tbody>
+{%- endif -%}
 	{%- for i in range(table.__len__()) -%}
 		<tr>
 		{%- with first_row = loop.first -%}
 			{%- for j in range(table[i].__len__()) -%}
 				{%- if table[i][j] -%}
 					<
-						{%- if first_row and comp != 'tsinsen-oj' -%}
+						{%- if first_row and comp != 'tsinsen-oj' and options['titled'] -%}
 							th
 						{%- else -%}
 							td
 						{%- endif %} rowspan="{{- cnt[i][j] -}}">{{ table[i][j] }}<
-						{%- if first_row and comp != 'tsinsen-oj' -%}
+						{%- if first_row and comp != 'tsinsen-oj' and options['titled'] -%}
 							/th
 						{%- else -%}
 							/td
@@ -24,7 +33,7 @@
 			{%- endfor -%}
 		{%- endwith -%}
 		</tr>
-		{%- if loop.first -%}
+		{%- if loop.first and options['titled'] -%}
 			</thead><tbody>
 		{%- endif -%}
 	{%- endfor -%}
