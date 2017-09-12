@@ -113,6 +113,8 @@ def file_name(comp, prob, name):
 		return name
 	
 def table(path, name, temp, context, options):
+	if options == None:
+		options = {}
 	for suf in ['.py', '.json']:
 		try:
 			common.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
@@ -231,7 +233,7 @@ def tex(comp):
 			res = get_template('problem.tex.jinja', prob.lang()).render(
 				context,
 				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', prob.lang()).render(context),
-				table = lambda name, options = {} : table(os.path.join(prob.path, 'tables'), name, 'table.tex.jinja', context, options)
+				table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.tex.jinja', context, options)
 			)
 			tex_problems.append(res)
 				
@@ -334,7 +336,7 @@ def md(comp):
 		result_md = get_template('problem.md', prob.lang()).render(
 			context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
-			table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
+			table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 		).encode('utf-8')
 		if comp == 'uoj':
 			result_md = uoj_title(result_md)
@@ -401,7 +403,7 @@ def html(comp):
 				.render(
 					context,
 					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
-					table = lambda name, options={} : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
+					table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
 		result_file = path + ('-' + common.lang if common.lang else '') + '.html'
