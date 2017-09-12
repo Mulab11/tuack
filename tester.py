@@ -17,6 +17,7 @@ from threading import Timer
 import platform
 import common
 from common import log, pjoin, rjoin
+import traceback
 
 def run_windows(name, tl, ml, input = None, output = None):
 	'''
@@ -303,13 +304,28 @@ def test_problem(prob):
 			for algo, path in algos.items():
 				if (not prob.all and not common.any_prefix(rjoin(prob.route, user, algo))):
 					continue
-				if os.path.exists('tmp'):
-					shutil.rmtree('tmp')
+				while os.path.exists('tmp'):
+					try:
+						shutil.rmtree('tmp')
+					except:
+						pass
 				if prob['type'] == 'program':
-					os.makedirs('tmp')
+					while True:
+						try:
+							os.makedirs('tmp')
+						except:
+							pass
+						else:
+							break
 					shutil.copy(path, pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
 				elif prob['type'] == 'output':
-					shutil.copytree(path, 'tmp')
+					while True:
+						try:
+							shutil.copytree(path, 'tmp')
+						except:
+							pass
+						else:
+							break
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob)
 				while os.path.exists('tmp'):
@@ -354,7 +370,7 @@ def test_progs():
 		try:
 			test_problem(prob)
 		except Exception as e:
-			log.error('At line %d: %s' % (e.__traceback__.tb_lineno, str(e)))
+			log.error(traceback.format_exc())
 
 if __name__ == '__main__':
 	try:

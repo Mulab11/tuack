@@ -11,8 +11,8 @@
 	"partial score" : false,
 	"packed" : false,
 	"compile" : {
-		"cpp" : "-O2 -lm",
-		"c" : "-O2 -lm",
+		"cpp" : "-O2 -std=c++14",
+		"c" : "-O2 -std=c14",
 		"pas" : "-O2"
 	},
     "samples" : [],
