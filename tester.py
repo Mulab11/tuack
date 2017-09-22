@@ -237,13 +237,13 @@ def test(prob):
 				if ret == 0:
 					score = 1.0
 					report = 'ok'
-					if time > prob['time limit']:
+					if prob['type'] != 'output' and time > prob['time limit']:
 						score = 0.0
 						report += '(but time out)'
 				else:
 					score = 0.0
 					report = 'wa'
-					if time > prob['time limit']:
+					if prob['type'] != 'output' and time > prob['time limit']:
 						report += '(and time out)'
 		else:
 			score = 0.0
@@ -351,7 +351,7 @@ def test_problem(prob):
 					scores = [0.0, 0.0] + scores
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
-				scores = map(lambda i : '%.1f' % i, scores)
+				scores = map(lambda i : '%.2f' % i, scores)
 				times = map(lambda i : '%.3f' % i, times)
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
 				for title, line in [(user, scores), (algo, times), ('', reports)]:

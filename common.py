@@ -272,6 +272,7 @@ class Problem(Configure):
 				#]}]
 			self.__setattr__(attr, sorter()(list(tc)))
 
+		self.score = 100
 		if self['packed']:
 			num_unscored = 0
 			total_score = 0.0
@@ -286,6 +287,7 @@ class Problem(Configure):
 				for datum in self.data:
 					if 'score' not in datum:
 						datum.score = item_score
+			self.score = total_score
 
 	def extend_pathed(self, path):
 		if path.startswith(':'):
@@ -386,7 +388,7 @@ def any_prefix(pre, st = None):
 	if not st:
 		st = sub_set
 	for s in st:
-		if s.startswith(pre):
+		if s == pre or s.startswith(pre + '/'):
 			return True
 	return False
 

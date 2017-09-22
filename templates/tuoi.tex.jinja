@@ -81,7 +81,7 @@
 	{% if common.out_system != 'Windows' %}
 		目录
 		{%- for prob in probs -%}
-			& {\ttfamily {{ prob['name'] }} }
+			& {\ttfamily {{ prob['name'].replace('_', '\\_') }} }
 		{%- endfor -%} 
 		\tabularnewline
 	\hline
@@ -90,7 +90,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{\ttfamily {{ prob['name'] + ('.exe' if common.out_system == 'Windows' else '') }} }
+				{\ttfamily {{ prob['name'].replace('_', '\\_') + ('.exe' if common.out_system == 'Windows' else '') }} }
 			{% else %}
 				N/A
 			{% endif %}
@@ -103,9 +103,9 @@
 			&
 			{%- if io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
-					{\ttfamily {{ prob['name'] }}.in }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.in }
 				{%- else -%}
-					{\ttfamily {{ prob['name'] }}*.in }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}*.in }
 				{%- endif -%}
 			{%- else -%}
 				{%- if prob['type'] != 'output' -%}
@@ -122,9 +122,9 @@
 			&
 			{%- if io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
-					{\ttfamily {{ prob['name'] }}.out }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.out }
 				{%- else -%}
-					{\ttfamily {{ prob['name'] }}*.out }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}*.out }
 				{%- endif -%}
 			{%- else -%}
 				{%- if prob['type'] != 'output' -%}
@@ -191,7 +191,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{\ttfamily {{ prob['name'] }}.cpp }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.cpp }
 				{% else %}
 					N/A
 				{% endif %}
@@ -202,7 +202,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{\ttfamily {{ prob['name'] }}.c }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.c }
 				{% else %}
 					N/A
 				{% endif %}
@@ -213,7 +213,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{\ttfamily {{ prob['name'] }}.pas }
+					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.pas }
 				{% else %}
 					N/A
 				{% endif %}
@@ -286,7 +286,7 @@
 	\clearpage
 
 	\begin{center}
-		\section{ {{probs[i].tr('title')}}（{{probs[i]['name']}}） }
+		\section{ {{probs[i].tr('title')}}（{{ probs[i]['name'].replace('_', '\\_') }}） }
 	\end{center}
 	
 	{{ problems[i] }}

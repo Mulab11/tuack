@@ -123,4 +123,4 @@ msgid "For each input file, you should accomplish an output file named *%s1.out*
 msgstr "对于每组输入数据，你需要提交相应的输出文件 *%s1.out* ~ *%s%d.out*。"
 
 msgid "Case related"
-msgstr "非等分测试点"
+msgstr "见题面"
