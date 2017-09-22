@@ -318,6 +318,9 @@ def arbiter(conf = None,daynum = 0):
 
 def tsinsen_oj():
 	import random
+	if type(common.conf) != common.Problem:
+		log.error(u'只能转换一道题目，请到相应题目目录下运行')
+		return
 	hash_ch = list(map(
 		chr,
 		[ord('a') + i for i in range(26)] + \
@@ -325,13 +328,16 @@ def tsinsen_oj():
 		[ord('0') + i for i in range(10)]
 	))
 	hash = lambda l = 10 : ''.join([hash_ch[random.randint(0, len(hash_ch) - 1)] for i in range(l)])
-	if common.conf.folder != 'problem' and not os.path.exists('tsinsen-oj'):
-		os.makdedirs('tsinsen-oj')
+	if not os.path.exists('tsinsen-oj'):
+		os.makedirs('tsinsen-oj')
 	for day in common.days():
 		p = common.pjoin('tsinsen-oj', day.route)
-		if not os.path.exists():
+		if not os.path.exists(p):
 			os.makedirs(p)
 	for prob in common.probs():
+		p = common.pjoin('tsinsen-oj', prob.route)
+		if not os.path.exists(p):
+			os.makedirs(p)
 		if os.path.exists(common.pjoin(prob.path, 'down')):
 			with zipfile.ZipFile(common.pjoin('tsinsen-oj', prob.route, 'down.zip'), 'w') as z:
 				common.run_r(lambda path : z.write(path), common.pjoin(prob.path, 'down'))
