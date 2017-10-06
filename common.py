@@ -26,12 +26,21 @@ diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
 elf_suffix = '' if system != 'Windows' else '.exe'
 problem_skip = re.compile(r'^(data|down|tables|resources|gen)$')
-user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check|make_data|data_maker|data_make|make|generate|generator|makedata|spj|judge|.*\.test|.*\.dir)$')
+user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check.*|make_data|data_maker|data_make|make|generate|generator|makedata|spj|judge|tables|.*\.test|.*\.dir)(\..*)?$')
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	# I don't know how to change stack size, nor add #define in pascal
-	'pas' : lambda name, args, macros = '': 'fpc %s.pas %s' % (name, args)
+	'pas' : lambda name, args, macros = '': 'fpc %s.pas %s' % (name, args),
+	'java' : lambda name, args, macros = '': 'javac %s.java %s' % (name, args),
+	'py' : lambda name, args, macros = '': ''
+}
+runners = {
+	'cpp' : None,
+	'c' : None,
+	'pas' : None,
+	'java' : lambda name: 'java %s' % name,
+	'py' : lambda name: 'python %s.py' % name
 }
 macros = {
 	'uoj' : '-DONLINE_JUDGE',
@@ -388,9 +397,11 @@ def any_prefix(pre, st = None):
 	if not st:
 		st = sub_set
 	for s in st:
-		if s == pre or s.startswith(pre + '/'):
-			return True
-	return False
+		if s == pre:
+			return 1
+		if pre == '' or s.startswith(pre + '/'):
+			return 2
+	return 0
 
 def mkdir(name):
 	if not os.path.exists(name):
@@ -450,7 +461,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, probs, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier
 	do_render = True
 	works = []
 	args = []

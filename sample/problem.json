@@ -13,7 +13,9 @@
 	"compile" : {
 		"cpp" : "-O2 -std=c++14",
 		"c" : "-O2 -std=c14",
-		"pas" : "-O2"
+		"pas" : "-O2",
+		"java" : "",
+		"python" : ""
 	},
     "samples" : [],
 	"args" : {

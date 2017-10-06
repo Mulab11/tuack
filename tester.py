@@ -19,7 +19,7 @@ import common
 from common import log, pjoin, rjoin
 import traceback
 
-def run_windows(name, tl, ml, input = None, output = None):
+def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
 	'''
@@ -27,7 +27,7 @@ def run_windows(name, tl, ml, input = None, output = None):
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)
-		pro = subprocess.Popen(name, stdin = fin, stdout = fout)
+		pro = subprocess.Popen(vm(name) if vm else name, stdin = fin, stdout = fout)
 		if fout:
 			fout.close()
 		if fin:
@@ -52,11 +52,11 @@ def run_windows(name, tl, ml, input = None, output = None):
 	time.sleep(1e-2)
 	return ret, t
 
-def runner_linux(name, que, ml, input = None, output = None):
+def runner_linux(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; time -f "%%U" -o timer ./%s %s %s' % (
+		'ulimit -v %d; time -f "%%U" -o timer %s %s %s' % (
 			int(common.Memory(ml).KB),
-			name,
+			vm(name) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
 		),
@@ -67,9 +67,9 @@ def runner_linux(name, que, ml, input = None, output = None):
 	ret = pro.wait()
 	que.put(ret)
 	
-def run_linux(name, tl, ml, input = None, output = None):
+def run_linux(name, tl, ml, input = None, output = None, vm = None):
 	que = Queue()
-	pro = Process(target = runner_linux, args = (name, que, ml, input, output))
+	pro = Process(target = runner_linux, args = (name, que, ml, input, output, vm))
 	pro.start()
 	pro.join(tl * common.time_multiplier)
 	if que.qsize() == 0:
@@ -90,15 +90,15 @@ def run_linux(name, tl, ml, input = None, output = None):
 				t = 0.
 			ret = None
 		else:
-			ret = 'Runtime error %d.' % ret
+			ret = 'Runtime error %d.(MLE will cause RE as well in linux)' % ret
 			t = 0.
 	return ret, t
 
-def runner_mac(name, que, ml, input = None, output = None):
+def runner_mac(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; (time -p ./%s %s %s) 2> timer' % (
+		'ulimit -v %d; (time -p %s %s %s) 2> timer' % (
 			int(common.Memory(ml).KB),
-			name,
+			vm(name) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
 		),
@@ -109,9 +109,9 @@ def runner_mac(name, que, ml, input = None, output = None):
 	ret = pro.wait()
 	que.put(ret)
 
-def run_mac(name, tl, ml, input = None, output = None):
+def run_mac(name, tl, ml, input = None, output = None, vm = None):
 	que = Queue()
-	pro = Process(target = runner_mac, args = (name, que, ml, input, output))
+	pro = Process(target = runner_mac, args = (name, que, ml, input, output, vm))
 	pro.start()
 	pro.join(tl * common.time_multiplier)
 	if que.empty():
@@ -126,10 +126,7 @@ def run_mac(name, tl, ml, input = None, output = None):
 			ret = que.get()
 			if ret == 0:
 				try:
-					with open('timer') as f:
-						f.readline()
-						s = f.readline()
-						t = float(s.split()[-1])
+					t = float(open('timer').readline().split()[-1])
 				except:
 					common.warning('Timer broken.')
 					t = 0.
@@ -145,34 +142,39 @@ elif common.system == 'Windows':
 	run = run_windows
 elif common.system == 'Darwin':
 	run = run_mac
+else:
+	run = run_linux
+	log.warning(u'未知的操作系统，尝试当做Linux运行。')
 	
-def compile(prob):
+def compile(prob, name):
 	for lang, args in prob['compile'].items():
-		if os.path.exists(pjoin('tmp', prob['name'] + '.' + lang)):
+		if os.path.exists(pjoin('tmp', name + '.' + lang)):
 			os.chdir('tmp')
 			ret = subprocess.call(
-				common.compilers[lang](prob['name'], args, common.macros[common.work]),
+				common.compilers[lang](name, args, common.macros[common.work]),
 				shell = True,
 				stdout = open('log', 'w'),
 				stderr = subprocess.STDOUT
 			)
 			os.chdir('..')
-			return '`' + prob['name'] + '.' + lang + '` compile failed.' if ret != 0 else None
+			if ret:
+				raise Exception('`' + name + '.' + lang + '` compile failed.')
+			return lang
 	else:
-		return 'Can\'t find source file.'
-	return None
-	
-def test(prob):
+		raise Exception('Can\'t find source file.')
+
+def test(prob, name):
 	scores = []
 	times = []
 	reports = []
 	if prob['type'] == 'program':
-		res = compile(prob)
-		if res:
+		try:
+			lang = compile(prob, name)
+		except Exception as e:
 			for i in range(len(prob.test_cases) + len(prob.sample_cases)):
 				scores.append(0.0)
 				times.append(0.0)
-				reports.append(res)
+				reports.append(str(e))
 			return scores, times, reports
 	all_cases = prob.test_cases + prob.sample_cases
 	for case in all_cases:
@@ -187,7 +189,7 @@ def test(prob):
 				common.dos2unix(pjoin('tmp', fname))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
-			ret, time = run(prob['name'], prob['time limit'], prob['memory limit'], 'in', 'out')
+			ret, time = run(name, prob['time limit'], prob['memory limit'], 'in', 'out', common.runners[lang])
 			os.chdir('..')
 		elif prob['type'] == 'output':
 			if os.path.exists(pjoin('tmp', case['case'] + '.out')):
@@ -299,10 +301,12 @@ def test_problem(prob):
 			','.join(prob.sample_cases)
 		))
 		for user, algos in prob.users().items():
-			if (not prob.all and not common.any_prefix(rjoin(prob.route, user))):
-				continue
+			if not prob.all:
+				match = common.any_prefix(rjoin(prob.route, user))
+				if not match:
+					continue
 			for algo, path in algos.items():
-				if (not prob.all and not common.any_prefix(rjoin(prob.route, user, algo))):
+				if (not prob.all and match != 1 and not common.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
 					try:
@@ -317,7 +321,7 @@ def test_problem(prob):
 							pass
 						else:
 							break
-					shutil.copy(path, pjoin('tmp', prob['name'] + '.' + path.split('.')[-1]))
+					shutil.copy(path, pjoin('tmp', path.split('/')[-1]))
 				elif prob['type'] == 'output':
 					while True:
 						try:
@@ -327,7 +331,7 @@ def test_problem(prob):
 						else:
 							break
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
-				scores, times, reports = test(prob)
+				scores, times, reports = test(prob, path.split('/')[-1].split('.')[0])
 				while os.path.exists('tmp'):
 					try:
 						shutil.rmtree('tmp')

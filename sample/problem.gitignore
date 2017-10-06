@@ -24,3 +24,5 @@ tsinsen-oj*
 arbiter*
 *.0
 *.tmp
+**.class
+**.pyc

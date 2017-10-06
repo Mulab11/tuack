@@ -66,6 +66,8 @@ def find_all_code():
 	def find_code(user, path):
 		full_path = common.pjoin(prob.path, user, path)
 		for f in os.listdir(full_path):
+			if common.user_skip.match(f):
+				continue
 			if os.path.isfile(common.pjoin(full_path, f)):
 				for key in common.compilers:
 					if not f.endswith('.' + key):
@@ -75,8 +77,6 @@ def find_all_code():
 						log.info(u'发现新源代码`%s`。' % common.rjoin(user, path, f))
 					break
 			else:
-				if common.user_skip.match(f):
-					continue
 				find_code(user, common.rjoin(path, f))
 
 	for prob in common.probs():
