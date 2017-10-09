@@ -39,8 +39,8 @@ runners = {
 	'cpp' : None,
 	'c' : None,
 	'pas' : None,
-	'java' : lambda name: 'java %s' % name,
-	'py' : lambda name: 'python %s.py' % name
+	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm -Xmn32m -Xss16m %s' % (int(Memory(ml).MB) // 4, int(Memory(ml).MB), name),
+	'py' : lambda name, ml = None: 'python %s.py' % name
 }
 macros = {
 	'uoj' : '-DONLINE_JUDGE',

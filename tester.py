@@ -27,7 +27,7 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)
-		pro = subprocess.Popen(vm(name) if vm else name, stdin = fin, stdout = fout)
+		pro = subprocess.Popen(vm(name, ml) if vm else name, stdin = fin, stdout = fout)
 		if fout:
 			fout.close()
 		if fin:
@@ -56,7 +56,7 @@ def runner_linux(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; time -f "%%U" -o timer %s %s %s' % (
 			int(common.Memory(ml).KB),
-			vm(name) if vm else './%s' % name,
+			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
 		),
@@ -98,7 +98,7 @@ def runner_mac(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; (time -p %s %s %s) 2> timer' % (
 			int(common.Memory(ml).KB),
-			vm(name) if vm else './%s' % name,
+			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
 		),
@@ -153,11 +153,18 @@ def compile(prob, name):
 			ret = subprocess.call(
 				common.compilers[lang](name, args, common.macros[common.work]),
 				shell = True,
-				stdout = open('log', 'w'),
-				stderr = subprocess.STDOUT
+				stdout = open('stdout', 'w'),
+				stderr = open('stderr', 'w')
 			)
 			os.chdir('..')
 			if ret:
+				log.info('`' + name + '.' + lang + u'`编译失败，详情见`compile.log`.')
+				with open('compile.log', 'a') as f:
+					import __main__
+					f.write(u'## 脚本%s/，工程路径%s，参数%s，开始于%s。\n' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
+					f.write(u'## 测试题目`%s`，编译失败代码名称`%s.%s`\n' % (prob['name'], name, lang))
+					f.write(open('tmp/stdout').read())
+					f.write(open('tmp/stderr').read())
 				raise Exception('`' + name + '.' + lang + '` compile failed.')
 			return lang
 	else:
