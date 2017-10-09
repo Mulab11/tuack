@@ -39,7 +39,7 @@ runners = {
 	'cpp' : None,
 	'c' : None,
 	'pas' : None,
-	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm -Xmn32m -Xss16m %s' % (int(Memory(ml).MB) // 4, int(Memory(ml).MB), name),
+	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm %s' % (int(Memory(ml).MB) // 16, int(Memory(ml).MB) // 4, name),
 	'py' : lambda name, ml = None: 'python %s.py' % name
 }
 macros = {
