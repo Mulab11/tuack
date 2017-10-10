@@ -39,7 +39,7 @@ int main(int argc, char** argv);
 
 不要用markdown自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
 
-{{ render("template('image', resource = resource('3.jpg'), size = 0.5, align = 'middle', inline = False)") }}
+{{ render("template('image', resource = resource('sample.png'), size = 0.5, align = 'middle', inline = False)") }}
 
 其中 `inline` 为 `False` 表示这是一个独占一行的图片，此时支持 `align`，选项为 `left`，`middle` 或 `right`。
 

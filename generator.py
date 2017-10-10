@@ -128,7 +128,7 @@ def new_dir(folder, args = None):
 		copy(folder + '.json', 'conf.json')
 		if folder == 'problem':
 			copy(folder + '.gitattributes', '.gitattributes')
-			for ff in ('data', 'down', 'statement'):
+			for ff in ('data', 'down', 'statement', 'tables', 'resources'):
 				st_path = common.pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)
@@ -140,7 +140,7 @@ def new_dir(folder, args = None):
 			conf.path = path
 			common.save_json(conf)
 	if len(args) != 0:
-		common.conf['subdir'] = sorted(list(set(common.conf['subdir'] + args)))
+		common.conf['subdir'] += args
 		common.save_json(common.conf)
 
 def upgrade():
