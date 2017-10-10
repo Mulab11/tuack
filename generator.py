@@ -127,12 +127,13 @@ def new_dir(folder, args = None):
 		copy(folder + '.gitignore', '.gitignore')
 		copy(folder + '.json', 'conf.json')
 		if folder == 'problem':
-			copy('.gitattributes')
-			st_path = common.pjoin(path, 'statement')
-			if not os.path.exists(st_path):
-				os.makedirs(st_path)
-			for f in os.listdir(common.pjoin(common.path, 'sample', 'statement')):
-				copy(common.pjoin('statement', f), common.pjoin('statement', f))
+			copy(folder + '.gitattributes', '.gitattributes')
+			for ff in ('data', 'down', 'statement'):
+				st_path = common.pjoin(path, ff)
+				if not os.path.exists(st_path):
+					os.makedirs(st_path)
+				for f in os.listdir(common.pjoin(common.path, 'sample', ff)):
+					copy(common.pjoin(ff, f), common.pjoin(ff, f))
 		if path != '.':
 			conf = common.load_json(path)
 			conf['name'] = path
