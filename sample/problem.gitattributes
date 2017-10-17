@@ -4,3 +4,6 @@
 **.in filter=lfs diff=lfs merge=lfs
 **.out filter=lfs diff=lfs merge=lfs
 **.ans filter=lfs diff=lfs merge=lfs
+*/*.in/* filter=lfs diff=lfs merge=lfs
+*/*.out/* filter=lfs diff=lfs merge=lfs
+*/*.ans/* filter=lfs diff=lfs merge=lfs

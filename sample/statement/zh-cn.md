@@ -47,11 +47,12 @@ int main(int argc, char** argv);
 
 图片需要保存在试题目录的 `resources` 子目录下。
 
-如果有本工具不能提供的功能，需要直接使用 tex 或 html 代码的，请使用下列方式以免另外一种格式下出错。
+如果有本工具不能提供的功能，需要直接使用 tex 或 html 代码的，请使用下列方式以免另外一种格式下出错。（注意代码不要放在```中）
 
+```python
 {{ render(json.dumps('\\clearpage'), 'tuoi') }}
-
 {{ render(json.dumps('<a href="http://oj.thusaac.org">TUOJ</a>'), 'html') }}
+```
 
 上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `tuoi` 表示只在生成 TUOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
 
