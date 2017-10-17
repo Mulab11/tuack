@@ -180,6 +180,9 @@ def secondary(s, sp, work):
 	else:
 		return ' {{ ' + s + ' }} '
 
+def to_arg(dic):
+	return ','.join(['%s = %s' % (key, val if type(val) != str else json.dumps(val)) for key, val in dic.items()])
+
 def tex(comp):
 	common.check_install('pandoc')
 	common.check_install('xelatex')
@@ -213,6 +216,14 @@ def tex(comp):
 				'precautions' : prec,
 				'json' : json
 			}
+			context['img'] = lambda src, env = None, **argw : context['render'](
+				"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
+				env
+			)
+			context['tbl'] = lambda src, env = None, **argw : context['render'](
+				"table(%s, %s)" % (json.dumps(src), argw),
+				env
+			)
 			open(os.path.join('tmp', 'problem.md'), 'wb') \
 				.write(get_template('problem_base.md.jinja', prob.lang())
 					.render(context)
@@ -327,6 +338,14 @@ def md(comp):
 			'comp' : comp,
 			'json' : json
 		}
+		context['img'] = lambda src, env = None, **argw : context['render'](
+			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
+			env
+		)
+		context['tbl'] = lambda src, env = None, **argw : context['render'](
+			"table(%s, %s)" % (json.dumps(src), argw),
+			env
+		)
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
 			.write(get_template('problem_base.md.jinja', prob.lang())
 				.render(context)
@@ -380,6 +399,14 @@ def html(comp):
 			'comp' : comp,
 			'json' : json
 		}
+		context['img'] = lambda src, env = None, **argw : context['render'](
+			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
+			env
+		)
+		context['tbl'] = lambda src, env = None, **argw : context['render'](
+			"table(%s, %s)" % (json.dumps(src), argw),
+			env
+		)
 		if comp == 'tsinsen-oj' and 'tsinsen_files' in dir(prob):
 			context['resource'] = lambda name : '/RequireFile.do?fid=%s' % prob.tsinsen_files[name]
 		open(os.path.join('tmp', 'problem.1.md'), 'wb') \

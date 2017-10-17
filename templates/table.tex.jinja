@@ -7,8 +7,8 @@
 
 \begin{center}
 {
-{% if 'font size' in options %}
-	\fontsize{ {{options['font size']}} }{ {{options['font size'] * 1.2}} }\selectfont
+{% if 'font_size' in options %}
+	\fontsize{ {{options['font_size']}} }{ {{options['font_size'] * 1.2}} }\selectfont
 {% endif %}
 	{%- if 'width' in options and options['width'] -%}
 		{% set sum_width = tools.sum(options['width']) %}

@@ -56,6 +56,9 @@ msgstr "提示"
 msgid "Subtasks"
 msgstr "子任务"
 
+msgid "Scoring"
+msgstr "评分方式"
+
 msgid "Time limit:"
 msgstr "时间限制："
 

@@ -2,15 +2,17 @@
 
 ## {{ _('Background') }}
 
-这样的子标题是带国际化的，如果你的标签不是常用的标签，并且不需要国际化的话，你可以直接写成这样：
+这样的子标题是带国际化的，为了方便翻译和提取每个部分等。如果你的子标题不是本文中的这些，并且不需要国际化的话，你可将这些子标题直接写成这样：
 
 ```
 ## 题目背景
 ```
 
-If you want an english statement file, just copy this file as `en.md` and replace any Chinese text into English.
+If you want an English statement file, just copy this file as `en.md` and replace any Chinese text into English.
 
-现在子标题都不加方括号 `【】` 了。
+如果你不需要某些章节，可以直接删除。比如这一段是“题目背景”，很多题目其实并不需要这一段。
+
+*子标题请不要自己手动加方括号 `【】` 。*
 
 ## {{ _('Description') }}
 
@@ -39,9 +41,9 @@ int main(int argc, char** argv);
 
 不要用markdown自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
 
-{{ render("template('image', resource = resource('sample.png'), size = 0.5, align = 'middle', inline = False)") }}
+{{ img('sample.png', size = 0.5, align = 'middle', inline = False) }}
 
-其中 `inline` 为 `False` 表示这是一个独占一行的图片，此时支持 `align`，选项为 `left`，`middle` 或 `right`。
+其中 `inline` 为 `False` 表示这是一个独占一行的图片，此时支持 `align`，选项为 `left`，`middle` 或 `right`。后面这些参数可以不写。
 
 图片需要保存在试题目录的 `resources` 子目录下。
 
@@ -55,6 +57,8 @@ int main(int argc, char** argv);
 
 可选的参数有 `html`，`md`，`tex`，`noi`，`uoj`，`ccpc`，`ccc`，`tuoj`，`ccc-tex`，`ccc-md`，`tuoi`，`tupc`。
 
+**不要在题面里直接写tex或html代码！**
+
 ## {{ _('Input Format') }}
 
 {{ self.input_file() }}
@@ -67,7 +71,7 @@ int main(int argc, char** argv);
 
 {{ self.output_file() }}
 
-下面是自动读入样例 `1.in/ans` 然后渲染到题面中；如果只有一组样例，则去掉前两行，样例仍然保存成 `1.in/ans`。其中 `1` 可以是字符串。
+下面是自动读入样例 `1.in/ans`（存储在 `down` 文件夹内） 然后渲染到题面中；如果只有一组样例，则去掉前两行，样例仍然保存成 `1.in/ans`。其中 `1` 可以是字符串。
 
 {% set vars = {} -%}
 {%- do vars.__setitem__('sample_id', 1) -%}
@@ -82,16 +86,20 @@ int main(int argc, char** argv);
 {% do vars.__setitem__('sample_id', 2) -%}
 {{ self.sample_file() }}
 
-## {{ _('Hint') }}
-
-这里是一个非常温馨的提示。
-
 ## {{ _('Subtasks') }}
 
 不要使用markdown原生的表格，使用下列方式渲染一个表格，其中表格存放在试题目录的 `tables` 子目录下。
 
-{{ render("table('data')") }}
+{{ tbl('data') }}
 
-{{ render("table('table', {'width' : [1, 6]})") }}
+{{ tbl('table', {'width' : [1, 6]}) }}
 
 表格的例子见 `oi_tools/sample/tables`。原理上用一个二维的json表格存储，`null` 表示和上一行合并，不支持横向合并。建议用python的格式写，如例子中的 `data.py`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
+
+## {{ _('Scoring') }}
+
+这是评分方法，如果有必要的话。
+
+## {{ _('Hint') }}
+
+这里是一个非常温馨的提示。

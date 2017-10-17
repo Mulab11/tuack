@@ -82,6 +82,9 @@ msgstr "Subtasks"
 
 #子任务"
 
+msgid "Scoring"
+msgstr "Scoring"
+
 msgid "Time limit:"
 msgstr "Time limit:"
 
