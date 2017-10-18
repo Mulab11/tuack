@@ -416,7 +416,7 @@ def html(comp):
 			)
 		with open(os.path.join('tmp', 'problem.2.md'), 'wb') as f:
 			for line in open(os.path.join('tmp', 'problem.1.md'), 'rb'):
-				if line.startswith(b'##'):
+				if re.match(b'^##[^#]', line):
 					line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
 				f.write(line)
 		txt = open(os.path.join('tmp', 'problem.2.md'), 'rb').read().decode('utf-8')
