@@ -56,14 +56,17 @@ def lemon(conf = None):
 		ost.writeQString('--ignore-space-change --text --brief')
 		ost.writeInt32(3)		# real precision (float number error bound)
 		ost.writeQString('')	# spj route TODO: What if there is spj
-		ost.writeInt32(len(prob['compile']))
+		ost.writeInt32(len([i for i in prob['compile'] if i in {'cpp', 'c', 'pas'}]))
 		for key, val in prob['compile'].items():
-			ost.writeQString({
-				'cpp' : 'g++',
-				'c' : 'gcc',
-				'pas' : 'fpc'
-			}[key])
-			ost.writeQString(val)
+			try:
+				ost.writeQString({
+					'cpp' : 'g++',
+					'c' : 'gcc',
+					'pas' : 'fpc'
+				}[key])
+				ost.writeQString(val)
+			except:
+				pass
 		ost.writeQString('out')
 		if 'packed' in prob and prob['packed']:
 			ost.writeInt32(len(prob['data']))
