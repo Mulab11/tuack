@@ -1,6 +1,6 @@
 ## 简介
 
-*居然有两个人提了issue，吓得我赶紧开始撸README了。*
+感觉用了一段时间还比较平稳，所以我来假装正儿八经地发布一个0.1版本吧。
 
 这个gitlab没有注册的用户似乎是不能提issue的，所以有issue可以给我发邮件 [chen.xm.mu@gmail.com](mailto:chen.xm.mu@gmail.com)，或是到[这个废弃的老工程](http://git.oschina.net/mulab/oi_tools)上面提issue，知道我QQ或微信的小伙伴也可以用这些工具告诉我。
 

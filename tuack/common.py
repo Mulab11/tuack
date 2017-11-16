@@ -461,7 +461,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs
 	do_render = True
 	works = []
 	args = []
@@ -472,6 +472,7 @@ def deal_args():
 	do_pack = True
 	do_zip = False
 	do_encript = False
+	git_lfs = False
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -490,6 +491,8 @@ def deal_args():
 			do_pack = False
 		elif sys.argv[i] == '-z':
 			do_zip = True
+		elif sys.argv[i] == '-g':
+			git_lfs = True
 		elif sys.argv[i] == '-r':
 			do_render = False
 		elif sys.argv[i] == '-e':
@@ -516,6 +519,7 @@ def deal_args():
 			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
 			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
 			log.info(u'  -r                  对于dumper，不先尝试渲染题面。')
+			log.info(u'  -g                  对于generator，使用git-lfs。')
 			return False
 		else:
 			if len(works) == 0:

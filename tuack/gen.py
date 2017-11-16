@@ -127,7 +127,8 @@ def new_dir(folder, args = None):
 		copy(folder + '.gitignore', '.gitignore')
 		copy(folder + '.json', 'conf.json')
 		if folder == 'problem':
-			copy(folder + '.gitattributes', '.gitattributes')
+			if common.git_lfs:
+				copy(folder + '.gitattributes', '.gitattributes')
 			for ff in ('data', 'down', 'statement', 'tables', 'resources'):
 				st_path = common.pjoin(path, ff)
 				if not os.path.exists(st_path):
