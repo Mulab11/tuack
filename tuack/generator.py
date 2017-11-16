@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-import common
-from common import log
+from . import common
+from .common import log
 
 def find_all_data(kind, folder, key, conf = None):
 	if not conf:

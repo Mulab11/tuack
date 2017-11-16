@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-import common
-from common import log
+from . import common
+from .common import log
 
 def lemon(conf = None):
 	common.check_install('pyside')

@@ -15,13 +15,13 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-import common
-from common import log
+from . import common
+from .common import log
 try:
 	import jinja2
 except:
 	pass
-import tools
+from . import tools
 import uuid
 
 work_class = {

@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-import common
-from common import log, pjoin, rjoin
+from . import common
+from .common import log, pjoin, rjoin
 import traceback
 
 def run_windows(name, tl, ml, input = None, output = None, vm = None):

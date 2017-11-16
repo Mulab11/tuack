@@ -3,7 +3,3 @@ __pycache__
 .DS_Store
 */.DS_Store
 conf.json
-build
-tuack.egg-info
-dist
-build

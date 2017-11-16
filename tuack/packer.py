@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from common import *
-import common
+from .common import *
+from . import common
 import math
 
 doc_format = re.compile(r'^(.*)\.(doc|docs|ppt|pptx|pdf|tex|md|html|htm|zip|dir)$')
