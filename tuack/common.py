@@ -273,7 +273,7 @@ class Problem(Configure):
 			else:
 				self[data] = []
 			if cases in self and type(self[cases]) == int:
-				log.warning(u'`%s`字段不再使用，使用`python -m generator upgrade`升级。' % cases)
+				log.warning(u'`%s`字段不再使用，使用`python -m gen upgrade`升级。' % cases)
 				#to_dp = lambda i : DataPath({'case' : self['name'] + str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
 				#self[data] = [{'cases' : [
 				#	to_dp(i) for i in range(1, self.pop(cases) + 1) \
@@ -514,12 +514,12 @@ def deal_args():
 			log.info(u'  -s                  对于有输出的文件的操作，输出完以后不自动打开文件。')
 			log.info(u'  -p day0/sleep,day2  只对day0/sleep和day2进行本次操作；此路径是基于当前文件夹的，')
 			log.info(u'                      例如：在比赛日目录如day1下，则可以直接指定题目如exam；')
-			log.info(u'                      对于tester，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
-			log.info(u'  -t 6.0              对于tester，设置掐断时间为6.0*时间限制，用于对比不同程序的时限。')
-			log.info(u'  -o SYSTEM           对于renderer，输出指定操作系统的题面，可选Windows和Linux。')
-			log.info(u'  -l zh-cn,en         对于renderer，指定输出语言，不指定默认为zh-cn。')
-			log.info(u'  -r                  对于dumper，不先尝试渲染题面。')
-			log.info(u'  -g                  对于generator，使用git-lfs。')
+			log.info(u'                      对于test，还可以指定用户或算法，如day1/problem/vfk/std.cpp。')
+			log.info(u'  -t 6.0              对于test，设置掐断时间为6.0*时间限制，用于对比不同程序的时限。')
+			log.info(u'  -o SYSTEM           对于ren，输出指定操作系统的题面，可选Windows和Linux。')
+			log.info(u'  -l zh-cn,en         对于ren，指定输出语言，不指定默认为zh-cn。')
+			log.info(u'  -r                  对于dump，不先尝试渲染题面。')
+			log.info(u'  -g                  对于gen，使用git-lfs。')
 			return False
 		else:
 			if len(works) == 0:
