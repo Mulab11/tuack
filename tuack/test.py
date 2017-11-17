@@ -388,7 +388,7 @@ if __name__ == '__main__':
 		if common.init():
 			common.work = 'test'
 			if common.do_pack:
-				import packer
+				from . import packer
 				common.run_exc(packer.test)
 			common.run_exc(test_progs)
 		else:
