@@ -1,3 +1,4 @@
+//You can include .h file like testlib.h here
 #include <cstdio>
 #include <cstdlib>
 
@@ -15,6 +16,7 @@ void ret(double result, const char* info){
 }
 
 int main(int argc, char **argv){
+	//You'd better not change this swith block
 	switch(argc){
 		case 4:		//Arbiter
 			inFile = fopen(argv[1], "r");

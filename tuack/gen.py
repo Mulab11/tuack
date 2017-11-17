@@ -16,18 +16,18 @@ from functools import wraps
 from threading import Timer
 import platform
 from . import common
-from .common import log
+from .common import log, pjoin
 
 def find_all_data(kind, folder, key, conf = None):
 	if not conf:
 		conf = common.conf
 	def find_data(path = ''):
-		full_path = common.pjoin(prob.path, folder, path)
+		full_path = pjoin(prob.path, folder, path)
 		for f in os.listdir(full_path):
-			if os.path.isfile(common.pjoin(full_path, f)):
+			if os.path.isfile(pjoin(full_path, f)):
 				if not f.endswith('.in'):
 					continue
-				fans = common.pjoin(full_path, f[:-3]) + '.ans'
+				fans = pjoin(full_path, f[:-3]) + '.ans'
 				if not os.path.exists(fans) or not os.path.isfile(fans):
 					continue
 				name = common.rjoin(path, f[:-3])
@@ -54,7 +54,7 @@ def find_all_data(kind, folder, key, conf = None):
 			log.warning(e)
 		new_data = parse(new_data)
 		for datum in new_data:
-			log.info(u'发现新数据`%s`。' % (common.pjoin(prob.path, folder, str(datum))))
+			log.info(u'发现新数据`%s`。' % (pjoin(prob.path, folder, str(datum))))
 		prob.__getattribute__(key).__iadd__(new_data)
 		if kind not in prob:
 			prob[kind] = []
@@ -64,11 +64,11 @@ def find_all_data(kind, folder, key, conf = None):
 	
 def find_all_code():
 	def find_code(user, path):
-		full_path = common.pjoin(prob.path, user, path)
+		full_path = pjoin(prob.path, user, path)
 		for f in os.listdir(full_path):
 			if common.user_skip.match(f):
 				continue
-			if os.path.isfile(common.pjoin(full_path, f)):
+			if os.path.isfile(pjoin(full_path, f)):
 				for key in common.compilers:
 					if not f.endswith('.' + key):
 						continue
@@ -91,7 +91,7 @@ def find_all_code():
 			for algo, path in algos.items():
 				exist_code.add(path)
 		for f in os.listdir(prob.path):
-			if common.user_skip.match(f) or os.path.isfile(common.pjoin(prob.path, f)):
+			if common.user_skip.match(f) or os.path.isfile(pjoin(prob.path, f)):
 				continue
 			if f not in prob['users']:
 				prob['users'][f] = {}
@@ -100,17 +100,21 @@ def find_all_code():
 				prob['users'].pop(f)
 		common.save_json(prob)
 
-def new_dir(folder, args = None):
-	def copy(src, tgt = None):
-		if not tgt:
-			tgt = src
-		if not os.path.exists(common.pjoin(path, tgt)):
-			common.copy(
-				common.pjoin(common.path, 'sample'),
-				src,
-				common.pjoin(path, tgt)
-			)
+def sample_copy(src, tgt = None, path = ''):
+	if not tgt:
+		tgt = src
+	full_tgt = pjoin(path, tgt)
+	if os.path.exists(full_tgt) and not os.path.isfile(full_tgt):
+		full_tgt = pjoin(full_tgt, src)
+	if not os.path.exists(full_tgt):
+		log.info(u'生成文件`%s`' % full_tgt)
+		common.copy(
+			pjoin(common.path, 'sample'),
+			src,
+			full_tgt
+		)
 
+def new_dir(folder, args = None):
 	if not args:
 		args = common.args
 	if len(args) == 0:
@@ -122,6 +126,7 @@ def new_dir(folder, args = None):
 			return
 		dirs = args
 	for path in dirs:
+		copy = lambda src, tgt = None: sample_copy(src, tgt, path)
 		if not os.path.exists(path):
 			os.makedirs(path)
 		copy(folder + '.gitignore', '.gitignore')
@@ -130,11 +135,11 @@ def new_dir(folder, args = None):
 			if common.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')
 			for ff in ('data', 'down', 'statement', 'tables', 'resources'):
-				st_path = common.pjoin(path, ff)
+				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)
-				for f in os.listdir(common.pjoin(common.path, 'sample', ff)):
-					copy(common.pjoin(ff, f), common.pjoin(ff, f))
+				for f in os.listdir(pjoin(common.path, 'sample', ff)):
+					copy(pjoin(ff, f), pjoin(ff, f))
 		if path != '.':
 			conf = common.load_json(path)
 			conf['name'] = path
@@ -157,8 +162,8 @@ def upgrade():
 							for i in range(1, cnt + 1):
 								for suf in ['.in', '.ans']:
 									try:
-										ff = common.pjoin(conf.path, folder, conf['name'] + str(i) + suf)
-										ft = common.pjoin(conf.path, folder, str(i) + suf)
+										ff = pjoin(conf.path, folder, conf['name'] + str(i) + suf)
+										ft = pjoin(conf.path, folder, str(i) + suf)
 										os.rename(ff, ft)
 									except FileNotFoundError as e:
 										if os.path.exists(ft):
@@ -190,6 +195,18 @@ def upgrade():
 		common.conf = common.load_json()
 		upgrade()
 
+def copy_lfs():
+	for prob in common.probs():
+		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
+		copy('problem.gitattributes', '.gitattributes')
+
+def copy_chk():
+	for prob in common.probs():
+		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
+		if not os.path.exists(pjoin(prob.path, 'data', 'chk')):
+			os.makedirs(pjoin(prob.path, 'data', 'chk'))
+		copy('chk.cpp', pjoin('data', 'chk'))
+
 work_list = {
 	'data' : lambda conf = None: find_all_data('data', 'data', 'test_cases', conf),
 	'samples' : lambda conf = None: find_all_data('samples', 'down', 'sample_cases', conf),
@@ -197,7 +214,9 @@ work_list = {
 	'contest' : lambda : new_dir('contest'),
 	'day' : lambda : new_dir('day'),
 	'problem' : lambda : new_dir('problem'),
-	'upgrade' : upgrade
+	'upgrade' : upgrade,
+	'lfs' : copy_lfs,
+	'chk' : copy_chk
 }
 
 if __name__ == '__main__':
@@ -220,6 +239,9 @@ if __name__ == '__main__':
 		log.info(u'  problem  无参数表示在当前目录下生成一道题目，题目可以是独立的工程；')
 		log.info(u'           有参数表示在当前比赛日下依次生成名叫参数1，参数2，…的题目，')
 		log.info(u'           有参数必须保证当前目录是比赛日。')
-		log.info(u'  data     在所有题目工程的data文件夹中搜索数据并添加到配置文件。')
-		log.info(u'  samples  在所有题目工程的down文件夹中搜索样例并添加到配置文件。')
-		log.info(u'  code     在所有题目工程的非数据文件夹中搜索源代码并添加到配置文件。')
+		log.info(u'  data     在题目工程的data文件夹中搜索数据并添加到配置文件。')
+		log.info(u'           对于比赛工程和比赛日工程，此操作将应用于所有子题目工程，下同。')
+		log.info(u'  samples  在题目工程的down文件夹中搜索样例并添加到配置文件。')
+		log.info(u'  code     在题目工程的非数据文件夹中搜索源代码并添加到配置文件。')
+		log.info(u'  lfs      用git-lfs维护所有的*.in/out/ans，当数据较大时使用。')
+		log.info(u'  chk      添加一个空的答案校验器或称spj，建议在此基础上修改以兼容。')
