@@ -5,7 +5,7 @@
 	"name" : "name for programers",
 	"title" : {
 		"zh-cn" : "用于试题标题的中文名称"
-	},		
+	},
 	"time limit" : 1.0,
 	"memory limit" : "512 MB",
 	"partial score" : false,
@@ -17,7 +17,7 @@
 		"java" : "",
 		"py" : ""
 	},
-    "samples" : [],
+	"samples" : [],
 	"args" : {
 		"n" : 1000
 	},
