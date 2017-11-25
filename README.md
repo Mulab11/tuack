@@ -16,4 +16,4 @@
 
 ## 文档
 
-[文档在这里](https://git.thusaac.org/mulab/oi_tools/wikis/home)
+[文档在这里](https://git.thusaac.org/publish/tuack/wikis/home)
