@@ -48,13 +48,17 @@
 					{%- if ifirst -%}
 						{{ table[i][j] }}
 					{%- else -%}
-						\multirow{ {{- cnt[i][j] -}} }{*}{
-							{%- if 'width' in options and options['width'] -%}
-								\parbox{ \hsize }{ \centering {{table[i][j]}} }
-							{%- else -%}
-								{{table[i][j]}}
-							{%- endif -%}
-						}
+						{%- if cnt[i][j] > 1 -%}
+							\multirow{ {{- cnt[i][j] -}} }{*}{
+								{%- if 'width' in options and options['width'] -%}
+									\parbox{ \hsize }{ \centering {{table[i][j]}} }
+								{%- else -%}
+									{{table[i][j]}}
+								{%- endif -%}
+							}
+						{%- else -%}
+							{{table[i][j]}}
+						{%- endif -%}
 					{%- endif -%}
 				{%- endif -%}
 				{%- if loop.last -%}
