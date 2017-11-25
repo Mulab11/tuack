@@ -49,7 +49,6 @@ macros = {
 	'test' : '-D__TUACK__ -DONLINE_JUDGE'
 }
 
-frep = open('tester.log', 'a')
 copied_data = set()
 no_compiling = False
 path = os.path.dirname(os.path.realpath(__file__))
@@ -722,7 +721,6 @@ dos2unix = lambda path : change_eol(path, b'\n')
 def run_exc(func):
 	try:
 		func()
-		log.info(u'好厉害 这个脚本跑完了呢')
 	except Exception as e:
 		log.error(e)
 		log.info(traceback.format_exc())
