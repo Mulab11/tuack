@@ -93,7 +93,7 @@ int main(int argc, char** argv);
 
 {{ tbl('data') }}
 
-{{ tbl('table', {'width' : [1, 6]}) }}
+{{ tbl('table', width = [1, 6]) }}
 
 表格的例子见 `oi_tools/sample/tables`。原理上用一个二维的json表格存储，`null` 表示和上一行合并，不支持横向合并。建议用python的格式写，如例子中的 `data.py`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
 
