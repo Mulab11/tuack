@@ -7,9 +7,7 @@ import platform
 def check():
 	system = platform.system()
 	if system == 'Linux':
-		check_call("apt-get install pandoc".split())
-		check_call("apt-get install git".split())
-		check_call("apt-get install git-lfs".split())
+		check_call("sudo apt-get install pandoc git git-lfs".split())
 		check_call("git lfs install".split())
 	elif system == 'Darwin':
 		check_call("brew update".split())
@@ -48,6 +46,7 @@ setup(
 		'natsort'
 	],
 	package_data = {
-		'tuack': ['templates/*', 'sample/*']
+		'tuack': ['templates/*.*', 'templates/*/*/*', 'sample/*.*', 'sample/*/*']
 	}
 )
+
