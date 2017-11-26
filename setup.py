@@ -46,5 +46,8 @@ setup(
 	install_requires = [
 		'jinja2',
 		'natsort'
-	]
+	],
+	package_data = {
+		'tuack': ['templates/*', 'sample/*']
+	}
 )
