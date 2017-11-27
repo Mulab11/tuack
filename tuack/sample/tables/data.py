@@ -10,5 +10,5 @@ for datum in prob['data']:
         "$\\le %s$" % tools.hn(args[4])
     ]
     ret.append(row)
-common.log.debug(u'输出调试信息')
+base.log.debug(u'输出调试信息')
 return merge_ver(ret)

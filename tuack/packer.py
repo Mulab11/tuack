@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from .common import *
-from . import common
+from .base import *
+from . import base
 import math
 
 doc_format = re.compile(r'^(.*)\.(doc|docs|ppt|pptx|pdf|tex|md|html|htm|zip|dir)$')
@@ -32,7 +32,7 @@ def find_doc(path, name):
 def test_copy_problem_files(prob):
 	data_path = os.path.join(prob.path, 'data')
 	try:
-		copy(data_path, 'chk', common.pjoin(output_folder, prob.route))
+		copy(data_path, 'chk', base.pjoin(output_folder, prob.route))
 		prob.chk = True
 	except Exception as e:
 		prob.chk = False
@@ -41,7 +41,7 @@ def copy_one_day_files(probs, day_name):
 	remkdir(os.path.join(output_folder, day_name, 'data'))
 	print('copy data files')
 	for prob in probs:
-		if common.rjoin(day_name, prob['name']) not in common.prob_set:
+		if base.rjoin(day_name, prob['name']) not in base.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'data')
@@ -50,7 +50,7 @@ def copy_one_day_files(probs, day_name):
 				copy(data_path, prob['name'] + str(i) + suf, os.path.join(output_folder, day_name, 'data'))
 		copy(data_path, 'chk', os.path.join(output_folder, day_name, 'data', prob['name'] + '_e'))
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
 				copy(data_path, name, os.path.join(output_folder, day_name, 'data'))
 	print('dos2unix data files')
@@ -59,7 +59,7 @@ def copy_one_day_files(probs, day_name):
 	print('copy down files')
 	remkdir(os.path.join(output_folder, day_name, 'down'))
 	for prob in probs:
-		if common.rjoin(day_name, prob['name']) not in common.prob_set:
+		if base.rjoin(day_name, prob['name']) not in base.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'down')
@@ -74,7 +74,7 @@ def copy_one_day_files(probs, day_name):
 				copy(data_path, prob['name'] + str(i) + suf, target_path)
 		copy(data_path, 'checker', target_path)
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
 				copy(data_path, name, target_path)
 	print('dos2unix down files')
@@ -97,7 +97,7 @@ def pc2_copy_one_day_files(probs, day_name):
 	remkdir(os.path.join('pc2', day_name, 'data'))
 	print('copy data files')
 	for prob in probs:
-		if common.rjoin(day_name, prob['name']) not in common.prob_set:
+		if base.rjoin(day_name, prob['name']) not in base.prob_set:
 			continue
 		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
@@ -109,7 +109,7 @@ def pc2_copy_one_day_files(probs, day_name):
 				copy(data_path, prob['name'] + str(i) + suf, target_path)
 		copy(data_path, 'chk', target_path)
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
 				copy(data_path, name, target_path)
 		if os.system('dos2unix %s 2> log' % os.path.join(target_path, '*')) != 0:
@@ -117,7 +117,7 @@ def pc2_copy_one_day_files(probs, day_name):
 	print('copy down files')
 	remkdir(os.path.join('pc2', day_name, 'down'))
 	for prob in probs:
-		if common.rjoin(day_name, prob['name']) not in common.prob_set:
+		if base.rjoin(day_name, prob['name']) not in base.prob_set:
 			continue
 		name = prob['name'].capitalize()
 		# TODO: if test cases is a list of scores instead of an integer
@@ -131,7 +131,7 @@ def pc2_copy_one_day_files(probs, day_name):
 				copy(data_path, prob['name'] + str(i) + suf, target_path)
 		copy(data_path, 'checker', target_path)
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
 				copy(data_path, name, target_path)
 	print('dos2unix down files')
@@ -168,9 +168,9 @@ def prob2uoj_conf(prob):
 	if 'time limit' in prob:
 		s += 'time_limit %d\n' % math.ceil(prob['time limit'])
 	if 'memory limit' in prob:
-		s += 'memory_limit %d\n' % (common.memory2bytes(prob['memory limit']) // 1024 // 1024)
+		s += 'memory_limit %d\n' % (base.memory2bytes(prob['memory limit']) // 1024 // 1024)
 	if 'output limit' in prob:
-		s += 'output_limit %d\n' % (common.memory2bytes(prob['output limit']) // 1024 // 1024)
+		s += 'output_limit %d\n' % (base.memory2bytes(prob['output limit']) // 1024 // 1024)
 	else:
 		s += 'output_limit 64\n'
 	return s
@@ -178,7 +178,7 @@ def prob2uoj_conf(prob):
 def uoj_copy_one_day_files(probs, day_name):
 	print('copy data files')
 	for prob in probs:
-		if common.rjoin(day_name, prob['name']) not in common.prob_set:
+		if base.rjoin(day_name, prob['name']) not in base.prob_set:
 			continue
 		# TODO: if test cases is a list of scores instead of an integer
 		data_path = os.path.join(day_name, prob['name'], 'data')
@@ -195,7 +195,7 @@ def uoj_copy_one_day_files(probs, day_name):
 			#with open(os.path.join(target_path, 'val.cpp'), 'w') as f:
 			#	f.write(empty_cpp)
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				require_path = os.path.join(target_path, 'require')
 				if not os.path.exists(require_path):
 					os.makedirs(require_path)
@@ -212,7 +212,7 @@ def uoj_copy_one_day_files(probs, day_name):
 				copy(data_path, prob['name'] + str(i) + suf, os.path.join(target_path, 'ex_' + prob['name'] + str(i) + suf))
 		copy(data_path, 'checker', download_path)
 		for name in os.listdir(data_path):
-			if os.path.join(data_path, name) not in common.copied_data:
+			if os.path.join(data_path, name) not in base.copied_data:
 				warning('Unusual file \'%s\' found.' % os.path.join(data_path, name))
 				copy(data_path, name, download_path)
 		with open(os.path.join(target_path, 'problem.conf'), 'w') as f:
@@ -225,9 +225,9 @@ def uoj_copy_one_day_files(probs, day_name):
 		os.remove('log')
 
 def copy_files(suffix = ''):
-	for day in common.days():
-		common.mkdir(os.path.join(output_folder, day.route))
-	for prob in common.probs():
+	for day in base.days():
+		base.mkdir(os.path.join(output_folder, day.route))
+	for prob in base.probs():
 		eval(suffix + 'copy_problem_files')(prob)
 
 def zip_tree(z, path):
@@ -239,32 +239,32 @@ def zip_tree(z, path):
 			z.write(full_path)
 
 def make_zip():
-	for day_name, day_data in common.probs.items():
-		if day_name not in common.day_set:
+	for day_name, day_data in base.probs.items():
+		if day_name not in base.day_set:
 			continue
 		with zipfile.ZipFile(os.path.join(output_folder, day_name + '.zip'), 'w') as z:
 			zip_tree(z, os.path.join(output_folder, day_name))
 
 def noi():
 	global output_folder
-	common.no_compiling = False
+	base.no_compiling = False
 	output_folder = 'noi'
 	remkdir('noi')
 	copy_files()
 
 def test():
 	global output_folder
-	common.no_compiling = False
+	base.no_compiling = False
 	output_folder = 'bin'
-	if common.conf.folder != 'problem':
+	if base.conf.folder != 'problem':
 		remkdir('bin')
-		for day in common.days():
-			remkdir(common.pjoin('bin', day.route))
+		for day in base.days():
+			remkdir(base.pjoin('bin', day.route))
 	copy_files('test_')
 	
 def pc2():
 	global output_folder
-	common.no_compiling = True
+	base.no_compiling = True
 	remkdir('pc2')
 	copy_files('pc2_')
 
@@ -272,17 +272,17 @@ def release():
 	global output_folder
 	infom('make release files.')
 	remkdir('release')
-	common.no_compiling = True
+	base.no_compiling = True
 	output_folder = 'release'
 	copy_files()
 	make_zip()
 
 def svn_init():
-	for day_name, probs in common.probs.items():
-		if day_name not in common.day_set:
+	for day_name, probs in base.probs.items():
+		if day_name not in base.day_set:
 			continue
 		for prob in probs:
-			if common.rjoin(day_name, prob['name']) not in common.prob_set:
+			if base.rjoin(day_name, prob['name']) not in base.prob_set:
 				continue
 			if not os.path.exists(os.path.join('uoj', day_name, prob['name'], '.svn')):
 				os.system(
@@ -297,11 +297,11 @@ def svn_init():
 				os.system('svn delete %s' % os.path.join(os.path.join('uoj', day_name, prob['name'], '1')))
 	
 def svn_upload():
-	for day_name, probs in common.probs.items():
-		if day_name not in common.day_set:
+	for day_name, probs in base.probs.items():
+		if day_name not in base.day_set:
 			continue
 		for prob in probs:
-			if common.rjoin(day_name, prob['name']) not in common.prob_set:
+			if base.rjoin(day_name, prob['name']) not in base.prob_set:
 				continue
 			os.system('svn add %s' % os.path.join(os.path.join('uoj', day_name, prob['name'], '1')))
 			os.system('svn commit %s -m "%s"' % (
@@ -311,7 +311,7 @@ def svn_upload():
 
 def uoj():
 	global output_folder, uoj_config
-	common.no_compiling = False
+	base.no_compiling = False
 	output_folder = 'uoj'
 	if not os.path.exists('uoj'):
 		os.makedirs('uoj')
@@ -336,10 +336,10 @@ work_list = {
 }
 
 if __name__ == '__main__':
-	if common.init():
+	if base.init():
 		infom('Packing starts at %s.\n' % str(datetime.datetime.now()))
-		for common.work in common.works:
-			work_list[common.work]()
+		for base.work in base.works:
+			work_list[base.work]()
 	else:
 		print('Use arguments other than options to run what to output.')
 		print('Enabled output types:')

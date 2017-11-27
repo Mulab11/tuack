@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from . import common
-from .common import log, pjoin
+from . import base
+from .base import log, pjoin
 try:
 	import jinja2
 except:
@@ -75,11 +75,11 @@ env = None
 
 def get_template(fname, lang = None):
 	global env
-	if common.lang:
-		lang = common.lang
+	if base.lang:
+		lang = base.lang
 	if not lang:
 		lang = 'zh-cn'
-	if env == None or common.system == 'Darwin' or (lang and env['lang'] != lang):
+	if env == None or base.system == 'Darwin' or (lang and env['lang'] != lang):
 		env = {
 			'env' : jinja2.Environment(
 				loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')),
@@ -96,10 +96,10 @@ def get_template(fname, lang = None):
 	return env['env'].get_template(fname)
 
 def init():
-	common.mkdir('statements')
+	base.mkdir('statements')
 	shutil.rmtree('tmp', ignore_errors = True)
 	time.sleep(0.1)
-	shutil.copytree(os.path.join(common.path, 'templates'), 'tmp')
+	shutil.copytree(os.path.join(base.path, 'templates'), 'tmp')
 	
 def final():
 	shutil.rmtree('tmp', ignore_errors = True)
@@ -117,13 +117,13 @@ def table(path, name, temp, context, options):
 		options = {}
 	for suf in ['.py', '.json']:
 		try:
-			common.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
-			log.info(u'渲染表格`%s`，参数%s' % (common.pjoin(path, name + suf), str(options)))
+			base.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
+			log.info(u'渲染表格`%s`，参数%s' % (base.pjoin(path, name + suf), str(options)))
 			break
-		except common.NoFileException as e:
+		except base.NoFileException as e:
 			pass
 	else:
-		log.error(u'找不到表格`%s.*`' % common.pjoin(path, name))
+		log.error(u'找不到表格`%s.*`' % base.pjoin(path, name))
 	if suf == '.json':
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
@@ -147,7 +147,7 @@ def table(path, name, temp, context, options):
 		code += '\tglobal val\n'
 		code += '\tfor key, val in context.items():\n'
 		code += '\t\texec(\'%s = val\' % key, globals())\n'
-		for line in open(common.pjoin('tmp', 'table.py'), 'rb'):
+		for line in open(base.pjoin('tmp', 'table.py'), 'rb'):
 			code += '\t' + line.decode('utf-8').rstrip() + '\n'
 		namespace = {}
 		exec(code, namespace)
@@ -168,7 +168,7 @@ def secondary(s, sp, work):
 			sp = [sp]
 		in_set = False
 		for i in sp:
-			if i in work_class and common.work in work_class[i]:
+			if i in work_class and base.work in work_class[i]:
 				in_set = True
 				break
 		if not in_set:
@@ -184,9 +184,9 @@ def to_arg(dic):
 	return ','.join(['%s = %s' % (key, val if type(val) != str else json.dumps(val)) for key, val in dic.items()])
 
 def tex(comp):
-	common.check_install('pandoc')
-	common.check_install('xelatex')
-	common.check_install('gettext')
+	base.check_install('pandoc')
+	base.check_install('xelatex')
+	base.check_install('gettext')
 	def render(conf, contest, path):
 		tex_problems = []
 		day_name = conf['name'] if conf.folder == 'day' else '测试'
@@ -197,8 +197,8 @@ def tex(comp):
 		for prob in probs:
 			log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
 			try:
-				shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
-			except common.NoFileException as e:
+				shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
+			except base.NoFileException as e:
 				log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
 				continue
 			context = {
@@ -208,7 +208,7 @@ def tex(comp):
 				'io_style' : io_style,
 				'comp' : comp,
 				'tools' : tools,
-				'common' : common,
+				'base' : base,
 				'file_name' : lambda name : file_name(comp, prob, name),
 				'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 				'resource' : lambda name : os.path.join('..', prob.path, 'resources', name).replace('\\', '/'),
@@ -271,35 +271,35 @@ def tex(comp):
 		os.system('xelatex -interaction=batchmode problems.tex')
 		os.chdir('..')
 		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
-		if common.start_file:
-			common.xopen_file(path)
-	common.mkdir(os.path.join('statements', comp))
+		if base.start_file:
+			base.xopen_file(path)
+	base.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
 	base_template = base_templates[comp]
 	context = {
 		'io_style' : io_style,
 		'comp' : comp,
 		'tools' : tools,
-		'common' : common,
+		'base' : base,
 		'json' : json
 	}
 	prec = None
-	if os.path.exists(common.pjoin(common.conf.path, 'precautions', 'zh-cn.md')):
-		common.copy(common.pjoin(common.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
-		open(common.pjoin('tmp', 'precautions.md'), 'wb') \
-			.write(get_template('zh-cn.md').render(context, conf = common.conf).encode('utf-8'))
+	if os.path.exists(base.pjoin(base.conf.path, 'precautions', 'zh-cn.md')):
+		base.copy(base.pjoin(base.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
+		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(get_template('zh-cn.md').render(context, conf = base.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
 			os.path.join('tmp', 'precautions.md'),
 			os.path.join('tmp', 'precautions.tex')
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
-	if common.conf.folder != 'problem':
-		for day in common.days():
-			result_path = os.path.join('statements', comp, day['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
-			render(day, common.conf if common.conf.folder == 'contest' else None, result_path)
+	if base.conf.folder != 'problem':
+		for day in base.days():
+			result_path = os.path.join('statements', comp, day['name'] + ('-' + base.lang if base.lang else '') + '.pdf')
+			render(day, base.conf if base.conf.folder == 'contest' else None, result_path)
 	else:
-		result_path = os.path.join('statements', comp, common.conf['name'] + ('-' + common.lang if common.lang else '') + '.pdf')
-		render(common.conf, None, result_path)
+		result_path = os.path.join('statements', comp, base.conf['name'] + ('-' + base.lang if base.lang else '') + '.pdf')
+		render(base.conf, None, result_path)
 
 def uoj_title(text):
 	in_quote = 0
@@ -323,8 +323,8 @@ def md(comp):
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
 		try:
-			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
-		except common.NoFileException as e:
+			shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
+		except base.NoFileException as e:
 			log.error(u'找不到题面文件，建议使用`python -m tuack.gen problem`生成题目工程。')
 			return
 		time.sleep(0.1)
@@ -332,7 +332,7 @@ def md(comp):
 			'prob' : prob,
 			'io_style' : io_style,
 			'tools' : tools,
-			'common' : common,
+			'base' : base,
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
@@ -353,7 +353,7 @@ def md(comp):
 				.render(context)
 				.encode('utf-8')
 			)
-		result_file = path + ('-' + common.lang if common.lang else '')
+		result_file = path + ('-' + base.lang if base.lang else '')
 		if prob.route == '':
 			result_file = pjoin(result_file, prob['name'])
 		result_file += '.md'
@@ -365,20 +365,20 @@ def md(comp):
 		if comp == 'uoj':
 			result_md = uoj_title(result_md)
 		open(result_file, 'wb').write(result_md)
-		if common.start_file:
-			common.xopen_file(result_file)
+		if base.start_file:
+			base.xopen_file(result_file)
 
-	common.mkdir(os.path.join('statements', comp))
+	base.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
-	if common.conf.folder == 'contest':
-		for day in common.days():
-			if not os.path.exists(common.pjoin('statements', comp, day.route)):
-				os.makedirs(common.pjoin('statements', comp, day.route))
-	for prob in common.probs():
+	if base.conf.folder == 'contest':
+		for day in base.days():
+			if not os.path.exists(base.pjoin('statements', comp, day.route)):
+				os.makedirs(base.pjoin('statements', comp, day.route))
+	for prob in base.probs():
 		render(prob)
 		
 def html(comp):
-	common.check_install('pandoc')
+	base.check_install('pandoc')
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
 		path = pjoin('statements', comp)
@@ -389,8 +389,8 @@ def html(comp):
 			time.sleep(0.1)
 			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
 		try:
-			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
-		except common.NoFileException as e:
+			shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
+		except base.NoFileException as e:
 			log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
 			return
 		time.sleep(0.1)
@@ -398,7 +398,7 @@ def html(comp):
 			'prob' : prob,
 			'io_style' : io_style,
 			'tools' : tools,
-			'common' : common,
+			'base' : base,
 			'file_name' : lambda name : file_name(comp, prob, name),
 			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
 			'resource' : lambda name : prob['name'] + '/' + name,
@@ -432,7 +432,7 @@ def html(comp):
 		open(os.path.join('tmp', 'problem.3.md'), 'wb').write(
 			txt.encode('utf-8')
 		)
-		open(common.pjoin('tmp', 'problem.4.md'), 'wb') \
+		open(base.pjoin('tmp', 'problem.4.md'), 'wb') \
 			.write(get_template('problem.3.md', prob.lang())
 				.render(
 					context,
@@ -440,7 +440,7 @@ def html(comp):
 					table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
-		result_file = path + ('-' + common.lang if common.lang else '')
+		result_file = path + ('-' + base.lang if base.lang else '')
 		if prob.route == '':
 			result_file = pjoin(result_file, prob['name'])
 		result_file += '.html'
@@ -448,31 +448,31 @@ def html(comp):
 			os.path.join('tmp', 'problem.4.md'),
 			result_file
 		))
-		if common.start_file:
-			common.xopen_file(result_file)
+		if base.start_file:
+			base.xopen_file(result_file)
 
-	common.mkdir(os.path.join('statements', comp))
+	base.mkdir(os.path.join('statements', comp))
 	io_style = io_styles[comp]
-	if common.conf.folder == 'contest':
-		for day in common.days():
-			if not os.path.exists(common.pjoin('statements', comp, day.route)):
-				os.makedirs(common.pjoin('statements', comp, day.route))
+	if base.conf.folder == 'contest':
+		for day in base.days():
+			if not os.path.exists(base.pjoin('statements', comp, day.route)):
+				os.makedirs(base.pjoin('statements', comp, day.route))
 	if comp == 'tsinsen-oj':
 		log.warning(u'如果你使用了resource，你可能需要使用dumper才能获得正确上传清橙的文件。')
-	for prob in common.probs():
+	for prob in base.probs():
 		render(prob)
 
 if __name__ == '__main__':
 	try:
-		if common.init():
-			common.check_install('jinja2')
+		if base.init():
+			base.check_install('jinja2')
 			init()
-			for common.work in common.works:
-				for common.lang in common.langs:
-					common.run_exc(work_list[common.work])
+			for base.work in base.works:
+				for base.lang in base.langs:
+					base.run_exc(work_list[base.work])
 			final()
 		else:
 			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
-	except common.NoFileException as e:
+	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

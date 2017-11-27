@@ -15,25 +15,25 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from . import common
-from .common import log, pjoin
+from . import base
+from .base import log, pjoin
 
 def lemon(conf = None):
-	common.check_install('pyside')
+	base.check_install('pyside')
 	if not conf:
-		if common.conf.folder == 'problem':
+		if base.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
-		common.remkdir('lemon')
-		if common.conf.folder == 'day':
-			lemon(common.conf)
+		base.remkdir('lemon')
+		if base.conf.folder == 'day':
+			lemon(base.conf)
 		else:
-			for day in common.days():
-				os.makedirs(common.pjoin('lemon', day.route))
+			for day in base.days():
+				os.makedirs(base.pjoin('lemon', day.route))
 				lemon(day)
 		return
 	log.info(u'导出lemon工程：%s' % conf.route)
-	os.makedirs(common.pjoin('lemon', conf.route, 'data'))
-	os.makedirs(common.pjoin('lemon', conf.route, 'source'))
+	os.makedirs(base.pjoin('lemon', conf.route, 'data'))
+	os.makedirs(base.pjoin('lemon', conf.route, 'source'))
 	jzp_magic = 0x20111127
 	zlib_magic = 0x185E
 	import zlib
@@ -45,7 +45,7 @@ def lemon(conf = None):
 	ost.writeInt32(len(probs))
 	for prob in probs:
 		log.info(u'导出lemon题目：%s' % prob.route)
-		ost.writeQString(common.tr(prob['title']))
+		ost.writeQString(base.tr(prob['title']))
 		ost.writeQString(prob['name'])
 		ost.writeQString(prob['name'] + '.in')
 		ost.writeQString(prob['name'] + '.out')
@@ -77,10 +77,10 @@ def lemon(conf = None):
 				tc = datum['cases']
 				ost.writeInt32(len(tc))
 				for c in tc:
-					ost.writeQString(common.pjoin(prob['name'], str(c) + '.in'))
+					ost.writeQString(base.pjoin(prob['name'], str(c) + '.in'))
 				ost.writeInt32(len(tc))
 				for c in tc:
-					ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
+					ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
 		else:
 			score = 100. / len(prob.test_cases)
 			ost.writeInt32(len(prob.test_cases))
@@ -89,20 +89,20 @@ def lemon(conf = None):
 				ost.writeInt32(prob['time limit'] * 1000)
 				ost.writeInt32(prob.memory_limit().MB)
 				ost.writeInt32(1)
-				ost.writeQString(common.pjoin(prob['name'], str(c) + '.in'))
+				ost.writeQString(base.pjoin(prob['name'], str(c) + '.in'))
 				ost.writeInt32(1)
-				ost.writeQString(common.pjoin(prob['name'], str(c) + '.ans'))
+				ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
 		
 		sp = list(prob.route.split('/'))
 		target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
-		shutil.copytree(common.pjoin(prob.path, 'data'), common.pjoin(*target))
+		shutil.copytree(base.pjoin(prob.path, 'data'), base.pjoin(*target))
 	
 	compressed = QtCore.QByteArray(zlib.compress(str(obuff)))
 	obuff = QtCore.QByteArray()
 	ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
 	ost.writeUInt32(zlib_magic)
 	ost.writeRawData(str(compressed))
-	file_ = QtCore.QFile(common.pjoin('lemon', conf.route, conf['name'] + '.cdf'))
+	file_ = QtCore.QFile(base.pjoin('lemon', conf.route, conf['name'] + '.cdf'))
 	file_.open(QtCore.QIODevice.WriteOnly)
 	ofs = QtCore.QDataStream(file_)
 	ofs.writeUInt32(jzp_magic)
@@ -111,12 +111,12 @@ def lemon(conf = None):
 	ofs.writeRawData(str(obuff))
 	file_.close()
 	
-	common.run_r(common.unix2dos, common.pjoin('lemon', conf.route, 'data'))
+	base.run_r(base.unix2dos, base.pjoin('lemon', conf.route, 'data'))
 	
-	if common.do_zip:
+	if base.do_zip:
 		import zipfile
-		with zipfile.ZipFile(common.pjoin('lemon', conf.route) + '.zip', 'w') as z:
-			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf.route))
+		with zipfile.ZipFile(base.pjoin('lemon', conf.route) + '.zip', 'w') as z:
+			base.run_r(lambda path : z.write(path), base.pjoin('lemon', conf.route))
 	log.warning(u'目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	log.warning(u'目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 
@@ -128,37 +128,37 @@ def arbiter_main(conf = None,daynum = 0):
 	if not conf:
 		log.info('makedirs')
 		if not os.path.exists('arbiter'):
-			common.remkdir('arbiter')
-		common.remkdir(pjoin('arbiter', 'main'))
-		os.makedirs(common.pjoin('arbiter', 'main','data'))
-		os.makedirs(common.pjoin('arbiter', 'main','final'))
-		os.makedirs(common.pjoin('arbiter', 'main','players'))
-		os.makedirs(common.pjoin('arbiter', 'main','result'))
-		os.makedirs(common.pjoin('arbiter', 'main','filter'))
-		os.makedirs(common.pjoin('arbiter', 'main','tmp'))
-		if common.conf.folder == 'problem':
+			base.remkdir('arbiter')
+		base.remkdir(pjoin('arbiter', 'main'))
+		os.makedirs(base.pjoin('arbiter', 'main','data'))
+		os.makedirs(base.pjoin('arbiter', 'main','final'))
+		os.makedirs(base.pjoin('arbiter', 'main','players'))
+		os.makedirs(base.pjoin('arbiter', 'main','result'))
+		os.makedirs(base.pjoin('arbiter', 'main','filter'))
+		os.makedirs(base.pjoin('arbiter', 'main','tmp'))
+		if base.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
-		if common.conf.folder == 'day':
-			arbiter(common.days())
+		if base.conf.folder == 'day':
+			arbiter(base.days())
 		else:
-			for idx, day in enumerate(common.days(), start = 1):
-				os.makedirs(common.pjoin('arbiter', 'main','players',day.route))
-				os.makedirs(common.pjoin('arbiter', 'main','result',day.route))
+			for idx, day in enumerate(base.days(), start = 1):
+				os.makedirs(base.pjoin('arbiter', 'main','players',day.route))
+				os.makedirs(base.pjoin('arbiter', 'main','result',day.route))
 				arbiter_main(day,idx)
 			log.info('dos2unix')
-			common.run_r(common.dos2unix, common.pjoin('arbiter', 'main', 'data'))
-			shutil.copytree(common.pjoin('arbiter', 'main','data'),common.pjoin('arbiter', 'main','evaldata'))	#这里也不能直接copy，见下面的处理方式
+			base.run_r(base.dos2unix, base.pjoin('arbiter', 'main', 'data'))
+			shutil.copytree(base.pjoin('arbiter', 'main','data'),base.pjoin('arbiter', 'main','evaldata'))	#这里也不能直接copy，见下面的处理方式
 			cfg = {}
-			cfg['NAME='] = common.conf['name']
+			cfg['NAME='] = base.conf['name']
 			cfg['DAYNUM='] = idx
 			cfg['ENV='] = 'env.info'
 			cfg['PLAYER='] = 'player.info'
 			cfg['TEAM='] = 'team.info'
 			cfg['MISC='] = 'misc.info'
-			arbiter_info(cfg,common.pjoin('arbiter', 'main','setup.cfg'))
+			arbiter_info(cfg,base.pjoin('arbiter', 'main','setup.cfg'))
 			team = {}
-			arbiter_info(team,common.pjoin('arbiter', 'main','team.info'))
-			'''arbiter_info(userlist,common.pjoin('arbiter','player.info'))'''
+			arbiter_info(team,base.pjoin('arbiter', 'main','team.info'))
+			'''arbiter_info(userlist,base.pjoin('arbiter','player.info'))'''
 		return
 	dayinfo = {}
 	dayinfo['NAME='] = u'第'+str(daynum)+u'场'+u'--机试'
@@ -166,7 +166,7 @@ def arbiter_main(conf = None,daynum = 0):
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
-	arbiter_info(dayinfo,common.pjoin('arbiter', 'main', conf['name']+'.info'))
+	arbiter_info(dayinfo,base.pjoin('arbiter', 'main', conf['name']+'.info'))
 	for probnum, prob in enumerate(conf.sub, start = 1):
 		log.info(prob['name'])
 		probinfo = {}
@@ -192,15 +192,15 @@ def arbiter_main(conf = None,daynum = 0):
 		if 'packed' in prob and prob['packed']:
 			raise Exception('Can\'t dump packed problem for arbiter.')
 		for idx, case in enumerate(prob.test_cases, start = 1):
-			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.in'))'''
+			'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.in'))'''
 			shutil.copy(
-				common.pjoin(prob.path,'data',str(case)+'.in'),
-				common.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.in')
+				base.pjoin(prob.path,'data',str(case)+'.in'),
+				base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.in')
 			)
-			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.ans'))'''
+			'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.ans'))'''
 			shutil.copy(
-				common.pjoin(prob.path,'data',str(case)+'.ans'),
-				common.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.ans')
+				base.pjoin(prob.path,'data',str(case)+'.ans'),
+				base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.ans')
 			)
 			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
 		'''for idx, userdir in enumerate(prob['users'],start = 1):
@@ -208,49 +208,49 @@ def arbiter_main(conf = None,daynum = 0):
 				dirname = prob['name']+'-'+str(idx)+str(idx2)
 				codename = userdir + code
 				tmplist = prob['users'][userdir][code].split('/')
-				codedir = common.pjoin(prob.path,*tmplist)
-				os.makedirs(common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
-				shutil.copy(codedir,common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
+				codedir = base.pjoin(prob.path,*tmplist)
+				os.makedirs(base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
+				shutil.copy(codedir,base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
-		shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
-		arbiter_info(probinfo,common.pjoin('arbiter', 'main','task'+str(daynum)+'_'+str(probnum)+'.info'))
+		shutil.copy(base.pjoin(base.path,'sample','arbiter_e'),base.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
+		arbiter_info(probinfo,base.pjoin('arbiter', 'main','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 def arbiter_down(conf = None):
 	if not conf:
-		conf = common.conf
+		conf = base.conf
 		if not os.path.exists('arbiter'):
-			common.remkdir('arbiter')
-		common.remkdir(pjoin('arbiter', 'down'))
+			base.remkdir('arbiter')
+		base.remkdir(pjoin('arbiter', 'down'))
 	if conf.folder == 'problem':
 		raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
 	if conf.folder == 'contest':
-		for idx, day in enumerate(common.days(), start = 1):
-			os.makedirs(common.pjoin(pjoin('arbiter', 'down'), day['name']))
+		for idx, day in enumerate(base.days(), start = 1):
+			os.makedirs(base.pjoin(pjoin('arbiter', 'down'), day['name']))
 			arbiter_down(day)
 		log.info('dos2unix')
-		common.run_r(common.dos2unix, common.pjoin(pjoin('arbiter', 'down')))
+		base.run_r(base.dos2unix, base.pjoin(pjoin('arbiter', 'down')))
 		return
 	for prob in conf.probs():
 		log.info(prob.route)
-		os.makedirs(common.pjoin(pjoin('arbiter', 'down'), prob.route))
+		os.makedirs(base.pjoin(pjoin('arbiter', 'down'), prob.route))
 		for idx, case in enumerate(prob.sample_cases, start = 1):
 			shutil.copy(
-				common.pjoin(prob.path,'down',str(case)+'.in'),
-				common.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.in')
+				base.pjoin(prob.path,'down',str(case)+'.in'),
+				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.in')
 			)
 			shutil.copy(
-				common.pjoin(prob.path,'down',str(case)+'.ans'),
-				common.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.ans')
+				base.pjoin(prob.path,'down',str(case)+'.ans'),
+				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.ans')
 			)
 
 def arbiter():
-	common.remkdir('arbiter')
+	base.remkdir('arbiter')
 	arbiter_main()
 	arbiter_down()
 
 def tsinsen_oj():
 	import random
-	if type(common.conf) != common.Problem:
+	if type(base.conf) != base.Problem:
 		log.error(u'只能转换一道题目，请到相应题目目录下运行')
 		return
 	hash_ch = list(map(
@@ -262,33 +262,33 @@ def tsinsen_oj():
 	hash = lambda l = 10 : ''.join([hash_ch[random.randint(0, len(hash_ch) - 1)] for i in range(l)])
 	if not os.path.exists('tsinsen-oj'):
 		os.makedirs('tsinsen-oj')
-	for day in common.days():
-		p = common.pjoin('tsinsen-oj', day.route)
+	for day in base.days():
+		p = base.pjoin('tsinsen-oj', day.route)
 		if not os.path.exists(p):
 			os.makedirs(p)
-	for prob in common.probs():
-		p = common.pjoin('tsinsen-oj', prob.route)
+	for prob in base.probs():
+		p = base.pjoin('tsinsen-oj', prob.route)
 		if not os.path.exists(p):
 			os.makedirs(p)
-		if os.path.exists(common.pjoin(prob.path, 'down')):
-			with zipfile.ZipFile(common.pjoin('tsinsen-oj', prob.route, 'down.zip'), 'w') as z:
-				common.run_r(lambda path : z.write(path), common.pjoin(prob.path, 'down'))
+		if os.path.exists(base.pjoin(prob.path, 'down')):
+			with zipfile.ZipFile(base.pjoin('tsinsen-oj', prob.route, 'down.zip'), 'w') as z:
+				base.run_r(lambda path : z.write(path), base.pjoin(prob.path, 'down'))
 			prob.tsinsen_down = hash(8)
 		else:
 			prob.tsinsen_down = None
 		files = {}
-		path = common.pjoin(prob.path, 'resources')
+		path = base.pjoin(prob.path, 'resources')
 		if os.path.exists(path):
-			common.run_r(lambda p : files.__setitem__(p[len(path) + 1:], hash(8)), path)
+			base.run_r(lambda p : files.__setitem__(p[len(path) + 1:], hash(8)), path)
 		prob.tsinsen_files = files
-	if common.do_render:
+	if base.do_render:
 		from . import ren
-		tmp = common.start_file
-		common.start_file = False
+		tmp = base.start_file
+		base.start_file = False
 		ren.init()
 		ren.html('tsinsen-oj')
 		ren.final()
-		common.start_file = tmp
+		base.start_file = tmp
 	else:
 		log.warning(u'如果你使用了文件，不重新渲染题面会导致tsinsen的文件失效。')
 	
@@ -303,13 +303,13 @@ def tsinsen_oj():
 	MemoryLimit = lambda : '%.1fMB' % prob.memory_limit().MB
 	
 	def Checkers():
-		path = common.pjoin('data', 'chk', 'chk.cpp')
+		path = base.pjoin('data', 'chk', 'chk.cpp')
 		if os.path.exists(path):
 			return open(path, 'rb').read().decode('utf-8')
 		else:
 			return '\n'
 	def Description():
-		path = common.pjoin('statements', 'tsinsen-oj', prob.route + '.html')
+		path = base.pjoin('statements', 'tsinsen-oj', prob.route + '.html')
 		if not os.path.exists(path):
 			log.warning(u'找不到题面，你可能需要自己手工添加题面。')
 			return ''
@@ -342,49 +342,49 @@ def tsinsen_oj():
 		'Title', 'CheckPoint', 'Checkers', 'TestMethod', 'Description',
 		'InputFileName', 'OutputFileName', 'Solution', 'TimeLimit', 'MemoryLimit'
 	]
-	for prob in common.probs():
-		result_file = common.pjoin('tsinsen-oj', prob.route) + '.txt'
+	for prob in base.probs():
+		result_file = base.pjoin('tsinsen-oj', prob.route) + '.txt'
 		with open(result_file, 'wb') as f:
 			for token in tokens:
 				f.write(add_shell(token, eval(token)))
 			if prob['packed']:
 				log.warning(u'清橙OJ不支持打包评测和指定测试点分值，直接将所有测试点视为相同。')
 			for datum in prob.test_cases:
-				f.write(add_shell('InData', lambda : read_file(common.pjoin('data', datum + '.in'))))
-				f.write(add_shell('OutData', lambda : read_file(common.pjoin('data', datum + '.ans'))))
+				f.write(add_shell('InData', lambda : read_file(base.pjoin('data', datum + '.in'))))
+				f.write(add_shell('OutData', lambda : read_file(base.pjoin('data', datum + '.ans'))))
 			if prob.tsinsen_down:
 				f.write(add_shell('FileName', lambda : 'down.zip'))
-				f.write(add_shell('File(%s)' % prob.tsinsen_down, lambda : to_base64(common.pjoin('tsinsen-oj', prob.route, 'down.zip'))))
+				f.write(add_shell('File(%s)' % prob.tsinsen_down, lambda : to_base64(base.pjoin('tsinsen-oj', prob.route, 'down.zip'))))
 			for key, val in prob.tsinsen_files.items():
 				f.write(add_shell('FileName', lambda : key.replace('/', '-').replace('\\', '-')))
-				f.write(add_shell('File(%s)' % val, lambda : to_base64(common.pjoin(prob.path, 'resources', key))))
-		if common.start_file:
-			common.xopen_file(result_file)
+				f.write(add_shell('File(%s)' % val, lambda : to_base64(base.pjoin(prob.path, 'resources', key))))
+		if base.start_file:
+			base.xopen_file(result_file)
 
 def tuoj_down(conf = None):
 	if not conf:
-		conf = common.conf
+		conf = base.conf
 		if not os.path.exists('tuoj'):
-			common.remkdir('tuoj')
-		common.remkdir(pjoin('tuoj', 'down'))
+			base.remkdir('tuoj')
+		base.remkdir(pjoin('tuoj', 'down'))
 	if conf.folder == 'contest':
-		for day in common.days():
-			os.makedirs(common.pjoin(pjoin('tuoj', 'down'), day['name']))
+		for day in base.days():
+			os.makedirs(base.pjoin(pjoin('tuoj', 'down'), day['name']))
 			tuoj_down(day)
 		return
 	for prob in conf.probs():
 		log.info(prob.route)
-		os.makedirs(common.pjoin(pjoin('tuoj', 'down'), prob.route))
+		os.makedirs(base.pjoin(pjoin('tuoj', 'down'), prob.route))
 		for idx, case in enumerate(prob.sample_cases, start = 1):
 			shutil.copy(
-				common.pjoin(prob.path, 'down', str(case) + '.in'),
-				common.pjoin('tuoj', 'down', prob.route, str(case) + '.in')
+				base.pjoin(prob.path, 'down', str(case) + '.in'),
+				base.pjoin('tuoj', 'down', prob.route, str(case) + '.in')
 			)
 			shutil.copy(
-				common.pjoin(prob.path, 'down',str(case) + '.ans'),
-				common.pjoin('tuoj', 'down', prob.route, str(case) + '.ans')
+				base.pjoin(prob.path, 'down',str(case) + '.ans'),
+				base.pjoin('tuoj', 'down', prob.route, str(case) + '.ans')
 			)
-		common.run_r(common.dos2unix, common.pjoin(pjoin('tuoj', 'down', prob.route)))
+		base.run_r(base.dos2unix, base.pjoin(pjoin('tuoj', 'down', prob.route)))
 
 work_list = {
 	'lemon' : lemon,
@@ -397,12 +397,12 @@ work_list = {
 
 if __name__ == '__main__':
 	try:
-		if common.init():
-			for common.work in common.works:
-				common.run_exc(work_list[common.work])
+		if base.init():
+			for base.work in base.works:
+				base.run_exc(work_list[base.work])
 		else:
 			log.info(u'这个工具用于导出成其他类型的工程。')
 			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
-	except common.NoFileException as e:
+	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

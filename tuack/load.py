@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from . import common
-from .common import log
+from . import base
+from .base import log
 
 def tsinsen_oj():
 	new_tc = []
@@ -44,15 +44,15 @@ def tsinsen_oj():
 					cur = [cur]
 				else:
 					cur = {name : cur}
-			common.conf[self.names[0]] = cur
+			base.conf[self.names[0]] = cur
 	class File(Base):
 		def __init__(self, *names):
 			path = ''
 			for name in names[:-1]:
-				path = common.pjoin(path, name)
+				path = base.pjoin(path, name)
 				if not os.path.exists(path):
 					os.makedirs(path)
-			self.f = open(common.pjoin(*names), 'wb')
+			self.f = open(base.pjoin(*names), 'wb')
 		def write(self, text):
 			self.f.write(text)
 		def close(self):
@@ -61,10 +61,10 @@ def tsinsen_oj():
 		def __init__(self, *names):
 			path = ''
 			for name in names[:-1]:
-				path = common.pjoin(path, name)
+				path = base.pjoin(path, name)
 				if not os.path.exists(path):
 					os.makedirs(path)
-			self.fname = common.pjoin(*names)
+			self.fname = base.pjoin(*names)
 			self.buff = b''
 		def write(self, text):
 			self.buff += text.strip() + b'\n'
@@ -87,7 +87,7 @@ def tsinsen_oj():
 			import base64
 			if not os.path.exists('resources'):
 				os.makedirs('resources')
-			open(common.pjoin('resources', FileName.last_name), 'wb').write(base64.b64decode(self.buff))
+			open(base.pjoin('resources', FileName.last_name), 'wb').write(base64.b64decode(self.buff))
 	Title = lambda : Conf('title', 'zh-cn')
 	CheckPoint = lambda : Conf('key words')
 	TestMethod = Base
@@ -118,21 +118,21 @@ def tsinsen_oj():
 			super(Solution, self).__init__('tsinsen-oj', 'std', 'std.cpp')
 		def close(self):
 			super(Solution, self).close()
-			if 'users' not in common.conf:
-				common.conf['users'] = {}
-			if 'tsinsen-oj' not in common.conf['users']:
-				common.conf['users']['tsinsen-oj'] = {}
-			common.conf['users']['tsinsen-oj']['std'] = 'tsinsen-oj/std/std.cpp'
+			if 'users' not in base.conf:
+				base.conf['users'] = {}
+			if 'tsinsen-oj' not in base.conf['users']:
+				base.conf['users']['tsinsen-oj'] = {}
+			base.conf['users']['tsinsen-oj']['std'] = 'tsinsen-oj/std/std.cpp'
 			
 	class InData(File):
 		last_in = None
 		def __init__(self):
-			tc = set(common.conf.test_cases)
+			tc = set(base.conf.test_cases)
 			for i in range(1, len(tc) + 2):
 				if str(i) not in tc:
 					name = i
 			new_tc.append(name)
-			common.conf.test_cases.append(name)
+			base.conf.test_cases.append(name)
 			InData.last_in = name
 			super(InData, self).__init__('data', '%d.in' % name)
 			
@@ -146,16 +146,16 @@ def tsinsen_oj():
 			super(Checkers, self).__init__(*Checkers.fname)
 		def close(self):
 			super(Checkers, self).close()
-			if os.path.getsize(common.pjoin(*Checkers.fname)) < 10:
-				shutil.rmtree(common.pjoin(*Checkers.fname[:2]), ignore_errors = True)
+			if os.path.getsize(base.pjoin(*Checkers.fname)) < 10:
+				shutil.rmtree(base.pjoin(*Checkers.fname[:2]), ignore_errors = True)
 	import re
 	key_re = re.compile('(\w*)\((\w*)\)')
 
-	if common.conf.folder != 'problem':
+	if base.conf.folder != 'problem':
 		log.error(u'只能导入到一个problem的工程中。')
 		return
 	status = None
-	for line in open(common.args[0], 'rb'):
+	for line in open(base.args[0], 'rb'):
 		if not status:			# 啥都没有
 			try:
 				key = line.decode('utf-8').strip()[:-1]
@@ -183,10 +183,10 @@ def tsinsen_oj():
 		else:					# 读到了标记开始的行，还没读到标记结束的行
 			buffer.write(line)
 	if len(new_tc) > 0:
-		if 'data' not in common.conf:
-			common.conf['data'] = []
-		common.conf['data'].append({'cases' : new_tc})
-	common.save_json(common.conf)
+		if 'data' not in base.conf:
+			base.conf['data'] = []
+		base.conf['data'].append({'cases' : new_tc})
+	base.save_json(base.conf)
 
 work_list = {
 	'tsinsen-oj' : tsinsen_oj
@@ -194,12 +194,12 @@ work_list = {
 
 if __name__ == '__main__':
 	try:
-		if common.init() and len(common.args) != 0:
-			for common.work in common.works:
-				common.run_exc(work_list[common.work])
+		if base.init() and len(base.args) != 0:
+			for base.work in base.works:
+				base.run_exc(work_list[base.work])
 		else:
 			log.info(u'这个工具用于导入其他类型的工程，参数1必须是来源路径。')
 			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
-	except common.NoFileException as e:
+	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

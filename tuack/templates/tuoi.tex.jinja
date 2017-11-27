@@ -78,7 +78,7 @@
 		\tabularnewline
 	\hline
 {% if comp == 'noi' %}
-	{% if common.out_system != 'Windows' %}
+	{% if base.out_system != 'Windows' %}
 		目录
 		{%- for prob in probs -%}
 			& {\ttfamily {{ prob['name'].replace('_', '\\_') }} }
@@ -90,7 +90,7 @@
 		{%- for prob in probs -%}
 			&
 			{% if prob['type'] != 'output' %}
-				{\ttfamily {{ prob['name'].replace('_', '\\_') + ('.exe' if common.out_system == 'Windows' else '') }} }
+				{\ttfamily {{ prob['name'].replace('_', '\\_') + ('.exe' if base.out_system == 'Windows' else '') }} }
 			{% else %}
 				N/A
 			{% endif %}
@@ -240,7 +240,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{\ttfamily {{ prob['compile']['cpp'] + (' -Wl,--stack=%d' % prob.memory_limit().B if common.out_system == 'Windows' else '') }} }
+					{\ttfamily {{ prob['compile']['cpp'] + (' -Wl,--stack=%d' % prob.memory_limit().B if base.out_system == 'Windows' else '') }} }
 				{% else %}
 					N/A
 				{% endif %}
@@ -251,7 +251,7 @@
 			{%- for prob in probs -%}
 				&
 				{% if prob['type'] != 'output' %}
-					{\ttfamily {{ prob['compile']['c'] + (' -Wl,--stack=%d' % prob.memory_limit().B if common.out_system == 'Windows' else '') }} }
+					{\ttfamily {{ prob['compile']['c'] + (' -Wl,--stack=%d' % prob.memory_limit().B if base.out_system == 'Windows' else '') }} }
 				{% else %}
 					N/A
 				{% endif %}

@@ -15,12 +15,12 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from . import common
-from .common import log, pjoin
+from . import base
+from .base import log, pjoin
 
 def find_all_data(kind, folder, key, conf = None):
 	if not conf:
-		conf = common.conf
+		conf = base.conf
 	def find_data(path = ''):
 		full_path = pjoin(prob.path, folder, path)
 		for f in os.listdir(full_path):
@@ -30,13 +30,13 @@ def find_all_data(kind, folder, key, conf = None):
 				fans = pjoin(full_path, f[:-3]) + '.ans'
 				if not os.path.exists(fans) or not os.path.isfile(fans):
 					continue
-				name = common.rjoin(path, f[:-3])
+				name = base.rjoin(path, f[:-3])
 				if name not in new_data and name not in exist_data:
 					new_data.add(name)
 			else:
-				find_data(common.rjoin(path, f))
+				find_data(base.rjoin(path, f))
 	def parse(data):
-		tmp = common.sorter()(map(str, list(data)))
+		tmp = base.sorter()(map(str, list(data)))
 		ret = []
 		for i in tmp:
 			try:
@@ -60,26 +60,26 @@ def find_all_data(kind, folder, key, conf = None):
 			prob[kind] = []
 		if len(new_data) > 0:
 			prob[kind].append({'cases' : new_data})
-		common.save_json(prob)
+		base.save_json(prob)
 	
 def find_all_code():
 	def find_code(user, path):
 		full_path = pjoin(prob.path, user, path)
 		for f in os.listdir(full_path):
-			if common.user_skip.match(f):
+			if base.user_skip.match(f):
 				continue
 			if os.path.isfile(pjoin(full_path, f)):
-				for key in common.compilers:
+				for key in base.compilers:
 					if not f.endswith('.' + key):
 						continue
-					if common.rjoin(user, path, f) not in exist_code:
-						prob['users'][user][common.rjoin(path, f)] = common.rjoin(user, path, f)
-						log.info(u'发现新源代码`%s`。' % common.rjoin(user, path, f))
+					if base.rjoin(user, path, f) not in exist_code:
+						prob['users'][user][base.rjoin(path, f)] = base.rjoin(user, path, f)
+						log.info(u'发现新源代码`%s`。' % base.rjoin(user, path, f))
 					break
 			else:
-				find_code(user, common.rjoin(path, f))
+				find_code(user, base.rjoin(path, f))
 
-	for prob in common.probs():
+	for prob in base.probs():
 		if prob['type'] == 'output':
 			log.info(u'题目`%s`是提交答案题，跳过。' % prob.route)
 			continue
@@ -91,14 +91,14 @@ def find_all_code():
 			for algo, path in algos.items():
 				exist_code.add(path)
 		for f in os.listdir(prob.path):
-			if common.user_skip.match(f) or os.path.isfile(pjoin(prob.path, f)):
+			if base.user_skip.match(f) or os.path.isfile(pjoin(prob.path, f)):
 				continue
 			if f not in prob['users']:
 				prob['users'][f] = {}
 			find_code(f, '')
 			if len(prob['users'][f]) == 0:
 				prob['users'].pop(f)
-		common.save_json(prob)
+		base.save_json(prob)
 
 def sample_copy(src, tgt = None, path = ''):
 	if not tgt:
@@ -108,19 +108,19 @@ def sample_copy(src, tgt = None, path = ''):
 		full_tgt = pjoin(full_tgt, src)
 	if not os.path.exists(full_tgt):
 		log.info(u'生成文件`%s`' % full_tgt)
-		common.copy(
-			pjoin(common.path, 'sample'),
+		base.copy(
+			pjoin(base.path, 'sample'),
 			src,
 			full_tgt
 		)
 
 def new_dir(folder, args = None):
 	if not args:
-		args = common.args
+		args = base.args
 	if len(args) == 0:
 		dirs = ['.']
 	else:
-		if not common.conf:
+		if not base.conf:
 			log.error(u'当前文件夹下没有找到合法的`conf.json`文件。')
 			log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
 			return
@@ -132,25 +132,25 @@ def new_dir(folder, args = None):
 		copy(folder + '.gitignore', '.gitignore')
 		copy(folder + '.json', 'conf.json')
 		if folder == 'problem':
-			if common.git_lfs:
+			if base.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')
 			for ff in ('data', 'down', 'statement', 'tables', 'resources', 'solution'):
 				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)
-				for f in os.listdir(pjoin(common.path, 'sample', ff)):
+				for f in os.listdir(pjoin(base.path, 'sample', ff)):
 					copy(pjoin(ff, f), pjoin(ff, f))
 		if path != '.':
-			conf = common.load_json(path)
+			conf = base.load_json(path)
 			conf['name'] = path
 			conf.path = path
-			common.save_json(conf)
+			base.save_json(conf)
 	if len(args) != 0:
-		common.conf['subdir'] += args
-		common.save_json(common.conf)
+		base.conf['subdir'] += args
+		base.save_json(base.conf)
 
 def upgrade():
-	if common.conf:	#是conf.json格式的老版本
+	if base.conf:	#是conf.json格式的老版本
 		def upgrade_r(conf):
 			def upgrade_None(conf):
 				log.info(u'将`%s`从None版本升级到0版本。' % conf.route)
@@ -176,32 +176,32 @@ def upgrade():
 			eval('upgrade_' + str(conf['version']))(conf)
 			for sub in conf.sub:
 				upgrade_r(sub)
-		upgrade_r(common.conf)
-		common.save_json(common.conf)
+		upgrade_r(base.conf)
+		base.save_json(base.conf)
 	else:			#是prob(s).json格式的老版本
 		if not os.path.exists('probs.json'):
 			log.error(u'找不到`probs.json`。')
 			return
 		old_json = json.loads(open('probs.json', 'rb').read().decode('utf-8'))
 		new_dir('contest', [])
-		common.conf = common.load_json()
-		common.conf.pop('version')
-		new_dir('day', common.sorter()(old_json.keys()))
-		common.conf = common.load_json()
-		for day in common.conf.sub:
+		base.conf = base.load_json()
+		base.conf.pop('version')
+		new_dir('day', base.sorter()(old_json.keys()))
+		base.conf = base.load_json()
+		for day in base.conf.sub:
 			day.pop('version')
 			day['subdir'] += [prob for prob in old_json[day['name']]]
-		common.save_json(common.conf)
-		common.conf = common.load_json()
+		base.save_json(base.conf)
+		base.conf = base.load_json()
 		upgrade()
 
 def copy_lfs():
-	for prob in common.probs():
+	for prob in base.probs():
 		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
 		copy('problem.gitattributes', '.gitattributes')
 
 def copy_chk():
-	for prob in common.probs():
+	for prob in base.probs():
 		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
 		if not os.path.exists(pjoin(prob.path, 'data', 'chk')):
 			os.makedirs(pjoin(prob.path, 'data', 'chk'))
@@ -221,13 +221,13 @@ work_list = {
 
 if __name__ == '__main__':
 	try:
-		result = common.init()
-	except common.NoFileException as e:
-		common.conf = None
+		result = base.init()
+	except base.NoFileException as e:
+		base.conf = None
 		result = True
 	if result:
-		for common.work in common.works:
-			common.run_exc(work_list[common.work])
+		for base.work in base.works:
+			base.run_exc(work_list[base.work])
 	else:
 		log.info(u'这个工具用于快速建立一道题目。')
 		log.info(u'支持的工作：')

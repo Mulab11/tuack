@@ -69,9 +69,9 @@
 \lfoot{}
 \cfoot{\parbox{\textwidth}{
 	\centering \footnotesize {
-{% if not common.lang or common.lang == 'zh-cn' -%}
+{% if not base.lang or base.lang == 'zh-cn' -%}
 	第 \thepage{} 页 ~~~~ 共 \pageref{LastPage} 页
-{%- elif common.lang == 'en' -%}
+{%- elif base.lang == 'en' -%}
 	page \thepage{} / \pageref{LastPage}
 {%- endif -%}
 } } }

@@ -15,8 +15,8 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
-from . import common
-from .common import log, pjoin, rjoin
+from . import base
+from .base import log, pjoin, rjoin
 import traceback
 
 def run_windows(name, tl, ml, input = None, output = None, vm = None):
@@ -43,7 +43,7 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 			else:
 				ret = 'Runtime error %d.' % ret
 			break
-		if (time.clock() - t) >= tl * common.time_multiplier:
+		if (time.clock() - t) >= tl * base.time_multiplier:
 			pro.kill()
 			t = 0.0
 			ret = 'Time out.'
@@ -55,7 +55,7 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 def runner_linux(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; time -f "%%U" -o timer %s %s %s' % (
-			int(common.Memory(ml).KB),
+			int(base.Memory(ml).KB),
 			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
@@ -71,7 +71,7 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 	que = Queue()
 	pro = Process(target = runner_linux, args = (name, que, ml, input, output, vm))
 	pro.start()
-	pro.join(tl * common.time_multiplier)
+	pro.join(tl * base.time_multiplier)
 	if que.qsize() == 0:
 		fatal('Runner broken.')
 	elif que.qsize() == 1:
@@ -97,7 +97,7 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 def runner_mac(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
 		'ulimit -v %d; (time -p %s %s %s) 2> timer' % (
-			int(common.Memory(ml).KB),
+			int(base.Memory(ml).KB),
 			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
@@ -113,9 +113,9 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 	que = Queue()
 	pro = Process(target = runner_mac, args = (name, que, ml, input, output, vm))
 	pro.start()
-	pro.join(tl * common.time_multiplier)
+	pro.join(tl * base.time_multiplier)
 	if que.empty():
-		common.fatal('Runner broken.')
+		base.fatal('Runner broken.')
 	else:
 		pid = que.get()
 		if que.empty():
@@ -128,7 +128,7 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 				try:
 					t = float(open('timer').readline().split()[-1])
 				except:
-					common.warning('Timer broken.')
+					base.warning('Timer broken.')
 					t = 0.
 				ret = None
 			else:
@@ -136,11 +136,11 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 				t = 0.
 	return ret, t
 
-if common.system == 'Linux':
+if base.system == 'Linux':
 	run = run_linux
-elif common.system == 'Windows':
+elif base.system == 'Windows':
 	run = run_windows
-elif common.system == 'Darwin':
+elif base.system == 'Darwin':
 	run = run_mac
 else:
 	run = run_linux
@@ -151,7 +151,7 @@ def compile(prob, name):
 		if os.path.exists(pjoin('tmp', name + '.' + lang)):
 			os.chdir('tmp')
 			ret = subprocess.call(
-				common.compilers[lang](name, args, common.macros[common.work]),
+				base.compilers[lang](name, args, base.macros[base.work]),
 				shell = True,
 				stdout = open('stdout', 'w'),
 				stderr = open('stderr', 'w')
@@ -190,13 +190,13 @@ def test(prob, name):
 		shutil.copy(case.full() + '.in', pjoin('tmp', 'in'))
 		shutil.copy(case.full() + '.ans', pjoin('tmp', 'ans'))
 		for fname in ('in', 'ans'):
-			if common.system == 'Windows':
-				common.unix2dos(pjoin('tmp', fname))
+			if base.system == 'Windows':
+				base.unix2dos(pjoin('tmp', fname))
 			else:
-				common.dos2unix(pjoin('tmp', fname))
+				base.dos2unix(pjoin('tmp', fname))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
-			ret, time = run(name, prob['time limit'], prob['memory limit'], 'in', 'out', common.runners[lang])
+			ret, time = run(name, prob['time limit'], prob['memory limit'], 'in', 'out', base.runners[lang])
 			os.chdir('..')
 		elif prob['type'] == 'output':
 			if os.path.exists(pjoin('tmp', case['case'] + '.out')):
@@ -215,17 +215,17 @@ def test(prob, name):
 				time = 0.0
 				score = 0.0
 			elif prob.chk:
-				shutil.copy(pjoin('bin', prob.route), pjoin('tmp', 'chk' + common.elf_suffix))
+				shutil.copy(pjoin('bin', prob.route), pjoin('tmp', 'chk' + base.elf_suffix))
 				open('100.0', 'w').write('100.0\n')
 				os.system('%s %s %s %s 100.0 tmp/score tmp/info' % (
-					pjoin('tmp', 'chk' + common.elf_suffix),
+					pjoin('tmp', 'chk' + base.elf_suffix),
 					pjoin('tmp', 'in'),
 					pjoin('tmp', 'out'),
 					pjoin('tmp', 'ans')
 				))
 				os.remove('100.0')
 				try:
-					arbiter_out = ('/' if common.system != 'Windows' else '') + 'tmp/_eval.score'
+					arbiter_out = ('/' if base.system != 'Windows' else '') + 'tmp/_eval.score'
 					f = open(arbiter_out)
 					report = f.readline().strip()
 					score = float(f.readline()) * 0.1
@@ -239,7 +239,7 @@ def test(prob, name):
 					score = float(open('tmp/score').readline()) * .01
 			else:
 				ret = os.system('%s %s %s > log' % (
-					common.diff_tool,
+					base.diff_tool,
 					pjoin('tmp', 'ans'),
 					pjoin('tmp', 'out')
 				))
@@ -309,11 +309,11 @@ def test_problem(prob):
 		))
 		for user, algos in prob.users().items():
 			if not prob.all:
-				match = common.any_prefix(rjoin(prob.route, user))
+				match = base.any_prefix(rjoin(prob.route, user))
 				if not match:
 					continue
 			for algo, path in algos.items():
-				if (not prob.all and match != 1 and not common.any_prefix(rjoin(prob.route, user, algo))):
+				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
 					try:
@@ -367,17 +367,17 @@ def test_problem(prob):
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
 				for title, line in [(user, scores), (algo, times), ('', reports)]:
 					fres.write('%s,%s\n' % (title, ','.join(line)))
-	if common.start_file:
-		common.xopen_file(pjoin('result', prob.route) + '.csv')
+	if base.start_file:
+		base.xopen_file(pjoin('result', prob.route) + '.csv')
 
 def test_progs():
-	if common.conf.folder != 'problem' and not os.path.exists('result'):
+	if base.conf.folder != 'problem' and not os.path.exists('result'):
 		os.makedirs('result')
-	for day in common.days():
+	for day in base.days():
 		path = pjoin('result', day.route)
 		if not os.path.exists(path):
 			os.makedirs(path)
-	for prob in common.probs():
+	for prob in base.probs():
 		try:
 			test_problem(prob)
 		except Exception as e:
@@ -385,14 +385,14 @@ def test_progs():
 
 if __name__ == '__main__':
 	try:
-		if common.init():
-			common.work = 'test'
-			if common.do_pack:
+		if base.init():
+			base.work = 'test'
+			if base.do_pack:
 				from . import packer
-				common.run_exc(packer.test)
-			common.run_exc(test_progs)
+				base.run_exc(packer.test)
+			base.run_exc(test_progs)
 		else:
 			log.info(u'这是测试出题人数据和程序的测试器，测试器没有细分的工作。')
-	except common.NoFileException as e:
+	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
