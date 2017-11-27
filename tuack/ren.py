@@ -472,7 +472,7 @@ if __name__ == '__main__':
 					common.run_exc(work_list[common.work])
 			final()
 		else:
-			log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
+			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
 	except common.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')

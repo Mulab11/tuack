@@ -134,7 +134,7 @@ def new_dir(folder, args = None):
 		if folder == 'problem':
 			if common.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')
-			for ff in ('data', 'down', 'statement', 'tables', 'resources'):
+			for ff in ('data', 'down', 'statement', 'tables', 'resources', 'solution'):
 				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)

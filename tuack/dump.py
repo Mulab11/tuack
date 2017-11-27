@@ -16,7 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 from . import common
-from .common import log
+from .common import log, pjoin
 
 def lemon(conf = None):
 	common.check_install('pyside')
@@ -117,36 +117,37 @@ def lemon(conf = None):
 		import zipfile
 		with zipfile.ZipFile(common.pjoin('lemon', conf.route) + '.zip', 'w') as z:
 			common.run_r(lambda path : z.write(path), common.pjoin('lemon', conf.route))
-	
 	log.warning(u'目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	log.warning(u'目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
-'''userlist = {}'''
-def arbiter(conf = None,daynum = 0):
+
+def arbiter_main(conf = None,daynum = 0):
 	def arbiter_info(info, filename):
 		with open(filename,'wb') as ofile:
 			for key, val in info.items():
 				ofile.write(('%s%s\n' % (key, val)).encode('gbk'))
 	if not conf:
-		print('makedirs')
-		common.remkdir('arbiter')
-		os.makedirs(common.pjoin('arbiter','data'))
-		os.makedirs(common.pjoin('arbiter','final'))
-		os.makedirs(common.pjoin('arbiter','players'))
-		os.makedirs(common.pjoin('arbiter','result'))
-		os.makedirs(common.pjoin('arbiter','filter'))
-		os.makedirs(common.pjoin('arbiter','tmp'))
+		log.info('makedirs')
+		if not os.path.exists('arbiter'):
+			common.remkdir('arbiter')
+		common.remkdir(pjoin('arbiter', 'main'))
+		os.makedirs(common.pjoin('arbiter', 'main','data'))
+		os.makedirs(common.pjoin('arbiter', 'main','final'))
+		os.makedirs(common.pjoin('arbiter', 'main','players'))
+		os.makedirs(common.pjoin('arbiter', 'main','result'))
+		os.makedirs(common.pjoin('arbiter', 'main','filter'))
+		os.makedirs(common.pjoin('arbiter', 'main','tmp'))
 		if common.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
 		if common.conf.folder == 'day':
 			arbiter(common.days())
 		else:
 			for idx, day in enumerate(common.days(), start = 1):
-				os.makedirs(common.pjoin('arbiter','players',day.route))
-				os.makedirs(common.pjoin('arbiter','result',day.route))
-				arbiter(day,idx)
-			print('dos2unix')
-			common.run_r(common.dos2unix, common.pjoin('arbiter', 'data'))
-			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))	#这里也不能直接copy，见下面的处理方式
+				os.makedirs(common.pjoin('arbiter', 'main','players',day.route))
+				os.makedirs(common.pjoin('arbiter', 'main','result',day.route))
+				arbiter_main(day,idx)
+			log.info('dos2unix')
+			common.run_r(common.dos2unix, common.pjoin('arbiter', 'main', 'data'))
+			shutil.copytree(common.pjoin('arbiter', 'main','data'),common.pjoin('arbiter', 'main','evaldata'))	#这里也不能直接copy，见下面的处理方式
 			cfg = {}
 			cfg['NAME='] = common.conf['name']
 			cfg['DAYNUM='] = idx
@@ -154,9 +155,9 @@ def arbiter(conf = None,daynum = 0):
 			cfg['PLAYER='] = 'player.info'
 			cfg['TEAM='] = 'team.info'
 			cfg['MISC='] = 'misc.info'
-			arbiter_info(cfg,common.pjoin('arbiter','setup.cfg'))
+			arbiter_info(cfg,common.pjoin('arbiter', 'main','setup.cfg'))
 			team = {}
-			arbiter_info(team,common.pjoin('arbiter','team.info'))
+			arbiter_info(team,common.pjoin('arbiter', 'main','team.info'))
 			'''arbiter_info(userlist,common.pjoin('arbiter','player.info'))'''
 		return
 	dayinfo = {}
@@ -165,9 +166,9 @@ def arbiter(conf = None,daynum = 0):
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
-	arbiter_info(dayinfo,common.pjoin('arbiter',conf['name']+'.info'))
+	arbiter_info(dayinfo,common.pjoin('arbiter', 'main', conf['name']+'.info'))
 	for probnum, prob in enumerate(conf.sub, start = 1):
-		print(prob['name'])
+		log.info(prob['name'])
 		probinfo = {}
 		probinfo['TITLE='] = ''
 		probinfo['NAME='] = prob['name']
@@ -178,13 +179,13 @@ def arbiter(conf = None,daynum = 0):
 		if prob['type'] == 'program':
 			probinfo['TYPE='] = 'SOURCE'
 		else:
-			print(u'【警告】暂时只支持非交互式程序题。')
+			log.warning(u'暂时只支持非交互式程序题。')
 		probinfo['LIMIT='] = int(prob['time limit'])
 		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
 		probinfo['SAMPLES='] = len(prob.test_cases)
 		score_per_case = 100 // len(prob.test_cases)
 		if score_per_case * len(prob.test_cases) != 100:
-			print(u'【警告】满分不是100哦。')
+			log.info(u'满分不是100哦。')
 		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
 		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
 		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
@@ -194,12 +195,12 @@ def arbiter(conf = None,daynum = 0):
 			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.in'))'''
 			shutil.copy(
 				common.pjoin(prob.path,'data',str(case)+'.in'),
-				common.pjoin('arbiter','data',prob['name']+str(idx)+'.in')
+				common.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.in')
 			)
 			'''print('copyfile %s'%common.pjoin(prob.path,'data',case+'.ans'))'''
 			shutil.copy(
 				common.pjoin(prob.path,'data',str(case)+'.ans'),
-				common.pjoin('arbiter','data',prob['name']+str(idx)+'.ans')
+				common.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.ans')
 			)
 			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
 		'''for idx, userdir in enumerate(prob['users'],start = 1):
@@ -211,113 +212,41 @@ def arbiter(conf = None,daynum = 0):
 				os.makedirs(common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				shutil.copy(codedir,common.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
-		shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter','filter',prob['name']+'_e'))
-		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
+		shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
+		arbiter_info(probinfo,common.pjoin('arbiter', 'main','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
-def down(conf = None):
+def arbiter_down(conf = None):
 	if not conf:
 		conf = common.conf
-		common.remkdir('down')
+		if not os.path.exists('arbiter'):
+			common.remkdir('arbiter')
+		common.remkdir(pjoin('arbiter', 'down'))
 	if conf.folder == 'problem':
 		raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
 	if conf.folder == 'contest':
 		for idx, day in enumerate(common.days(), start = 1):
-			os.makedirs(common.pjoin('down', day['name']))
-			down(day)
-		print('dos2unix')
-		common.run_r(common.dos2unix, common.pjoin('down'))
+			os.makedirs(common.pjoin(pjoin('arbiter', 'down'), day['name']))
+			arbiter_down(day)
+		log.info('dos2unix')
+		common.run_r(common.dos2unix, common.pjoin(pjoin('arbiter', 'down')))
 		return
 	for prob in conf.probs():
-		print(prob.route)
-		os.makedirs(common.pjoin('down', prob.route))
+		log.info(prob.route)
+		os.makedirs(common.pjoin(pjoin('arbiter', 'down'), prob.route))
 		for idx, case in enumerate(prob.sample_cases, start = 1):
 			shutil.copy(
 				common.pjoin(prob.path,'down',str(case)+'.in'),
-				common.pjoin('down', prob.route, prob['name']+str(idx)+'.in')
+				common.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.in')
 			)
 			shutil.copy(
 				common.pjoin(prob.path,'down',str(case)+'.ans'),
-				common.pjoin('down', prob.route, prob['name']+str(idx)+'.ans')
+				common.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.ans')
 			)
 
-'''def arbiter_info(info,filename):
-	with open(filename, 'wb') as f:
-		for k, v in info.items():
-			f.write(('%s%s\n' % (k, v)).encode('gbk'))
-
-def arbiter(conf = None,daynum = 0):
-	if not conf:
-		print('makedirs')
-		common.remkdir('arbiter')
-		os.makedirs(common.pjoin('arbiter','data'))
-		os.makedirs(common.pjoin('arbiter','final'))
-		os.makedirs(common.pjoin('arbiter','players'))
-		os.makedirs(common.pjoin('arbiter','result'))
-		os.makedirs(common.pjoin('arbiter','tmp'))
-		if common.conf.folder == 'problem':
-			raise Exception('Can\'t dump a single problem to arbiter, try to dump a day or a contest.')
-		if common.conf.folder == 'day':
-			arbiter(common.days())
-		else:
-			for day_num, day in enumerate(common.days(), start = 1):
-				os.makedirs(common.pjoin('arbiter','players',day.route))
-				os.makedirs(common.pjoin('arbiter','result',day.route))
-				arbiter(day,daynum)
-			print('dos2unix')
-			common.run_r(common.dos2unix, common.pjoin('arbiter', 'data'))
-			shutil.copytree(common.pjoin('arbiter','data'),common.pjoin('arbiter','evaldata'))
-			cfg = {}
-			cfg['NAME='] = common.conf['name']
-			cfg['DAYNUM='] = daynum
-			cfg['ENV='] = 'env.info'
-			cfg['PLAYER='] = 'player.info'
-			cfg['TEAM='] = 'team.info'
-			cfg['MISC='] = 'misc.info'
-			arbiter_info(cfg,common.pjoin('arbiter','setup.cfg'))
-			team = {}
-			arbiter_info(team,common.pjoin('arbiter','team.info'))
-		return
-	dayinfo = {}
-	dayinfo['NAME='] = u'第'+str(daynum)+u'场'+u'——'+conf['name']
-	dayinfo['PLAYERDIR='] = ''
-	dayinfo['CASEDIR='] = ''
-	dayinfo['BASESCORE='] = 0
-	dayinfo['TASKNUM='] = len(conf['subdir'])
-	arbiter_info(dayinfo,common.pjoin('arbiter',conf['name']+'.info'))
-	probnum = 0
-	for prob in common.probs(conf):
-		probnum += 1
-		print(prob['name'])
-		probinfo = {}
-		probinfo['TITLE='] = ''
-		probinfo['NAME='] = prob['name']
-		probinfo['RUN='] = ''
-		probinfo['INFILESUFFIX='] = 'in'
-		probinfo['ANSFILESUFFIX='] = 'ans'
-		probinfo['PLUG='] = prob['name']+'_e'
-		if prob['type'] == 'program':
-			probinfo['TYPE='] = 'SOURCE'
-		else:
-			print(u'暂时只支持非交互式程序题')
-		probinfo['LIMIT='] = int(prob['time limit'])
-		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
-		probinfo['SAMPLES='] = len(prob.test_cases)
-		score_per_case = 100 / len(prob.test_cases)
-		probinfo['CLL=c@gcc'] = ' -o $o $i ' + prob['compile']['c']
-		probinfo['CLL=cpp@g++'] = ' -o $o $i ' + prob['compile']['cpp']
-		probinfo['CLL=pas@fpc'] = ' -o $o $i ' + prob['compile']['pas']
-		if 'packed' in prob and prob['packed']:
-			raise Exception('Can\'t dump packed problem for arbiter.')
-		else:
-			casenum = 0
-			for case in prob.test_cases:
-				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.in'),common.pjoin('arbiter','data',prob['name']+case+'.in'))
-				shutil.copy(common.pjoin(prob.path,'data',str(case)+'.ans'),common.pjoin('arbiter','data',prob['name']+case+'.ans'))
-				casenum += 1
-				probinfo['MARK='+str(casenum)+'@'] = score_per_case
-			shutil.copy(common.pjoin(common.path,'sample','arbiter_e'),common.pjoin('arbiter','data',prob['name']+'_e'))
-		arbiter_info(probinfo,common.pjoin('arbiter','task'+str(daynum)+'_'+str(probnum)+'.info'))
-'''
+def arbiter():
+	common.remkdir('arbiter')
+	arbiter_main()
+	arbiter_down()
 
 def tsinsen_oj():
 	import random
@@ -432,11 +361,38 @@ def tsinsen_oj():
 		if common.start_file:
 			common.xopen_file(result_file)
 
+def tuoj_down(conf = None):
+	if not conf:
+		conf = common.conf
+		if not os.path.exists('tuoj'):
+			common.remkdir('tuoj')
+		common.remkdir(pjoin('tuoj', 'down'))
+	if conf.folder == 'contest':
+		for day in common.days():
+			os.makedirs(common.pjoin(pjoin('tuoj', 'down'), day['name']))
+			tuoj_down(day)
+		return
+	for prob in conf.probs():
+		log.info(prob.route)
+		os.makedirs(common.pjoin(pjoin('tuoj', 'down'), prob.route))
+		for idx, case in enumerate(prob.sample_cases, start = 1):
+			shutil.copy(
+				common.pjoin(prob.path, 'down', str(case) + '.in'),
+				common.pjoin('tuoj', 'down', prob.route, str(case) + '.in')
+			)
+			shutil.copy(
+				common.pjoin(prob.path, 'down',str(case) + '.ans'),
+				common.pjoin('tuoj', 'down', prob.route, str(case) + '.ans')
+			)
+		common.run_r(common.dos2unix, common.pjoin(pjoin('tuoj', 'down', prob.route)))
+
 work_list = {
 	'lemon' : lemon,
 	'arbiter' : arbiter,
-	'down' : down,
-	'tsinsen-oj' : tsinsen_oj
+	'arbiter-main' : arbiter_main,
+	'arbiter-down' : arbiter_down,
+	'tsinsen-oj' : tsinsen_oj,
+	'tuoj-down' : tuoj_down
 }
 
 if __name__ == '__main__':
@@ -446,7 +402,7 @@ if __name__ == '__main__':
 				common.run_exc(work_list[common.work])
 		else:
 			log.info(u'这个工具用于导出成其他类型的工程。')
-			log.info(u'支持的工作：%s' % ','.join(work_list.keys()))
+			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
 	except common.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
