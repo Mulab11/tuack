@@ -353,12 +353,12 @@ def tsinsen_oj():
 			common.run_r(lambda p : files.__setitem__(p[len(path) + 1:], hash(8)), path)
 		prob.tsinsen_files = files
 	if common.do_render:
-		import renderer
+		from . import ren
 		tmp = common.start_file
 		common.start_file = False
-		renderer.init()
-		renderer.html('tsinsen-oj')
-		renderer.final()
+		ren.init()
+		ren.html('tsinsen-oj')
+		ren.final()
 		common.start_file = tmp
 	else:
 		log.warning(u'如果你使用了文件，不重新渲染题面会导致tsinsen的文件失效。')
