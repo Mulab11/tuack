@@ -285,9 +285,7 @@ def tsinsen_oj():
 		from . import ren
 		tmp = base.start_file
 		base.start_file = False
-		ren.init()
-		ren.html('tsinsen-oj')
-		ren.final()
+		ren.Html('tsinsen-oj').run()
 		base.start_file = tmp
 	else:
 		log.warning(u'如果你使用了文件，不重新渲染题面会导致tsinsen的文件失效。')
@@ -309,7 +307,7 @@ def tsinsen_oj():
 		else:
 			return '\n'
 	def Description():
-		path = base.pjoin('statements', 'tsinsen-oj', prob.route + '.html')
+		path = pjoin('statements', 'tsinsen-oj', prob.route if prob.route != '' else prob['name']) + '.html'
 		if not os.path.exists(path):
 			log.warning(u'找不到题面，你可能需要自己手工添加题面。')
 			return ''

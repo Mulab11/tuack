@@ -127,10 +127,10 @@ class Configure(dict):
 		self.language = None
 		self.path = path
 		self.sub = []
-		
+
 	def lang(self):
 		return self.language
-	
+
 	def tr(self, key):
 		val = self[key]
 		if type(val) != dict:
@@ -186,6 +186,9 @@ class Configure(dict):
 			for sub in self.sub:
 				for day in sub.days(pick):
 					yield day
+
+	def name_lang(self):
+		return self['name'] + ('-' + globals()['lang'] if globals()['lang'] else '')
 
 def probs(item = None, pick = False):
 	if not item:
@@ -343,7 +346,7 @@ class Problem(Configure):
 
 	def ml(self):
 		return Memory(self['memory limit'])
-		
+
 	def memory_limit(self):
 		return self.ml()
 
@@ -546,7 +549,7 @@ def custom_conf():
 		c['format'] if 'format' in c else '[%(levelname).1s]%(filename)s:%(funcName)s:%(lineno)d:%(message)s'
 	))
 	log.addHandler(file_log)
-	
+
 	c = env_conf['bash_log'] if 'bash_log' in env_conf else {}
 	if 'encoding' in c:
 		class MyStream(object):
@@ -565,7 +568,7 @@ def custom_conf():
 		c['format'] if 'format' in c else '[%(levelname).1s]%(message)s'
 	))
 	log.addHandler(bash_log)
-	
+
 def init():
 	import __main__
 	global conf
@@ -599,7 +602,7 @@ def run_r(cmd, path):
 			cmd(cpath)
 		else:
 			run_r(cmd, cpath)
-	
+
 def get_tool_conf():
 	def get_sys_env():
 		return '$'.join([
@@ -684,7 +687,7 @@ def check_install(pack):
 		return True
 	eval('check_' + pack)()
 	env_conf['installed'][pack] = True
-	
+
 	open(pjoin(tool_path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 

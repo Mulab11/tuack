@@ -66,7 +66,11 @@ int main(int argc, char** argv);
 
 上面会根据具体的评测环境说明输入是文件还是标准输入等。
 
-输入第一行包含一个正整数 $n$，保证 $n \le {{ tools.hn(prob.args['n']) }}$。←这是引用 `conf.json` 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `$10^9$`，`1,000,000,007`。此外还可以写成 `{{ prob['args']['n'] }}`。引用 `args` 项、 `data` 项和 `samples` 项现在可以简写成例如 `{{ args['n'] }}` 或 `{{ args.n }}`。表格中也一样。
+输入第一行包含一个正整数 $n$，保证 $n \le {{ tools.hn(prob.args['n']) }}$。←这是引用 `conf.json` 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `10^9`，`1,000,000,007`。
+
+`prob.args['n']` 还可以写成 `prob['args']['n']`。引用 `args` 项、 `data` 项和 `samples` 项现在可以简写成例如 `args['n']` 或 `args.n`。表格中也一样。
+
+`tools` 可以简写成 `tl`，除 `hn` 外，还包括内建函数如 `tl.int`，`math` 中的对象或函数如 `tl.sin`，`datetime` 中的对象或函数如 `tl.time` 类，`num2chinese` 函数（可以把数字转化成中文）。
 
 ## {{ _('Output Format') }}
 

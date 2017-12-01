@@ -58,17 +58,6 @@ base_templates = {
 	'ccpc' : 'ccpc',
 	'ccc' : 'ccc'
 }
-work_list = {
-	'ccpc' : lambda : tex('ccpc'),
-	'uoj' : lambda : md('uoj'),
-	'tupc' : lambda : tex('tupc'),
-	'tuoi' : lambda : tex('tuoi'),
-	'noi' : lambda : tex('noi'),
-	'tuoj' : lambda : md('tuoj'),
-	'ccc-tex' :  lambda : tex('ccc'),
-	'ccc-md' : lambda : md('ccc'),
-	'tsinsen-oj' : lambda : html('tsinsen-oj')
-}
 
 secondary_dict = {}
 env = None
@@ -95,23 +84,6 @@ def get_template(fname, lang = None):
 			log.warning(u'没有%s这种语言的翻译表可用。' % lang)
 	return env['env'].get_template(fname)
 
-def init():
-	base.mkdir('statements')
-	shutil.rmtree('tmp', ignore_errors = True)
-	time.sleep(0.1)
-	shutil.copytree(os.path.join(base.path, 'templates'), 'tmp')
-	
-def final():
-	shutil.rmtree('tmp', ignore_errors = True)
-
-def file_name(comp, prob, name):
-	if comp == 'noi':
-		return prob['name'] + '/' + name
-	elif comp == 'uoj':
-		return name
-	else:
-		return name
-	
 def table(path, name, temp, context, options):
 	if options == None:
 		options = {}
@@ -315,171 +287,334 @@ def uoj_title(text):
 		in_quote ^= line.count(b'```') & 1
 	return b'\n'.join(result)
 
-def md(comp):
-	def render(prob):
-		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-		path = pjoin('statements', comp)
-		if prob.route != '':
-			path = pjoin(path, prob.route)
-		if os.path.exists(os.path.join(prob.path, 'resources')):
-			shutil.rmtree(path, ignore_errors = True)
-			time.sleep(0.1)
-			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
+class Base(object):
+	def __init__(self, comp, conf = None):
+		self.conf = (base.conf if conf == None else conf)
+		self.comp = comp
+		self.day = None
+		self.contest = None
+		self.prob = None
+		self.path = None
+		self.prec = None
+		self.secondary_dict = {}
+		self.io_style = io_styles[comp]
+
+	def file_name(self, name):
+		if self.comp == 'noi':
+			return self.prob['name'] + '/' + name
+		elif self.comp == 'uoj':
+			return name
+		else:
+			return name
+
+	def secondary(self, s, sp = None):
+		if sp != None:
+			if type(sp) == str:
+				sp = [sp]
+			in_set = False
+			for i in sp:
+				if i in work_class and base.work in work_class[i]:
+					in_set = True
+					break
+			if not in_set:
+				return ''
+		if self.work == 'tex' or self.work == 'html':
+			id = str(uuid.uuid4())
+			self.secondary_dict[id] = s
+			return id
+		else:
+			return ' {{ ' + s + ' }} '
+
+	def resource(self, name):
+		return self.prob['name'] + '/' + name
+
+	def ren_prob_md_j(self):
+		log.info(u'渲染题目题面 %s %s' % (self.comp, self.prob.route))
 		try:
-			shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
+			shutil.copy(self.prob.statement(), pjoin('tmp', 'problem.md.jinja'))
+			time.sleep(0.1)
 		except base.NoFileException as e:
 			log.error(u'找不到题面文件，建议使用`python -m tuack.gen problem`生成题目工程。')
 			return
-		time.sleep(0.1)
-		context = {
-			'prob' : prob,
-			'args' : prob.get('args'),
-			'data' : prob.get('data'),
-			'samples' : prob.get('samples'),
-			'io_style' : io_style,
+		self.context = {
+			'prob' : self.prob,
+			'args' : self.prob.get('args'),
+			'data' : self.prob.get('data'),
+			'samples' : self.prob.get('samples'),
+			'day' : self.day,
+			'contest' : self.contest,
+			'io_style' : self.io_style,
+			'comp' : self.comp,
 			'tools' : tools,
+			'tl' : tools,
 			'base' : base,
-			'file_name' : lambda name : file_name(comp, prob, name),
-			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
-			'resource' : lambda name : prob['name'] + '/' + name,
-			'render' : lambda s, sp = None : secondary(s, sp, 'md'),
-			'comp' : comp,
+			'file_name' : self.file_name,
+			'down_file' : lambda name : open(os.path.join(self.prob.path, 'down', name), 'rb').read().decode('utf-8'),
+			'resource' : self.resource,
+			'render' : self.secondary,
+			'precautions' : self.prec,
 			'json' : json
 		}
-		context['img'] = lambda src, env = None, **argw : context['render'](
-			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
+		self.context['img'] = lambda src, env = None, **argw : self.context['render'](
+			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)),
 			env
 		)
-		context['tbl'] = lambda src, env = None, **argw : context['render'](
+		self.context['tbl'] = lambda src, env = None, **argw : self.context['render'](
 			"table(%s, %s)" % (json.dumps(src), argw),
 			env
 		)
+		if self.comp == 'tsinsen-oj' and 'tsinsen_files' in dir(self.prob):
+			self.context['resource'] = lambda name : '/RequireFile.do?fid=%s' % self.prob.tsinsen_files[name]
 		open(os.path.join('tmp', 'problem.md'), 'wb') \
-			.write(get_template('problem_base.md.jinja', prob.lang())
-				.render(context)
+			.write(get_template('problem_base.md.jinja', self.prob.lang())
+				.render(self.context)
 				.encode('utf-8')
 			)
-		result_file = path + ('-' + base.lang if base.lang else '')
-		if prob.route == '':
-			result_file = pjoin(result_file, prob['name'])
-		result_file += '.md'
-		result_md = get_template('problem.md', prob.lang()).render(
-			context,
-			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
-			table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
-		).encode('utf-8')
-		if comp == 'uoj':
-			result_md = uoj_title(result_md)
-		open(result_file, 'wb').write(result_md)
-		if base.start_file:
-			base.xopen_file(result_file)
-
-	base.mkdir(os.path.join('statements', comp))
-	io_style = io_styles[comp]
-	if base.conf.folder == 'contest':
-		for day in base.days():
-			if not os.path.exists(base.pjoin('statements', comp, day.route)):
-				os.makedirs(base.pjoin('statements', comp, day.route))
-	for prob in base.probs():
-		render(prob)
-		
-def html(comp):
-	base.check_install('pandoc')
-	def render(prob):
-		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-		path = pjoin('statements', comp)
-		if prob.route != '':
-			path = pjoin(path, prob.route)
-		if os.path.exists(os.path.join(prob.path, 'resources')):
-			shutil.rmtree(path, ignore_errors = True)
-			time.sleep(0.1)
-			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
-		try:
-			shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
-		except base.NoFileException as e:
-			log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
-			return
 		time.sleep(0.1)
+
+	def check_install(self):
+		pass
+
+	def before(self):
+		base.mkdir('statements')
+		shutil.rmtree('tmp', ignore_errors = True)
+		time.sleep(0.1)
+		shutil.copytree(os.path.join(base.path, 'templates'), 'tmp')
+		base.mkdir(pjoin('statements', self.comp))
+		if self.conf.folder == 'contest':
+			self.contest = self.conf
+		elif self.conf.folder == 'day':
+			self.day = self.conf
+		elif self.conf.folder == 'problem':
+			self.prob = self.conf
+
+	def move_resource(self):
+		if os.path.exists(os.path.join(self.prob.path, 'resources')):
+			shutil.rmtree(self.path, ignore_errors = True)
+			time.sleep(0.1)
+			shutil.copytree(os.path.join(self.prob.path, 'resources'), (self.path if self.prob.route != '' else pjoin(self.path, self.prob['name'])))
+
+	def gen_paths(self):
+		self.path = pjoin('statements', self.comp)
+		if self.prob.route != '':
+			self.path = pjoin(self.path, self.prob.route)
+		self.result_path = self.path + ('-' + base.lang if base.lang else '')
+		if self.prob.route == '':
+			self.result_path = pjoin(self.result_path, self.prob['name'])
+		self.result_path += '.' + self.work
+
+	def main(self):
+		if self.conf.folder == 'contest':
+			for self.day in self.conf.days():
+				if not os.path.exists(pjoin('statements', self.comp, self.day.route)):
+					os.makedirs(pjoin('statements', self.comp, self.day.route))
+		if self.comp == 'tsinsen-oj':
+			log.warning(u'如果你使用了resource，你可能需要使用dumper才能获得正确上传清橙的文件。')
+		for self.prob in self.conf.probs():
+			self.gen_paths()
+			self.move_resource()
+			self.ren_prob_md_j()
+			self.ren_prob_rest()
+			self.start_file()
+
+	def final(self):
+		shutil.rmtree('tmp', ignore_errors = True)
+
+	def run(self):
+		self.check_install()
+		self.before()
+		self.main()
+		self.final()
+
+	def start_file(self):
+		if base.start_file:
+			base.xopen_file(self.result_path)
+
+class Latex(Base):
+	work = 'tex'
+	day_templates = {
+		'noi' : 'tuoi',
+		'tuoi' : 'tuoi',
+		'tupc' : 'tupc',
+		'ccpc' : 'ccpc',
+		'ccc' : 'ccc'
+	}
+
+	def resource(self, name):
+		return pjoin('..', self.prob.path, 'resources', name).replace('\\', '/')
+
+	def check_install(self):
+		base.check_install('pandoc')
+		base.check_install('xelatex')
+		base.check_install('gettext')
+
+	def ren_prec(self):
+		if not os.path.exists(base.pjoin(self.conf.path, 'precautions', 'zh-cn.md')):
+			return
 		context = {
-			'prob' : prob,
-			'args' : prob.get('args'),
-			'data' : prob.get('data'),
-			'samples' : prob.get('samples'),
-			'io_style' : io_style,
+			'io_style' : self.io_style,
+			'comp' : self.comp,
 			'tools' : tools,
+			'tl' : tools,
 			'base' : base,
-			'file_name' : lambda name : file_name(comp, prob, name),
-			'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
-			'resource' : lambda name : prob['name'] + '/' + name,
-			'render' : lambda s, sp = None : secondary(s, sp, 'html'),
-			'comp' : comp,
 			'json' : json
 		}
-		context['img'] = lambda src, env = None, **argw : context['render'](
-			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
-			env
+		base.copy(base.pjoin(self.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
+		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(get_template('zh-cn.md').render(context, conf = self.conf).encode('utf-8'))
+		os.system('pandoc %s -t latex -o %s' % (
+			os.path.join('tmp', 'precautions.md'),
+			os.path.join('tmp', 'precautions.tex')
+		))
+		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
+
+	def ren_prob_tex(self):
+		os.system('pandoc %s -t latex -o %s' % (
+			pjoin('tmp', 'problem.md'),
+			pjoin('tmp', 'problem.tex')
+		))
+		tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
+		tex = tex.replace('{{', '{ {').replace('}}', '} }')	##强行修复pandoc搞出连续大括号与jinja冲突的问题
+		for key, val in self.secondary_dict.items():
+			tex = tex.replace(key, '{{ ' + val + ' }}')
+		open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
+			tex.encode('utf-8')
 		)
-		context['tbl'] = lambda src, env = None, **argw : context['render'](
-			"table(%s, %s)" % (json.dumps(src), argw),
-			env
+		return get_template('problem.tex.jinja', self.prob.lang()).render(
+			self.context,
+			template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', self.prob.lang()).render(context),
+			table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.tex.jinja', self.context, options)
 		)
-		if comp == 'tsinsen-oj' and 'tsinsen_files' in dir(prob):
-			context['resource'] = lambda name : '/RequireFile.do?fid=%s' % prob.tsinsen_files[name]
-		open(os.path.join('tmp', 'problem.1.md'), 'wb') \
-			.write(get_template('problem_base.md.jinja', prob.lang())
-				.render(context)
-				.encode('utf-8')
-			)
-		with open(os.path.join('tmp', 'problem.2.md'), 'wb') as f:
-			for line in open(os.path.join('tmp', 'problem.1.md'), 'rb'):
-				if re.match(b'^##[^#]', line):
-					line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
-				f.write(line)
+
+	def ren_day_pdf(self):
+		log.info(u'渲染比赛日题面 %s %s' % (self.comp, self.day.route if self.day else self.conf.route))
+		self.context.pop('prob')
+		self.context.pop('file_name')
+		self.context.pop('down_file')
+		self.context.pop('resource')
+		self.context.pop('render')
+		self.context['probs'] = self.probs
+		self.context['problems'] = self.tex_problems
+		all_problem_statement = get_template('%s.tex.jinja' % base_templates[self.comp]).render(self.context)
+		try:
+			open(os.path.join('tmp', 'problems.tex'), 'wb') \
+				.write(all_problem_statement.encode('utf-8'))
+		except Exception as e:
+			log.info(u'渲染出错的文件为`tmp/problems.tmp.tex`')
+			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
+				.write(all_problem_statement.encode('utf-8'))
+			raise e
+		log.info(u'开始使用xelatex渲染题面。')
+		os.chdir('tmp')
+		os.system('xelatex -interaction=batchmode problems.tex')
+		os.system('xelatex -interaction=batchmode problems.tex')
+		os.chdir('..')
+		shutil.copy(os.path.join('tmp', 'problems.pdf'), self.result_path)
+
+	def ren_day(self):
+		if self.day:
+			day_name = self.day['name']
+			self.probs = list(self.day.probs())
+		else:
+			day_name = u'测试'
+			self.probs = [self.prob]
+		if len(self.probs) == 0:
+			log.info(u'指定目录`%s`下没有题目可渲染。' % conf.route)
+			return
+		self.tex_problems = []
+		for self.prob in self.probs:
+			self.ren_prob_md_j()
+			self.tex_problems.append(self.ren_prob_tex())
+		self.ren_day_pdf()
+		self.start_file()
+
+	def main(self):
+		self.ren_prec()
+		self.day_template = self.day_templates[self.comp]
+		if self.conf.folder != 'problem':
+			for self.day in base.days():
+				self.result_path = os.path.join('statements', self.comp, self.day.name_lang() + '.pdf')
+				self.ren_day()
+		else:
+			self.result_path = os.path.join('statements', self.comp, self.conf.name_lang() + '.pdf')
+			self.ren_day()
+
+class Markdown(Base):
+	work = 'md'
+	def ren_prob_rest(self):
+		result_md = get_template('problem.md', self.prob.lang()).render(
+			self.context,
+			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
+			table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
+		).encode('utf-8')
+		if self.comp == 'uoj':
+			result_md = uoj_title(result_md)
+		open(self.result_path, 'wb').write(result_md)
+
+class Html(Base):
+	work = 'html'
+	def check_install(self):
+		base.check_install('pandoc')
+
+	def ren_prob_rest(self):
+		if self.comp == 'tsinsen-oj':
+			with open(os.path.join('tmp', 'problem.2.md'), 'wb') as f:
+				for line in open(os.path.join('tmp', 'problem.md'), 'rb'):
+					if re.match(b'^##[^#]', line):
+						line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
+					f.write(line)
+		else:
+			base.copy('tmp', 'problem.md', pjoin('tmp', 'problem.2.md'))
 		txt = open(os.path.join('tmp', 'problem.2.md'), 'rb').read().decode('utf-8')
-		for key, val in secondary_dict.items():
+		for key, val in self.secondary_dict.items():
 			txt = txt.replace(key, '{{ ' + val + ' }}')
 		open(os.path.join('tmp', 'problem.3.md'), 'wb').write(
 			txt.encode('utf-8')
 		)
 		open(base.pjoin('tmp', 'problem.4.md'), 'wb') \
-			.write(get_template('problem.3.md', prob.lang())
+			.write(get_template('problem.3.md', self.prob.lang())
 				.render(
-					context,
-					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
-					table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
+					self.context,
+					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
+					table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
 				).encode('utf-8')
 			)
-		result_file = path + ('-' + base.lang if base.lang else '')
-		if prob.route == '':
-			result_file = pjoin(result_file, prob['name'])
-		result_file += '.html'
 		os.system('pandoc %s -o %s' % (
 			os.path.join('tmp', 'problem.4.md'),
-			result_file
+			self.result_path
 		))
-		if base.start_file:
-			base.xopen_file(result_file)
 
-	base.mkdir(os.path.join('statements', comp))
-	io_style = io_styles[comp]
-	if base.conf.folder == 'contest':
-		for day in base.days():
-			if not os.path.exists(base.pjoin('statements', comp, day.route)):
-				os.makedirs(base.pjoin('statements', comp, day.route))
-	if comp == 'tsinsen-oj':
-		log.warning(u'如果你使用了resource，你可能需要使用dumper才能获得正确上传清橙的文件。')
-	for prob in base.probs():
-		render(prob)
+class_list = {
+	'ccpc' : Latex,
+	'uoj' : Markdown,
+	'tupc' : Latex,
+	'tuoi' : Latex,
+	'noi' : Latex,
+	'tuoj' : Markdown,
+	'ccc-tex' : Latex,
+	'ccc-md' : Markdown,
+	'tsinsen-oj' : Html
+}
+
+comp_list = {
+	'ccpc' : 'ccpc',
+	'uoj' : 'uoj',
+	'tupc' : 'tupc',
+	'tuoi' : 'tuoi',
+	'noi' : 'noi',
+	'tuoj' : 'tuoj',
+	'ccc-tex' : 'ccc',
+	'ccc-md' : 'ccc',
+	'tsinsen-oj' : 'tsinsen-oj'
+}
 
 if __name__ == '__main__':
 	try:
 		if base.init():
 			base.check_install('jinja2')
-			init()
 			for base.work in base.works:
 				for base.lang in base.langs:
-					base.run_exc(work_list[base.work])
-			final()
+					base.run_exc(class_list[base.work](comp_list[base.work]).run)
 		else:
 			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
 	except base.NoFileException as e:
