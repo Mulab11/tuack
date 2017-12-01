@@ -203,6 +203,9 @@ def tex(comp):
 				continue
 			context = {
 				'prob' : prob,
+				'args' : prob.get('args'),
+				'data' : prob.get('data'),
+				'samples' : prob.get('samples'),
 				'day' : conf if conf.folder == 'day' else None,
 				'contest' : contest,
 				'io_style' : io_style,
@@ -330,6 +333,9 @@ def md(comp):
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
+			'args' : prob.get('args'),
+			'data' : prob.get('data'),
+			'samples' : prob.get('samples'),
 			'io_style' : io_style,
 			'tools' : tools,
 			'base' : base,
@@ -396,6 +402,9 @@ def html(comp):
 		time.sleep(0.1)
 		context = {
 			'prob' : prob,
+			'args' : prob.get('args'),
+			'data' : prob.get('data'),
+			'samples' : prob.get('samples'),
 			'io_style' : io_style,
 			'tools' : tools,
 			'base' : base,
