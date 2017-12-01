@@ -64,6 +64,11 @@ rjoin = lambda *args : '/'.join(args).strip('/')
 
 natsort_warned = None
 
+tool_path = (path if system == 'Windows' else pjoin(os.path.expanduser("~"), '.tuack'))
+sys.stdout.flush()
+if not os.path.exists(tool_path):
+	os.makedirs(tool_path)
+
 class Memory(str):
 	units = {
 		'B' : 1,
@@ -604,7 +609,7 @@ def get_tool_conf():
 		] + ['py%x' % sys.hexversion])
 	global env_conf
 	try:
-		tool_conf = json.loads(open(pjoin(path, 'conf.json'), 'rb').read().decode('utf-8'))
+		tool_conf = json.loads(open(pjoin(tool_path, 'conf.json'), 'rb').read().decode('utf-8'))
 	except:
 		tool_conf = {}
 	sys_env = get_sys_env()
@@ -680,7 +685,7 @@ def check_install(pack):
 	eval('check_' + pack)()
 	env_conf['installed'][pack] = True
 	
-	open(pjoin(path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
+	open(pjoin(tool_path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 
 def change_eol(path, eol):
