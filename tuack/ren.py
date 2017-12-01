@@ -16,7 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 from . import common
-from .common import log
+from .common import log, pjoin
 try:
 	import jinja2
 except:
@@ -315,15 +315,17 @@ def uoj_title(text):
 def md(comp):
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-		path = os.path.join('statements', comp, prob.route)
+		path = pjoin('statements', comp)
+		if prob.route != '':
+			path = pjoin(path, prob.route)
 		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
-			shutil.copytree(os.path.join(prob.path, 'resources'), path)
+			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
 		try:
 			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
 		except common.NoFileException as e:
-			log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
+			log.error(u'找不到题面文件，建议使用`python -m tuack.gen problem`生成题目工程。')
 			return
 		time.sleep(0.1)
 		context = {
@@ -351,7 +353,10 @@ def md(comp):
 				.render(context)
 				.encode('utf-8')
 			)
-		result_file = path + ('-' + common.lang if common.lang else '') + '.md'
+		result_file = path + ('-' + common.lang if common.lang else '')
+		if prob.route == '':
+			result_file = pjoin(result_file, prob['name'])
+		result_file += '.md'
 		result_md = get_template('problem.md', prob.lang()).render(
 			context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', prob.lang()).render(context),
@@ -380,7 +385,7 @@ def html(comp):
 		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
-			shutil.copytree(os.path.join(prob.path, 'resources'), path)
+			shutil.copytree(os.path.join(prob.path, 'resources'), (path if prob.route != '' else pjoin(path, prob['name'])))
 		try:
 			shutil.copy(prob.statement(), common.pjoin('tmp', 'problem.md.jinja'))
 		except common.NoFileException as e:
@@ -433,7 +438,10 @@ def html(comp):
 					table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.html.jinja', context, options)
 				).encode('utf-8')
 			)
-		result_file = path + ('-' + common.lang if common.lang else '') + '.html'
+		result_file = path + ('-' + common.lang if common.lang else '')
+		if prob.route == '':
+			result_file = pjoin(result_file, prob['name'])
+		result_file += '.html'
 		os.system('pandoc %s -o %s' % (
 			os.path.join('tmp', 'problem.4.md'),
 			result_file
