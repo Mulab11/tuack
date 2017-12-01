@@ -381,7 +381,9 @@ def html(comp):
 	common.check_install('pandoc')
 	def render(prob):
 		log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-		path = os.path.join('statements', comp, prob.route)
+		path = pjoin('statements', comp)
+		if prob.route != '':
+			path = pjoin(path, prob.route)
 		if os.path.exists(os.path.join(prob.path, 'resources')):
 			shutil.rmtree(path, ignore_errors = True)
 			time.sleep(0.1)
