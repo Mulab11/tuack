@@ -310,7 +310,6 @@ def test_problem(prob):
 				if prob['packed'] else '',
 			','.join(prob.sample_cases)
 		))
-
 		for user, algos in prob.users():
 			if not prob.all:
 				match = base.any_prefix(rjoin(prob.route, user))
@@ -370,6 +369,7 @@ def test_problem(prob):
 					scores = [0.0, 0.0] + scores
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
+<<<<<<< HEAD
 
 				# Check expected scores
 				algo_failed = False
