@@ -299,6 +299,9 @@ def test_problem(prob):
 		u'是' if prob['packed'] else u'不是',
 		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
 	))
+
+	prob_failed = False
+
 	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s\n' % (
 			prob['name'],
@@ -307,6 +310,7 @@ def test_problem(prob):
 				if prob['packed'] else '',
 			','.join(prob.sample_cases)
 		))
+
 		for user, algos in prob.users():
 			if not prob.all:
 				match = base.any_prefix(rjoin(prob.route, user))
@@ -350,20 +354,47 @@ def test_problem(prob):
 					for i in range(tc):
 						score_map[prob.test_cases[i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
+					tot = packed
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]
 					reports = reports[:tc] + packed[2] + reports[tc:]
 				elif tc > 0:
 					ratio = 100. / tc
 					scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
+					tot = sum(scores[:tc])
 					times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
 					reports = reports[:tc] + [''] + reports[tc:]
 				else:
+					# FIXME: Do I do this?
+					tot = sum(scores)
 					scores = [0.0, 0.0] + scores
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
-				totscore = reduce(lambda stash, i : stash + i, scores, 0)
-				print('tot: %.2f' % totscore)
+
+				# Check expected scores
+				algo_failed = False
+				if '>' in exp:
+					if tot <= exp['>']:
+						algo_failed = True
+				if '<' in exp:
+					if tot >= exp['<']:
+						algo_failed = True
+				if '>=' in exp:
+					if tot < exp['>=']:
+						algo_failed = True
+				if '<=' in exp:
+					if tot > exp['<=']:
+						algo_failed = True
+
+				if algo_failed:
+					log.error(u'预期分数 %s ，实际得分 %.2f' %
+								(', '.join([
+									'%s %.2f' % (k, v) 
+									for k, v in exp.items()
+								]), tot)
+							)
+					prob_failed = True
+
 				scores = map(lambda i : '%.2f' % i, scores)
 				times = map(lambda i : '%.3f' % i, times)
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
@@ -371,8 +402,10 @@ def test_problem(prob):
 					fres.write('%s,%s\n' % (title, ','.join(line)))
 	if base.start_file:
 		base.xopen_file(pjoin('result', prob.route) + '.csv')
+	return not prob_failed
 
 def test_progs():
+	test_failed = False
 	if base.conf.folder != 'problem' and not os.path.exists('result'):
 		os.makedirs('result')
 	for day in base.days():
@@ -381,9 +414,11 @@ def test_progs():
 			os.makedirs(path)
 	for prob in base.probs():
 		try:
-			test_problem(prob)
+			if not test_problem(prob):
+				test_failed = True
 		except Exception as e:
 			log.error(traceback.format_exc())
+	return not test_failed
 
 if __name__ == '__main__':
 	try:
@@ -392,9 +427,13 @@ if __name__ == '__main__':
 			if base.do_pack:
 				from . import packer
 				base.run_exc(packer.test)
-			base.run_exc(test_progs)
+			ex, success = base.run_exc(test_progs)
+			if ex or not success:
+				sys.exit(1)
 		else:
 			log.info(u'这是测试出题人数据和程序的测试器，测试器没有细分的工作。')
+			sys.exit(1)
 	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+		sys.exit(1)

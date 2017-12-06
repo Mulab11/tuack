@@ -320,7 +320,7 @@ class Problem(Configure):
 					# Ill-formed 
 					return None
 
-				return (user_pathed(self, users["path"], depth = depth+1),
+				return (users_pathed(self, users["path"], depth = depth+1)[0],
 						users["expected"] if "expected" in users else {})
 
 			pairs = map(lambda (key, val): (key, users_pathed(self, val, depth=depth+1)), users.items())
@@ -737,7 +737,8 @@ dos2unix = lambda path : change_eol(path, b'\n')
 
 def run_exc(func):
 	try:
-		func()
+		return (True, func())
 	except Exception as e:
 		log.error(e)
 		log.info(traceback.format_exc())
+		return (False, None)
