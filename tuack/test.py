@@ -369,7 +369,6 @@ def test_problem(prob):
 					scores = [0.0, 0.0] + scores
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
-<<<<<<< HEAD
 
 				# Check expected scores
 				algo_failed = False
