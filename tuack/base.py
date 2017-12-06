@@ -320,8 +320,10 @@ class Problem(Configure):
 					# Ill-formed 
 					return None
 
-				return (users_pathed(self, users["path"], depth = depth+1)[0],
-						users["expected"] if "expected" in users else {})
+				return (
+						self.extend_pathed(users["path"]),
+						users["expected"] if "expected" in users else {}
+						)
 
 			pairs = map(lambda (key, val): (key, users_pathed(self, val, depth=depth+1)), users.items())
 			filtered = filter(lambda (key, desc): desc != None, pairs)
