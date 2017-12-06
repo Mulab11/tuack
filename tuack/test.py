@@ -307,12 +307,12 @@ def test_problem(prob):
 				if prob['packed'] else '',
 			','.join(prob.sample_cases)
 		))
-		for user, algos in prob.users().items():
+		for user, algos in prob.users():
 			if not prob.all:
 				match = base.any_prefix(rjoin(prob.route, user))
 				if not match:
 					continue
-			for algo, path in algos.items():
+			for algo, (path, exp) in algos.items():
 				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
@@ -362,6 +362,8 @@ def test_problem(prob):
 					scores = [0.0, 0.0] + scores
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
+				totscore = reduce(lambda stash, i : stash + i, scores, 0)
+				print('tot: %.2f' % totscore)
 				scores = map(lambda i : '%.2f' % i, scores)
 				times = map(lambda i : '%.3f' % i, times)
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)

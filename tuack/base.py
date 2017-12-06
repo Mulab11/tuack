@@ -313,11 +313,20 @@ class Problem(Configure):
 	def users(self):
 		def users_pathed(self, users, key = '', depth = 0):
 			if type(users) != dict:
-				return self.extend_pathed(users)
-			return {
-				key : users_pathed(self, val) \
-				for key, val in users.items()
-			}
+				return (self.extend_pathed(users), {})
+			elif depth == 2:
+				# Is detailed description
+				if "path" not in users:
+					# Ill-formed 
+					return None
+
+				return (user_pathed(self, users["path"], depth = depth+1),
+						users["expected"] if "expected" in users else {})
+
+			pairs = map(lambda (key, val): (key, users_pathed(self, val, depth=depth+1)), users.items())
+			filtered = filter(lambda (key, desc): desc != None, pairs)
+			return filtered
+
 		return self.getitem('users', users_pathed)
 
 	def get_data(self, key):
