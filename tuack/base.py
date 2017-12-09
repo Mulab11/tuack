@@ -65,11 +65,13 @@ rjoin = lambda *args : '/'.join(args).strip('/')
 natsort_warned = None
 
 tool_path = (path if system == 'Windows' else pjoin(os.path.expanduser("~"), '.tuack'))
-sys.stdout.flush()
 if not os.path.exists(tool_path):
 	os.makedirs(tool_path)
 
 class Memory(str):
+	'''
+	'5KB'，'10 MB'，'8M'格式的字符串s，允许用Memory(s).GB，Memory(s).B等形式转换单位
+	'''
 	units = {
 		'B' : 1,
 		'K' : 2 ** 10,
@@ -97,8 +99,14 @@ class Memory(str):
 			self.__setattr__(key, b / val)
 
 class Configure(dict):
+	'''
+	描述一个conf.json的对象
+	'''
 	@staticmethod
 	def merge_item(base, ext):
+		'''
+		用于合并继承和原始的dict元素
+		'''
 		if type(base) == type(ext) == list:
 			return base + ext
 		elif type(base) != dict or type(ext) != dict:
@@ -280,7 +288,7 @@ class Problem(Configure):
 			else:
 				self[data] = []
 			if cases in self and type(self[cases]) == int:
-				log.warning(u'`%s`字段不再使用，使用`python -m gen upgrade`升级。' % cases)
+				log.warning(u'`%s`字段不再使用，使用`python -m tuack.gen upgrade`升级。' % cases)
 				#to_dp = lambda i : DataPath({'case' : self['name'] + str(i), 'key' : key, 'depth' : 0, 'prefix' : self.path})
 				#self[data] = [{'cases' : [
 				#	to_dp(i) for i in range(1, self.pop(cases) + 1) \
