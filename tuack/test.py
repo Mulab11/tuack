@@ -183,7 +183,7 @@ def test(prob, name):
 				times.append(0.0)
 				reports.append(str(e))
 			return scores, times, reports
-	all_cases = prob.test_cases + prob.sample_cases
+	all_cases = prob.test_cases + prob.sample_cases + prob.pre_cases
 	for case in all_cases:
 		print('Case %s:%s  ' % (case['key'], case), end = '\r')
 		sys.stdout.flush()
@@ -293,6 +293,10 @@ def test_problem(prob):
 		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m tuack.gen samples`在文件夹`%s`下搜索样例数据。' % (
 			prob.route, pjoin(prob.path, 'down')
 		))
+	if 'pre' not in prob or len(prob.pre_cases) == 0:
+		log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索样例数据。' % (
+			prob.route, pjoin(prob.path, 'pre')
+		))
 	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
 		len(prob.test_cases),
@@ -303,12 +307,13 @@ def test_problem(prob):
 	prob_failed = False
 
 	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
-		fres.write('%s,%s%s,summary,sample%s\n' % (
+		fres.write('%s,%s%s,summary,sample%s,pre%s\n' % (
 			prob['name'],
 			','.join(prob.test_cases),
 			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob.data)) \
 				if prob['packed'] else '',
-			','.join(prob.sample_cases)
+			','.join(prob.sample_cases),
+			','.join(prob.pre_cases)
 		))
 		for user, algos in prob.users().items():
 			if not prob.all:
@@ -436,5 +441,5 @@ if __name__ == '__main__':
 			sys.exit(1)
 	except base.NoFileException as e:
 		log.error(e)
-		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
 		sys.exit(1)

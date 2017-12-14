@@ -1,5 +1,5 @@
 {
-	"version": 0,
+	"version": 1,
 	"folder" : "problem",
 	"type" : "program",
 	"name" : "name for programers",
@@ -22,5 +22,6 @@
 		"n" : 1000
 	},
 	"data" : [],
+	"pre" : [],
 	"users" : {}
 }

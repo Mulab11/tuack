@@ -136,7 +136,7 @@ def new_dir(folder, args = None):
 				copy(folder + '.gitattributes', '.gitattributes')
 			else:
 				log.info(u'现在不默认用git-lfs，如需，用`python -m tuack.gen lfs`添加。')
-			for ff in ('data', 'down', 'statement', 'tables', 'resources', 'solution'):
+			for ff in ('data', 'down', 'pre', 'statement', 'tables', 'resources', 'solution'):
 				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)
@@ -183,6 +183,8 @@ def upgrade():
 				if conf.folder == 'problem':
 					if 'users' not in conf:
 						conf['users'] = {}
+					if 'pre' not in conf:
+						conf['pre'] = []
 					for user, algos in conf['users'].items():
 						for algo in algos:
 							if type(algos[algo]) == str:
@@ -229,6 +231,7 @@ def copy_chk():
 work_list = {
 	'data' : lambda conf = None: find_all_data('data', 'data', 'test_cases', conf),
 	'samples' : lambda conf = None: find_all_data('samples', 'down', 'sample_cases', conf),
+	'pre' : lambda conf = None: find_all_data('pre', 'pre', 'pre_cases', conf),
 	'code' : find_all_code,
 	'contest' : lambda : new_dir('contest'),
 	'day' : lambda : new_dir('day'),
@@ -261,6 +264,7 @@ if __name__ == '__main__':
 		log.info(u'  data     在题目工程的data文件夹中搜索数据并添加到配置文件。')
 		log.info(u'           对于比赛工程和比赛日工程，此操作将应用于所有子题目工程，下同。')
 		log.info(u'  samples  在题目工程的down文件夹中搜索样例并添加到配置文件。')
+		log.info(u'  pre      在题目工程的pre文件夹中搜索预测试数据并添加到配置文件。')
 		log.info(u'  code     在题目工程的非数据文件夹中搜索源代码并添加到配置文件。')
 		log.info(u'  lfs      用git-lfs维护所有的*.in/out/ans，当数据较大时使用。')
 		log.info(u'  chk      添加一个空的答案校验器或称spj，建议在此基础上修改以兼容。')

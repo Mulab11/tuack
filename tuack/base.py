@@ -18,7 +18,7 @@ import platform
 import logging
 import traceback
 
-json_version = 2
+json_version = 1
 work = None
 system = platform.system()
 out_system = system
@@ -26,8 +26,8 @@ windows_stack_size = 536870912
 diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
 elf_suffix = '' if system != 'Windows' else '.exe'
-problem_skip = re.compile(r'^(data|down|tables|resources|gen)$')
-user_skip = re.compile(r'^(data|down|val|gen|chk|checker|report|check.*|make_data|data_maker|data_make|make|generate|generator|makedata|spj|judge|tables|.*\.test|.*\.dir)(\..*)?$')
+problem_skip = re.compile(r'^(data|down|tables|resources|gen|pre)$')
+user_skip = re.compile(r'^(data|down|pre|val|gen|chk|checker|report|check.*|make_data|data_maker|data_make|make|generate|generator|makedata|spj|judge|tables|.*\.test|.*\.dir)(\..*)?$')
 compilers = {
 	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
@@ -277,11 +277,12 @@ class Problem(Configure):
 		self.chk = None
 		self.data = self.get_data('data')
 		self.samples = self.get_data('samples')
+		self.pre = self.get_data('pre')
 	def set_default(self, path = None):
 		super(Problem, self).set_default(path)
 		if 'title' not in self and 'cnname' in self:
 			self['title'] = {'zh-cn' : self.pop('cnname')}
-		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down')]:
+		for data, cases, attr, key in [('data', 'test cases', 'test_cases', 'data'), ('samples', 'sample count', 'sample_cases', 'down'), ('pre', 'pre count', 'pre_cases', 'pre')]:
 			tc = set()
 			if hasattr(self, data) and self.__getattribute__(data) != None:
 				for datum in self.__getattribute__(data):
@@ -351,7 +352,8 @@ class Problem(Configure):
 		def data_pathed(self, data, key, depth):
 			key_map = {
 				'data' : 'data',
-				'samples' : 'down'
+				'samples' : 'down',
+				'pre' : 'pre'
 			}
 			ret = []
 			for datum in data:
