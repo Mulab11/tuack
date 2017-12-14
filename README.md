@@ -1,6 +1,6 @@
 ## 简介
 
-感觉用了一段时间还比较平稳，所以我来假装正儿八经地发布一个0.1版本吧。
+更新了 0.1.1 版本，新特性见最后。
 
 这个gitlab没有注册的用户似乎是不能提issue的，所以有issue可以给我发邮件 [chen.xm.mu@gmail.com](mailto:chen.xm.mu@gmail.com)，或是到[这个废弃的老工程](http://git.oschina.net/mulab/oi_tools)上面提issue，知道我QQ或微信的小伙伴也可以用这些工具告诉我。
 
@@ -17,3 +17,13 @@
 ## 文档
 
 [文档在这里](https://git.thusaac.org/publish/tuack/wikis/home)
+
+## 更新记录
+
+### v0.1.1
+
+*   添加了 pre-test 类型的数据；
+*   题面可以用 `data`、`args`、`samples`、`pre` 等写法代替类似于 `prob['data']` 的写法；
+*   添加了用户代码的期望得分标注；
+*   添加了一个题解文件；
+*   修复了若干bug。
