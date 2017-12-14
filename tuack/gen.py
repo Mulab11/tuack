@@ -122,7 +122,7 @@ def new_dir(folder, args = None):
 	else:
 		if not common.conf:
 			log.error(u'当前文件夹下没有找到合法的`conf.json`文件。')
-			log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+			log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
 			return
 		dirs = args
 	for path in dirs:
