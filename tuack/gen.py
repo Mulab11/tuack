@@ -152,6 +152,9 @@ def new_dir(folder, args = None):
 def upgrade():
 	if base.conf:	#是conf.json格式的老版本
 		def upgrade_r(conf):
+			'''
+			非最新版本return False
+			'''
 			def upgrade_None(conf):
 				log.info(u'将`%s`从None版本升级到0版本。' % conf.route)
 				conf['version'] = 0
@@ -171,9 +174,23 @@ def upgrade():
 										else:
 											log.error('`%s`和`%s`都找不到，可能你的文件命名错误。' % (ff, ft))
 							work_list[key](conf)
+				return False
 			def upgrade_0(conf):
+				log.info(u'将`%s`从0版本升级到1版本。' % conf.route)
+				conf['version'] = 1
+				if conf.folder == 'problem':
+					if 'users' not in conf:
+						conf['users'] = {}
+					for user, algos in conf['users'].items():
+						for algo in algos:
+							if type(algos[algo]) == str:
+								algos[algo] = {'path' : algos[algo], 'expected' : {}}
+				return False
+			def upgrade_1(conf):
 				log.info(u'`%s`是最新版本。' % conf.route)
-			eval('upgrade_' + str(conf['version']))(conf)
+				return True
+			while not eval('upgrade_' + str(conf['version']))(conf):
+				pass
 			for sub in conf.sub:
 				upgrade_r(sub)
 		upgrade_r(base.conf)

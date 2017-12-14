@@ -30,10 +30,10 @@ class PostInstallCommand(install):
 
 setup(
 	name = 'tuack',
-	version = 0.1,
+	version = '0.1.1',
 	packages = find_packages(),
-	author = 'Chen Xumin, Zhang Ruizhe',
-	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com',
+	author = 'Chen Xumin, Zhang Ruizhe, Liu Xiaoyi',
+	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com',
 	url = '',
 	license = 'http://www.apache.org/licenses/LICENSE-2.0.html',
 	description = 'Tools for generating an OI/ICPC-styled problem or contest for multiple judges.',

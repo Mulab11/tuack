@@ -87,7 +87,7 @@ def get_template(fname, lang = None):
 def table(path, name, temp, context, options):
 	if options == None:
 		options = {}
-	for suf in ['.py', '.json']:
+	for suf in ['.py', '.pyinc', '.json']:
 		try:
 			base.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
 			log.info(u'渲染表格`%s`，参数%s' % (base.pjoin(path, name + suf), str(options)))
@@ -105,7 +105,7 @@ def table(path, name, temp, context, options):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 		os.remove(os.path.join('tmp', 'table.json'))
-	elif suf == '.py':
+	elif suf == '.py' or suf == '.pyinc':
 		def merge_ver(table):
 			ret = [row for row in table]
 			last = ret[-1]

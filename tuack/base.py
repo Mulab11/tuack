@@ -18,6 +18,7 @@ import platform
 import logging
 import traceback
 
+json_version = 2
 work = None
 system = platform.system()
 out_system = system
@@ -321,21 +322,28 @@ class Problem(Configure):
 	def users(self):
 		def users_pathed(self, users, key = '', depth = 0):
 			if type(users) != dict:
-				return (self.extend_pathed(users), {})
+				log.warning(u'`users`项%s:%s已经过时，但仍可以使用，用`python -m tuack.gen upgrade`升级' % (key, users))
+				return {
+					'path' : self.extend_pathed(users),
+					'expected' : {}
+				}
 			elif depth == 2:
 				# Is detailed description
 				if "path" not in users:
-					# Ill-formed 
+					# Ill-formed
+					log.warning(u'`users`项%s:%s不含`path`项' % (key, users))
 					return None
+				return {
+					'path' : self.extend_pathed(users["path"]),
+					'expected' : users["expected"] if "expected" in users else {}
+				}
 
-				return (
-						self.extend_pathed(users["path"]),
-						users["expected"] if "expected" in users else {}
-						)
-
-			pairs = map(lambda (key, val): (key, users_pathed(self, val, depth=depth+1)), users.items())
-			filtered = filter(lambda (key, desc): desc != None, pairs)
-			return filtered
+			return {
+				key : val
+				for key, val in \
+				((key, users_pathed(self, val, key, depth + 1)) for key, val in users.items()) \
+				if val
+			}
 
 		return self.getitem('users', users_pathed)
 
@@ -375,6 +383,8 @@ def load_json(path = '.', route = None):
 			full_path = pjoin(path, name)
 			if os.path.exists(full_path):
 				conf = json.loads(open(full_path, 'rb').read().decode('utf-8'))
+				if 'version' in conf and conf['version'] > json_version:
+					log.warning(u'`conf.json`版本高于`tuack`，请升级`tuack`。')
 				if 'folder' not in conf:
 					conf['folder'] = 'problem'
 				args = [conf, path]

@@ -310,12 +310,14 @@ def test_problem(prob):
 				if prob['packed'] else '',
 			','.join(prob.sample_cases)
 		))
-		for user, algos in prob.users():
+		for user, algos in prob.users().items():
 			if not prob.all:
 				match = base.any_prefix(rjoin(prob.route, user))
 				if not match:
 					continue
-			for algo, (path, exp) in algos.items():
+			for algo, algo_obj in algos.items():
+				path = algo_obj['path']
+				exp = algo_obj['expected']
 				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
