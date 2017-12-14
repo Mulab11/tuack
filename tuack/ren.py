@@ -202,6 +202,7 @@ class Base(object):
 			'args' : self.prob.get('args'),
 			'data' : self.prob.get('data'),
 			'samples' : self.prob.get('samples'),
+			'pre' : self.prob.get('pre'),
 			'day' : self.day,
 			'contest' : self.contest,
 			'io_style' : self.io_style,
