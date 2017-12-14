@@ -134,6 +134,8 @@ def new_dir(folder, args = None):
 		if folder == 'problem':
 			if base.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')
+			else:
+				log.info(u'现在不默认用git-lfs，如需，用`python -m tuack.gen lfs`添加。')
 			for ff in ('data', 'down', 'statement', 'tables', 'resources', 'solution'):
 				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):

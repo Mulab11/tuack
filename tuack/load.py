@@ -202,4 +202,4 @@ if __name__ == '__main__':
 			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
 	except base.NoFileException as e:
 		log.error(e)
-		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')

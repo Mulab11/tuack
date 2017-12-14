@@ -134,147 +134,8 @@ def table(path, name, temp, context, options):
 	ret = get_template(temp, context['prob'].lang()).render(context, table = table, cnt = cnt, width = max_len, options = options)
 	return ret
 
-def secondary(s, sp, work):
-	if sp != None:
-		if type(sp) == str:
-			sp = [sp]
-		in_set = False
-		for i in sp:
-			if i in work_class and base.work in work_class[i]:
-				in_set = True
-				break
-		if not in_set:
-			return ''
-	if work == 'tex' or work == 'html':
-		id = str(uuid.uuid4())
-		secondary_dict[id] = s
-		return id
-	else:
-		return ' {{ ' + s + ' }} '
-
 def to_arg(dic):
 	return ','.join(['%s = %s' % (key, val if type(val) != str else json.dumps(val)) for key, val in dic.items()])
-
-def tex(comp):
-	base.check_install('pandoc')
-	base.check_install('xelatex')
-	base.check_install('gettext')
-	def render(conf, contest, path):
-		tex_problems = []
-		day_name = conf['name'] if conf.folder == 'day' else '测试'
-		probs = list(conf.probs())
-		if len(probs) == 0:
-			log.info('Nothing to do for %s' % conf.route)
-			return
-		for prob in probs:
-			log.info(u'渲染题目题面 %s %s' % (comp, prob.route))
-			try:
-				shutil.copy(prob.statement(), base.pjoin('tmp', 'problem.md.jinja'))
-			except base.NoFileException as e:
-				log.error(u'找不到题面文件，建议使用`python -m generator problem`生成题目工程。')
-				continue
-			context = {
-				'prob' : prob,
-				'args' : prob.get('args'),
-				'data' : prob.get('data'),
-				'samples' : prob.get('samples'),
-				'day' : conf if conf.folder == 'day' else None,
-				'contest' : contest,
-				'io_style' : io_style,
-				'comp' : comp,
-				'tools' : tools,
-				'base' : base,
-				'file_name' : lambda name : file_name(comp, prob, name),
-				'down_file' : lambda name : open(os.path.join(prob.path, 'down', name), 'rb').read().decode('utf-8'),
-				'resource' : lambda name : os.path.join('..', prob.path, 'resources', name).replace('\\', '/'),
-				'render' : lambda s, sp = None : secondary(s, sp, 'tex'),
-				'precautions' : prec,
-				'json' : json
-			}
-			context['img'] = lambda src, env = None, **argw : context['render'](
-				"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)), 
-				env
-			)
-			context['tbl'] = lambda src, env = None, **argw : context['render'](
-				"table(%s, %s)" % (json.dumps(src), argw),
-				env
-			)
-			open(os.path.join('tmp', 'problem.md'), 'wb') \
-				.write(get_template('problem_base.md.jinja', prob.lang())
-					.render(context)
-					.encode('utf-8')
-				)
-			time.sleep(0.1)
-			os.system('pandoc %s -t latex -o %s' % (
-				os.path.join('tmp', 'problem.md'),
-				os.path.join('tmp', 'problem.tex')
-			))
-			tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
-			tex = tex.replace('{{', '{ {').replace('}}', '} }').replace('{%', '{')	##强行修复pandoc搞出连续大括号与jinja冲突的问题
-			for key, val in secondary_dict.items():
-				tex = tex.replace(key, '{{ ' + val + ' }}')
-			open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
-				tex.encode('utf-8')
-			)
-			res = get_template('problem.tex.jinja', prob.lang()).render(
-				context,
-				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', prob.lang()).render(context),
-				table = lambda name, options = None : table(os.path.join(prob.path, 'tables'), name, 'table.tex.jinja', context, options)
-			)
-			tex_problems.append(res)
-				
-		log.info(u'渲染比赛日题面 %s %s' % (comp, conf.route))
-		context.pop('prob')
-		context.pop('file_name')
-		context.pop('down_file')
-		context.pop('resource')
-		context.pop('render')
-		context['probs'] = list(conf.probs())
-		context['problems'] = tex_problems
-		all_problem_statement = get_template('%s.tex.jinja' % base_template).render(context)
-		try:
-			open(os.path.join('tmp', 'problems.tex'), 'wb') \
-				.write(all_problem_statement.encode('utf-8'))
-		except Exception as e:
-			log.info(u'渲染出错的文件为`tmp/problems.tmp.tex`')
-			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
-				.write(all_problem_statement.encode('utf-8'))
-			raise e
-		log.info(u'开始使用xelatex渲染题面。')
-		os.chdir('tmp')
-		os.system('xelatex -interaction=batchmode problems.tex')
-		os.system('xelatex -interaction=batchmode problems.tex')
-		os.chdir('..')
-		shutil.copy(os.path.join('tmp', 'problems.pdf'), path)
-		if base.start_file:
-			base.xopen_file(path)
-	base.mkdir(os.path.join('statements', comp))
-	io_style = io_styles[comp]
-	base_template = base_templates[comp]
-	context = {
-		'io_style' : io_style,
-		'comp' : comp,
-		'tools' : tools,
-		'base' : base,
-		'json' : json
-	}
-	prec = None
-	if os.path.exists(base.pjoin(base.conf.path, 'precautions', 'zh-cn.md')):
-		base.copy(base.pjoin(base.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
-		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
-			.write(get_template('zh-cn.md').render(context, conf = base.conf).encode('utf-8'))
-		os.system('pandoc %s -t latex -o %s' % (
-			os.path.join('tmp', 'precautions.md'),
-			os.path.join('tmp', 'precautions.tex')
-		))
-		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
-	if base.conf.folder != 'problem':
-		for day in base.days():
-			result_path = os.path.join('statements', comp, day['name'] + ('-' + base.lang if base.lang else '') + '.pdf')
-			render(day, base.conf if base.conf.folder == 'contest' else None, result_path)
-	else:
-		result_path = os.path.join('statements', comp, base.conf['name'] + ('-' + base.lang if base.lang else '') + '.pdf')
-		render(base.conf, None, result_path)
 
 def uoj_title(text):
 	in_quote = 0
@@ -468,13 +329,17 @@ class Latex(Base):
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
+	@staticmethod
+	def repair_jinja_bracket(text):
+		return text.replace('{{', '{ {').replace('}}', '} }').replace('{%', '{')
+
 	def ren_prob_tex(self):
 		os.system('pandoc %s -t latex -o %s' % (
 			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.tex')
 		))
 		tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
-		tex = tex.replace('{{', '{ {').replace('}}', '} }')	##强行修复pandoc搞出连续大括号与jinja冲突的问题
+		tex = self.repair_jinja_bracket(tex)	##强行修复pandoc搞出连续大括号与jinja冲突的问题
 		for key, val in self.secondary_dict.items():
 			tex = tex.replace(key, '{{ ' + val + ' }}')
 		open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
@@ -616,7 +481,7 @@ if __name__ == '__main__':
 				for base.lang in base.langs:
 					base.run_exc(class_list[base.work](comp_list[base.work]).run)
 		else:
-			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
+			log.info(u'支持的工作：%s' % ','.join(sorted(class_list.keys())))
 	except base.NoFileException as e:
 		log.error(e)
-		log.info(u'尝试使用`python -m generator -h`获取如何生成一个工程。')
+		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')

@@ -322,7 +322,7 @@ class Problem(Configure):
 	def users(self):
 		def users_pathed(self, users, key = '', depth = 0):
 			if type(users) != dict:
-				log.warning(u'`users`项%s:%s已经过时，但仍可以使用，用`python -m tuack.gen upgrade`升级' % (key, users))
+				log.warning(u'`json.conf`中，`users`项%s:%s已经过时，但仍可以使用，用`python -m tuack.gen upgrade`升级' % (key, users))
 				return {
 					'path' : self.extend_pathed(users),
 					'expected' : {}
@@ -377,7 +377,12 @@ class Problem(Configure):
 	def memory_limit(self):
 		return self.ml()
 
+mem_json = {}	# 题目复用的话，需要记忆化
+
 def load_json(path = '.', route = None):
+	abs_path = os.path.abspath(path)
+	if abs_path in mem_json:
+		return mem_json[abs_path]
 	for name in ['conf.json', 'prob.json']:
 		try:
 			full_path = pjoin(path, name)
@@ -404,6 +409,7 @@ def load_json(path = '.', route = None):
 						load_json(pjoin(path, sub), conf.route) \
 						for sub in conf['subdir']
 					]
+				mem_json[abs_path] = conf
 				return conf
 		except Exception as e:
 			log.error(u'文件`%s`错误或子目录下文件错误。' % pjoin(path, name))
@@ -541,6 +547,7 @@ def deal_args():
 			i += 1
 			time_multiplier = float(sys.argv[i])
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
+			log.info(u'详细用法见文档：https://git.thusaac.org/publish/tuack/wikis。')
 			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
 			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
 			log.info(u'只有有逗号的项目可以用逗号获得多个结果，逗号前后不能有空白符。')
