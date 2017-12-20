@@ -73,7 +73,10 @@ def find_all_code():
 					if not f.endswith('.' + key):
 						continue
 					if base.rjoin(user, path, f) not in exist_code:
-						prob['users'][user][base.rjoin(path, f)] = base.rjoin(user, path, f)
+						prob['users'][user][base.rjoin(path, f)] = {
+							'path' : base.rjoin(user, path, f),
+							'expected' : {}
+						}
 						log.info(u'发现新源代码`%s`。' % base.rjoin(user, path, f))
 					break
 			else:
