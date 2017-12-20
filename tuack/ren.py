@@ -119,7 +119,7 @@ def table(path, name, temp, context, options):
 		code += '\tglobal val\n'
 		code += '\tfor key, val in context.items():\n'
 		code += '\t\texec(\'%s = val\' % key, globals())\n'
-		for line in open(base.pjoin('tmp', 'table.py'), 'rb'):
+		for line in open(base.pjoin('tmp', 'table' + suf), 'rb'):
 			code += '\t' + line.decode('utf-8').rstrip() + '\n'
 		namespace = {}
 		exec(code, namespace)
