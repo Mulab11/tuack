@@ -244,6 +244,7 @@ work_list = {
 	'lfs' : copy_lfs,
 	'chk' : copy_chk
 }
+work_list['auto'] = lambda : [work_list[key]() for key in ['data', 'samples', 'pre', 'code']]
 
 if __name__ == '__main__':
 	try:
@@ -270,5 +271,6 @@ if __name__ == '__main__':
 		log.info(u'  samples  在题目工程的down文件夹中搜索样例并添加到配置文件。')
 		log.info(u'  pre      在题目工程的pre文件夹中搜索预测试数据并添加到配置文件。')
 		log.info(u'  code     在题目工程的非数据文件夹中搜索源代码并添加到配置文件。')
+		log.info(u'  auto     等于一次性做了上述4件事情。')
 		log.info(u'  lfs      用git-lfs维护所有的*.in/out/ans，当数据较大时使用。')
 		log.info(u'  chk      添加一个空的答案校验器或称spj，建议在此基础上修改以兼容。')

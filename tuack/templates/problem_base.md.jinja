@@ -50,11 +50,11 @@
 ## {{ _('Sample Input %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
-{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```plain'", 'md') }}{{ render("'<pre>'", 'html') }}
 {{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') + '"') }}
-{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'md') }}{{ render("'</pre>'", 'html') }}
 {% else %}
-```
+```plain
 {{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.in') }}
 ```
 {% endif %}
@@ -66,11 +66,11 @@
 ## {{ _('Sample Output %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
 {%- endif %}
 {% if 'show space' in vars %}
-{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render("'\\\\begin{Verbatim}[showspaces=true]'", 'tex') }}{{ render("'```plain'", 'md') }}{{ render("'<pre>'", 'html') }}
 {{ render('"' + down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') + '"') }}
-{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'html') }}
+{{ render("'\\\\end{Verbatim}'", 'tex') }}{{ render("'```'", 'md') }}{{ render("'</pre>'", 'html') }}
 {% else %}
-```
+```plain
 {{ down_file((vars['sample_id'].__str__() if 'sample_id' in vars else '1') + '.ans') }}
 ```
 {% endif %}

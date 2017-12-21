@@ -2,7 +2,11 @@
 	{% do options.__setitem__('titled', True) %}
 {% endif %}
 
-<table class="table table-bordered"
+<table {% if comp == 'loj' -%}
+	class="ui celled center aligned table"
+{%- else -%}
+	class="table table-bordered"
+{%- endif -%}
 {%- if 'font_size' in options -%}
 	style="font-size:{{options['font_size']}}"
 {%- endif -%}

@@ -38,7 +38,7 @@ work_class = {
 	'ccc-md' : {'ccc-md'},
 	'tsinsen-oj' : {'tsinsen-oj'},
 	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
-	'md' : {'uoj', 'tuoj', 'ccc-md'},
+	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj'},
 	'html' : {'tsinsen-oj'}
 }
 io_styles = {
@@ -49,7 +49,8 @@ io_styles = {
 	'ccc' : 'stdio',
 	'tuoi' : 'stdio',
 	'tupc' : 'stdio',
-	'tsinsen-oj' : 'stdio'
+	'tsinsen-oj' : 'stdio',
+	'loj' : 'stdio'
 }
 base_templates = {
 	'noi' : 'tuoi',
@@ -137,12 +138,26 @@ def table(path, name, temp, context, options):
 def to_arg(dic):
 	return ','.join(['%s = %s' % (key, val if type(val) != str else json.dumps(val)) for key, val in dic.items()])
 
-def uoj_title(text):
+def uoj_title(text):	## 很显然，这个是在瞎整，不过UOJ为什么从二级标题开始用？修改标题字体大小应该改CSS而不是题目嘛
 	in_quote = 0
 	result = []
 	for line in text.split(b'\n'):
 		if in_quote == 0 and line.startswith(b'#'):
 			result.append(b'#' + line)
+		else:
+			result.append(line)
+		in_quote ^= line.count(b'```') & 1
+	return b'\n'.join(result)
+	
+def loj_bug(text):		## 学弟也学着我瞎整，伤心QAQ
+	# TODO: Avoid duplication
+	in_quote = 0
+	result = []
+	for line in text.split(b'\n'):
+		if in_quote == 0 and line.startswith(b'<table'):
+			result.append(line
+				.replace(b'$<', b'$ <')   # LOJ Markdown 渲染的已知 bug
+			)
 		else:
 			result.append(line)
 		in_quote ^= line.count(b'```') & 1
@@ -331,7 +346,7 @@ class Latex(Base):
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
 	@staticmethod
-	def repair_jinja_bracket(text):
+	def repair_jinja_bracket(text):		## 这是强行乱修，很显然有很大的潜在风险，TODO: 正确的做法是把二次渲染先渲染好了再替换回去
 		return text.replace('{{', '{ {').replace('}}', '} }').replace('{%', '{')
 
 	def ren_prob_tex(self):
@@ -415,6 +430,8 @@ class Markdown(Base):
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
+		elif self.comp == 'loj':
+			result_md = loj_bug(result_md)
 		open(self.result_path, 'wb').write(result_md)
 
 class Html(Base):
@@ -459,7 +476,8 @@ class_list = {
 	'tuoj' : Markdown,
 	'ccc-tex' : Latex,
 	'ccc-md' : Markdown,
-	'tsinsen-oj' : Html
+	'tsinsen-oj' : Html,
+	'loj' : Markdown
 }
 
 comp_list = {
@@ -471,7 +489,8 @@ comp_list = {
 	'tuoj' : 'tuoj',
 	'ccc-tex' : 'ccc',
 	'ccc-md' : 'ccc',
-	'tsinsen-oj' : 'tsinsen-oj'
+	'tsinsen-oj' : 'tsinsen-oj',
+	'loj' : 'loj'
 }
 
 if __name__ == '__main__':
