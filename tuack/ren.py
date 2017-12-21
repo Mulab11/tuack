@@ -345,27 +345,24 @@ class Latex(Base):
 		))
 		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
-	@staticmethod
-	def repair_jinja_bracket(text):		## 这是强行乱修，很显然有很大的潜在风险，TODO: 正确的做法是把二次渲染先渲染好了再替换回去
-		return text.replace('{{', '{ {').replace('}}', '} }').replace('{%', '{')
-
 	def ren_prob_tex(self):
 		os.system('pandoc %s -t latex -o %s' % (
 			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.tex')
 		))
 		tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
-		tex = self.repair_jinja_bracket(tex)	##强行修复pandoc搞出连续大括号与jinja冲突的问题
-		for key, val in self.secondary_dict.items():
-			tex = tex.replace(key, '{{ ' + val + ' }}')
-		open(os.path.join('tmp', 'problem.tex.jinja'), 'wb').write(
-			tex.encode('utf-8')
-		)
-		return get_template('problem.tex.jinja', self.prob.lang()).render(
-			self.context,
-			template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', self.prob.lang()).render(context),
-			table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.tex.jinja', self.context, options)
-		)
+		for key, val in self.secondary_dict.items():	## 如果未来发生了性能问题，这里可以先写到一个文件里然后再解析
+			open(os.path.join('tmp', key + '.tex.jinja'), 'wb').write(
+				('{{ ' + val + ' }}').encode('utf-8')
+			)
+			ret = get_template(key + '.tex.jinja', self.prob.lang()).render(
+				self.context,
+				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', self.prob.lang()).render(context),
+				table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.tex.jinja', self.context, options)
+			)
+			tex = tex.replace(key, ret)
+		self.secondary_dict = {}
+		return tex
 
 	def ren_day_pdf(self):
 		log.info(u'渲染比赛日题面 %s %s' % (self.comp, self.day.route if self.day else self.conf.route))
