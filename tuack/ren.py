@@ -498,6 +498,7 @@ if __name__ == '__main__':
 				for base.lang in base.langs:
 					base.run_exc(class_list[base.work](comp_list[base.work]).run)
 		else:
+			log.info(u'这个工具用于渲染题面。')
 			log.info(u'支持的工作：%s' % ','.join(sorted(class_list.keys())))
 	except base.NoFileException as e:
 		log.error(e)
