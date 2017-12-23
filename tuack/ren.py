@@ -203,6 +203,15 @@ class Base(object):
 
 	def resource(self, name):
 		return self.prob['name'] + '/' + name
+		
+	def down_file(self, name):
+		ret = ''
+		fname = pjoin(self.prob.path, 'down', name)
+		for idx, line in enumerate(open(fname, 'rb')):
+			if len(line) > 60:
+				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
+			ret += line.decode('utf-8')
+		return ret
 
 	def ren_prob_md_j(self):
 		log.info(u'渲染题目题面 %s %s' % (self.comp, self.prob.route))
@@ -225,8 +234,9 @@ class Base(object):
 			'tools' : tools,
 			'tl' : tools,
 			'base' : base,
+			'common' : base,
 			'file_name' : self.file_name,
-			'down_file' : lambda name : open(os.path.join(self.prob.path, 'down', name), 'rb').read().decode('utf-8'),
+			'down_file' : self.down_file,
 			'resource' : self.resource,
 			'render' : self.secondary,
 			'precautions' : self.prec,

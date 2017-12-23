@@ -21,13 +21,13 @@ msgid "Sample"
 msgstr "样例"
 
 msgid "Sample Input %s"
-msgstr "样例输入%s"
+msgstr "样例%s输入"
 
 msgid "Input"
 msgstr "输入"
 
 msgid "Sample Output %s"
-msgstr "样例输出%s"
+msgstr "样例%s输出"
 
 msgid "Output"
 msgstr "输出"
@@ -36,7 +36,7 @@ msgid "Explanation"
 msgstr "解释"
 
 msgid "Sample Explanation %s"
-msgstr "样例解释%s"
+msgstr "样例%s解释"
 
 msgid "Input Format"
 msgstr "输入格式"

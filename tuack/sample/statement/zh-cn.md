@@ -18,7 +18,19 @@ If you want an English statement file, just copy this file as `en.md` and replac
 
 **要强调的东西**这么写。
 
-行内的公式：$\sin \left(a x + b \right)$。
+行内的公式：$\sin \left(a x + b \right)$。注意有一些公式条目容易出错，正确的写法为：
+
+```
+\sin	#有斜杠
+\log
+\max
+\bmod
+a~\mathrm{xor}~b	#不存在的算符可以这么造
+O\left(\frac{nm}{w}\right)
+#用left和right把括号变高以括住比较高的式子
+#不要用*和/表示乘除号，而用省略乘号、\times、\cdot和\div、分数表示
+d\left(a_i, b_j\right)	#多用括号和下标表示下标和参数，尽量不用方括号
+```
 
 行间的公式：
 $$
@@ -31,15 +43,15 @@ $$
 * 第一点
 * 第二点
 
-字符串或代码 `This is a string`
+字符串或代码 `This is a string`。注意中英文、字符串、公式和中文之间要加一个空格。注意按照《[标点符号用法](http://www.moe.gov.cn/ewebeditor/uploadfile/2015/01/13/20150113091548267.pdf)》（教育部国标 GB/T 15834-2011）使用标点符号，注意不要有错别字、语病等。
 
 ```
 int main(int argc, char** argv);
 ```
 
-除公式内可以使用tex的部分语法外，不要直接使用任何html语法和tex语法。替代方案如下：
+除公式内可以使用 tex 的部分语法外，不要直接使用任何 html 语法和 tex 语法。替代方案如下：
 
-不要用markdown自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
+不要用 markdown 自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
 
 {{ img('sample.png', size = 0.5, align = 'middle', inline = False) }}
 
@@ -76,6 +88,8 @@ int main(int argc, char** argv);
 
 {{ self.output_file() }}
 
+输出一个字符串 `Yes`。注意不要写成 `“Yes”（不包含引号）`。
+
 下面是自动读入样例 `1.in/ans`（存储在 `down` 文件夹内） 然后渲染到题面中；如果只有一组样例，则去掉前两行，样例仍然保存成 `1.in/ans`。其中 `1` 可以是字符串。
 
 {% set vars = {} -%}
@@ -99,7 +113,7 @@ int main(int argc, char** argv);
 
 {{ tbl('table', width = [1, 6]) }}
 
-表格的例子见 `oi_tools/sample/tables`。原理上用一个二维的json表格存储，`null` 表示和上一行合并，不支持横向合并。建议用python的格式写，如例子中的 `data.py`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
+表格的例子见 `oi_tools/sample/tables`。原理上用一个二维的 json 表格存储，`null` 表示和上一行合并，不支持横向合并。建议用 python 的格式写，如例子中的 `data.pyinc`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
 
 ## {{ _('Scoring') }}
 
