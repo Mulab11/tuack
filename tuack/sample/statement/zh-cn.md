@@ -10,21 +10,23 @@
 
 If you want an English statement file, just copy this file as `en.md` and replace any Chinese text into English.
 
+更加详细的题目书写文档在[这里](https://git.thusaac.org/publish/tuack/wikis/%E9%A2%98%E9%9D%A2%E7%9A%84%E4%B9%A6%E5%86%99)。
+
 如果你不需要某些章节，可以直接删除。比如这一段是“题目背景”，很多题目其实并不需要这一段。
 
-*子标题请不要自己手动加方括号 `【】` 。*
+*子标题请**不要**自己手动加方括号 `【】` 。*
 
 ## {{ _('Description') }}
 
 **要强调的东西**这么写。
 
-行内的公式：$\sin \left(a x + b \right)$。注意有一些公式条目容易出错，正确的写法为：
+行内的公式：$\sin \left(a x + b \right)$。注意使用规范的公式书写方式，例如一些常见错误的正确写法为：
 
 ```
 \sin	#有斜杠
 \log
 \max
-\bmod
+\bmod	#最常用的取模是bmod
 a~\mathrm{xor}~b	#不存在的算符可以这么造
 O\left(\frac{nm}{w}\right)
 #用left和right把括号变高以括住比较高的式子
@@ -43,7 +45,7 @@ $$
 * 第一点
 * 第二点
 
-字符串或代码 `This is a string`。注意中英文、字符串、公式和中文之间要加一个空格。注意按照《[标点符号用法](http://www.moe.gov.cn/ewebeditor/uploadfile/2015/01/13/20150113091548267.pdf)》（教育部国标 GB/T 15834-2011）使用标点符号，注意不要有错别字、语病等。
+字符串或代码 `This is a string`。注意英文、字符串、公式和中文之间要**加一个空格**，和标点符号之间不加空格。注意按照《[标点符号用法](http://www.moe.gov.cn/ewebeditor/uploadfile/2015/01/13/20150113091548267.pdf)》（教育部国标 GB/T 15834-2011）使用标点符号，注意不要有**错别字**、**语病**。
 
 ```
 int main(int argc, char** argv);

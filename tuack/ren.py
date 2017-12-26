@@ -96,7 +96,7 @@ def table(path, name, temp, context, options):
 		except base.NoFileException as e:
 			pass
 	else:
-		log.error(u'找不到表格`%s.*`' % base.pjoin(path, name))
+		raise base.NoFileException(u'找不到表格`%s.*`' % base.pjoin(path, name))
 	if suf == '.json':
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
@@ -407,7 +407,7 @@ class Latex(Base):
 			day_name = u'测试'
 			self.probs = [self.prob]
 		if len(self.probs) == 0:
-			log.info(u'指定目录`%s`下没有题目可渲染。' % conf.route)
+			log.info(u'指定目录`%s`下没有题目可渲染。' % (self.day.path if self.day else self.conf.path))
 			return
 		self.tex_problems = []
 		for self.prob in self.probs:
