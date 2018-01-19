@@ -246,6 +246,10 @@ class Base(object):
 			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)),
 			env
 		)
+		self.context['font'] = lambda txt, env = None, **argw : self.context['render'](
+			"template('font', txt = %s, %s)" % (json.dumps(txt), to_arg(argw)),
+			env
+		)
 		self.context['tbl'] = lambda src, env = None, **argw : self.context['render'](
 			"table(%s, %s)" % (json.dumps(src), argw),
 			env
