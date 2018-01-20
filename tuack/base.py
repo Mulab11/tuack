@@ -454,7 +454,7 @@ def save_json(conf):
 	for s in conf.sub:
 		save_json(s)
 	open(pjoin(conf.path, 'conf.json'), 'wb').write(
-		json.dumps(conf, indent = 2, sort_keys = True).encode('utf-8')
+		json.dumps(conf, indent = 2, sort_keys = True, ensure_ascii = False).encode('utf-8')
 	)
 
 def any_prefix(pre, st = None):
