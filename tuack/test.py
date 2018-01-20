@@ -294,14 +294,14 @@ def test_problem(prob):
 			prob.route, pjoin(prob.path, 'down')
 		))
 	if 'pre' not in prob or len(prob.pre_cases) == 0:
-		log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索样例数据。' % (
+		log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (
 			prob.route, pjoin(prob.path, 'pre')
 		))
 	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
 		len(prob.test_cases),
-		u'是' if prob['packed'] else u'不是',
-		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob['packed'] else ''
+		u'是' if prob.packed else u'不是',
+		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob.packed else ''
 	))
 
 	prob_failed = False
@@ -311,7 +311,7 @@ def test_problem(prob):
 			prob['name'],
 			','.join(prob.test_cases),
 			',' + ','.join(map(lambda datum : '{' + ';'.join(map(str, datum['cases'])) + '}', prob.data)) \
-				if prob['packed'] else '',
+				if prob.packed else '',
 			','.join(prob.sample_cases),
 			','.join(prob.pre_cases)
 		))
@@ -355,7 +355,7 @@ def test_problem(prob):
 					except:
 						pass
 				tc = len(prob.test_cases)
-				if 'packed' in prob and prob['packed']:
+				if prob.packed:
 					score_map = {}
 					for i in range(tc):
 						score_map[prob.test_cases[i]] = i

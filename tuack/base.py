@@ -297,23 +297,41 @@ class Problem(Configure):
 				#	if to_dp(i) not in tc
 				#]}]
 			self.__setattr__(attr, sorter()(list(tc)))
-
-		self.score = 100
-		if self['packed']:
-			num_unscored = 0
-			total_score = 0.0
+	def set_score(self):
+		if 'packed' in self:
+			log.warning(u'题目`%s`的`packed`字段不再使用，可将其删去。' % self.route)
+		num_unscored = 0
+		total_score = 0.0
+		for datum in self.data:
+			if 'score' in datum:
+				datum.score = datum['score']
+				total_score += datum['score']
+			else:
+				num_unscored += 1
+		if num_unscored != 0:
+			item_score = (100. - total_score) / num_unscored
 			for datum in self.data:
-				if 'score' in datum:
-					datum.score = datum['score']
-					total_score += datum['score']
-				else:
-					num_unscored += 1
+				if 'score' not in datum:
+					datum.score = item_score
+		if num_unscored == len(self.data):
+			self.packed = False
+			self.score = 100.
+		else:
+			self.packed = True
 			if num_unscored != 0:
-				item_score = (100. - total_score) / num_unscored
-				for datum in self.data:
-					if 'score' not in datum:
-						datum.score = item_score
-			self.score = total_score
+				log.warning(u'题目`%s`有%d个包设置了`score`，有%d个没有；总分共设%f分，将剩下%f分平分给没有的包。' % (
+					self.route,
+					len(self.data) - num_unscored,
+					num_unscored,
+					total_score,
+					100 - total_score
+				))
+				log.info(u'如果你需要不等分+打包测试，请每个包设置`score`；否则请每个包都不设置`score`，此时是每个测试点同分而不是每个包同分。')
+				self.score = 100.0
+			else:
+				if abs(total_score - 100) > 1e-6:
+					log.warning(u'题目`%s`总分是%f分，不是100分。' % (self.route, total_score))
+				self.score = total_score
 
 	def extend_pathed(self, path):
 		if path.startswith(':'):
@@ -406,6 +424,8 @@ def load_json(path = '.', route = None):
 					conf.folder = base_conf.folder
 				conf.set_default(os.path.basename(path))
 				conf.route = '' if route == None else rjoin(route, conf['name'])
+				if conf.folder == 'problem':
+					conf.set_score()
 				if 'subdir' in conf:
 					conf.sub = [
 						load_json(pjoin(path, sub), conf.route) \

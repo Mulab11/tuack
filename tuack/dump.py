@@ -68,7 +68,7 @@ def lemon(conf = None):
 			except:
 				pass
 		ost.writeQString('out')
-		if 'packed' in prob and prob['packed']:
+		if prob.packed:
 			ost.writeInt32(len(prob['data']))
 			for datum in prob['data']:
 				ost.writeInt32(datum['score'])
@@ -189,7 +189,7 @@ def arbiter_main(conf = None,daynum = 0):
 		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
 		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
 		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
-		if 'packed' in prob and prob['packed']:
+		if prob.packed:
 			raise Exception('Can\'t dump packed problem for arbiter.')
 		for idx, case in enumerate(prob.test_cases, start = 1):
 			'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.in'))'''
@@ -345,7 +345,7 @@ def tsinsen_oj():
 		with open(result_file, 'wb') as f:
 			for token in tokens:
 				f.write(add_shell(token, eval(token)))
-			if prob['packed']:
+			if prob.packed:
 				log.warning(u'清橙OJ不支持打包评测和指定测试点分值，直接将所有测试点视为相同。')
 			for datum in prob.test_cases:
 				f.write(add_shell('InData', lambda : read_file(base.pjoin('data', datum + '.in'))))
