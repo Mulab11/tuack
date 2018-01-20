@@ -43,7 +43,8 @@ setup(
 	},
 	install_requires = [
 		'jinja2',
-		'natsort'
+		'natsort',
+		'pyyaml'
 	],
 	package_data = {
 		'tuack': ['templates/*.*', 'templates/*/*/*', 'sample/*.*', 'sample/*/*']

@@ -130,11 +130,20 @@ def new_dir(folder, args = None):
 			return
 		dirs = args
 	for path in dirs:
-		copy = lambda src, tgt = None: sample_copy(src, tgt, path)
 		if not os.path.exists(path):
 			os.makedirs(path)
+		copy = lambda src, tgt = None: sample_copy(src, tgt, path)
+		def copy_conf(inp):
+			if base.dump_format != 'json':
+				open(pjoin(path, 'conf.' + base.dump_format), 'wb').write(
+					base.dump_formats[base.dump_format](
+						json.loads(open(pjoin(base.path, 'sample', inp), 'rb').read().decode('utf-8'))
+					)
+				)
+			else:
+				copy(inp, 'conf.json')
 		copy(folder + '.gitignore', '.gitignore')
-		copy(folder + '.json', 'conf.json')
+		copy_conf(folder + '.json')
 		if folder == 'problem':
 			if base.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')

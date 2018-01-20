@@ -17,6 +17,7 @@ from threading import Timer
 import platform
 import logging
 import traceback
+import yaml
 
 json_version = 1
 work = None
@@ -403,13 +404,17 @@ def load_json(path = '.', route = None):
 	abs_path = os.path.abspath(path)
 	if abs_path in mem_json:
 		return mem_json[abs_path]
-	for name in ['conf.json', 'prob.json']:
+	for name in ['conf.yaml', 'conf.json', 'prob.json']:
 		try:
 			full_path = pjoin(path, name)
-			if os.path.exists(full_path):
-				conf = json.loads(open(full_path, 'rb').read().decode('utf-8'))
-				if 'version' in conf and conf['version'] > json_version:
-					log.warning(u'`conf.json`版本高于`tuack`，请升级`tuack`。')
+			if os.path.isfile(full_path):
+				inp = open(full_path, 'rb').read().decode('utf-8')
+				if name.endswith('json'):
+					conf = json.loads(inp)
+				elif name.endswith('yaml'):
+					conf = yaml.load(inp)
+				if conf.get('version', -1) > json_version:
+					log.warning(u'`conf.*`版本高于`tuack`，请升级`tuack`。')
 				if 'folder' not in conf:
 					conf['folder'] = 'problem'
 				args = [conf, path]
@@ -438,7 +443,7 @@ def load_json(path = '.', route = None):
 			log.info(e)
 			raise e
 	else:
-		raise NoFileException(u'路径`%s`下找不到conf.json。' % path)
+		raise NoFileException(u'路径`%s`下找不到conf.*。' % path)
 
 def del_redundance(conf, red):
 	for key in red:
@@ -450,12 +455,19 @@ def del_redundance(conf, red):
 		conf.pop('name')
 	return conf
 
+dump_formats = {
+	'json' : lambda conf : json.dumps(conf, indent = 2, sort_keys = True, ensure_ascii = False).encode('utf-8'),
+	'yaml' : lambda conf : yaml.dump(dict(conf), encoding = 'utf-8', allow_unicode = True)
+}
+
 def save_json(conf):
 	for s in conf.sub:
 		save_json(s)
-	open(pjoin(conf.path, 'conf.json'), 'wb').write(
-		json.dumps(conf, indent = 2, sort_keys = True, ensure_ascii = False).encode('utf-8')
-	)
+	try:
+		open(pjoin(conf.path, 'conf.' + dump_format), 'wb').write(dump_formats[dump_format](conf))
+	except Exception as e:
+		log.error(u'不支持配置文件格式`%s`。' % dump_format)
+		log.info(e)
 
 def any_prefix(pre, st = None):
 	if not st:
@@ -525,7 +537,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format
 	do_render = True
 	works = []
 	args = []
@@ -537,6 +549,7 @@ def deal_args():
 	do_zip = False
 	do_encript = False
 	git_lfs = False
+	dump_format = 'yaml'
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -549,6 +562,9 @@ def deal_args():
 		elif sys.argv[i] == '-o':
 			i += 1
 			out_system = sys.argv[i]
+		elif sys.argv[i] == '-d':
+			i += 1
+			dump_format = sys.argv[i]
 		elif sys.argv[i] == '-s':
 			start_file = False
 		elif sys.argv[i] == '-k':
@@ -585,6 +601,7 @@ def deal_args():
 			log.info(u'  -l zh-cn,en         对于ren，指定输出语言，不指定默认为zh-cn。')
 			log.info(u'  -r                  对于dump，不先尝试渲染题面。')
 			log.info(u'  -g                  对于gen，使用git-lfs。')
+			log.info(u'  -d json             对于gen，规定配置文件格式，支持json、yaml，默认yaml。')
 			return False
 		else:
 			if len(works) == 0:
