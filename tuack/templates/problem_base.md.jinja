@@ -101,17 +101,17 @@
 {% block title %}
 
 {% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc' or comp == 'ccpc') %}
-{% if comp == 'tuoj' %}##### {% endif %}**{{ _('Time limit:') }}** {{ prob['time limit'] }} {{ _('second(s)') }} 
+**{{ _('Time limit:') }}** {{ prob['time limit'] }} {{ _('second(s)') }} 
 {% endif %}
 {% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc') %}
-{% if comp == 'tuoj' %}##### {% endif %}**{{ _('Memory limit:') }}** {{ prob['memory limit'] }}
+**{{ _('Memory limit:') }}** {{ prob['memory limit'] }}
 {% endif %}
 {% if comp == 'tuoj' -%}
-{% if comp == 'tuoj' %}##### {% endif %}**{{ _('Related files:') }}** {{ self.user_path() }}
+**{{ _('Related files:') }}** {{ self.user_path() }}
 {% endif %}
 {% if prob['type'] == 'output' %}
-{% if comp == 'tuoj' %}##### {% endif %}**{{ _('This is an output-only problem.') }}**
+**{{ _('This is an output-only problem.') }}**
 {% elif prob['type'] != 'program' %}
-{% if comp == 'tuoj' %}##### {% endif %}**{{ _('This is an interactive problem.') }}**
+**{{ _('This is an interactive problem.') }}**
 {% endif %}
 {% endblock %}
