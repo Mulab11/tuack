@@ -76,7 +76,7 @@ def find_all_code():
 					if code_path not in exist_code:
 						prob['users'][user][base.rjoin(path, f).replace('//', '/')] = {
 							'path' : code_path,
-							'expected' : {}
+							'expected' : '== 100' if 'std' in code_path or prob['name'] in code_path else []
 						}
 						log.info(u'发现新源代码`%s`。' % code_path)
 					break
