@@ -74,8 +74,8 @@ def find_all_code():
 						continue
 					code_path = base.rjoin(user, path, f).replace('//', '/')
 					if code_path not in exist_code:
-						prob['users'][user][base.rjoin(path, f)] = {
-							'path' : base.rjoin(user, path, f),
+						prob['users'][user][base.rjoin(path, f).replace('//', '/')] = {
+							'path' : code_path,
 							'expected' : {}
 						}
 						log.info(u'发现新源代码`%s`。' % code_path)
