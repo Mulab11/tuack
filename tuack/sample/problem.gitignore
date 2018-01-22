@@ -10,7 +10,9 @@ statements
 result
 result*
 *.swp
+**.swp
 *~
+**~
 .vscode
 tmp
 bin
