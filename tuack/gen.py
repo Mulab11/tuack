@@ -204,6 +204,21 @@ def upgrade():
 								algos[algo] = {'path' : algos[algo], 'expected' : {}}
 				return False
 			def upgrade_1(conf):
+				log.info(u'将`%s`从1版本升级到2版本。' % conf.route)
+				conf['version'] = 2
+				if conf.folder == 'problem':
+					if 'users' not in conf:
+						conf['users'] = {}
+					if 'packed' in conf:
+						conf.pop('packed')
+					for user, algos in conf['users'].items():
+						for algo, info in algos.items():
+							if type(info.get('expected', None)) == dict:
+								info['expected'] = ['%s %s' % (key, val) for key, val in info['expected'].items()]
+								if len(info['expected']) == 1:
+									info['expected'] = info['expected'][0]
+				return False
+			def upgrade_2(conf):
 				log.info(u'`%s`是最新版本。' % conf.route)
 				return True
 			while not eval('upgrade_' + str(conf['version']))(conf):

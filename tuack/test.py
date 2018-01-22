@@ -387,6 +387,8 @@ def test_problem(prob):
 						algo_failed |= not eval('tot %s' % pred)
 				elif type(exp) == str:
 					algo_failed |= not eval('tot %s' % exp)
+				elif exp is None:
+					pass
 				else:
 					log.warning('`expected`字段必须是字符串、数组或字典。')
 

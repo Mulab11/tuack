@@ -19,7 +19,7 @@ import logging
 import traceback
 import yaml
 
-json_version = 1
+json_version = 2
 work = None
 system = platform.system()
 out_system = system
@@ -300,7 +300,7 @@ class Problem(Configure):
 			self.__setattr__(attr, sorter()(list(tc)))
 	def set_score(self):
 		if 'packed' in self:
-			log.warning(u'题目`%s`的`packed`字段不再使用，可将其删去。' % self.route)
+			log.warning(u'题目`%s`的`packed`字段不再使用，但仍可以使用，用`python -m tuack.gen upgrade`升级。' % self.route)
 		num_unscored = 0
 		total_score = 0.0
 		for datum in self.data:
