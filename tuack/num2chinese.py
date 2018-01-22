@@ -28,7 +28,7 @@ def num2chinese(num, big=False, simp=True, o=False, twoalt=False):
     if o:  # formal
         twoalt = False
     if big:
-        c_basic = u'零壹贰叁肆伍陆柒捌玖' if simp else 'u零壹貳參肆伍陸柒捌玖'
+        c_basic = u'零壹贰叁肆伍陆柒捌玖' if simp else u'零壹貳參肆伍陸柒捌玖'
         c_unit1 = u'拾佰仟'
         c_twoalt = u'贰' if simp else u'貳'
     else:

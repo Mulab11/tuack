@@ -72,12 +72,13 @@ def find_all_code():
 				for key in base.compilers:
 					if not f.endswith('.' + key):
 						continue
-					if base.rjoin(user, path, f) not in exist_code:
+					code_path = base.rjoin(user, path, f).replace('//', '/')
+					if code_path not in exist_code:
 						prob['users'][user][base.rjoin(path, f)] = {
 							'path' : base.rjoin(user, path, f),
 							'expected' : {}
 						}
-						log.info(u'发现新源代码`%s`。' % base.rjoin(user, path, f))
+						log.info(u'发现新源代码`%s`。' % code_path)
 					break
 			else:
 				find_code(user, base.rjoin(path, f))
@@ -92,7 +93,7 @@ def find_all_code():
 		exist_code = set()
 		for user, algos in prob['users'].items():
 			for algo, path in algos.items():
-				exist_code.add(path)
+				exist_code.add((path['path'] if type(path) == dict else path).replace('//', '/'))
 		for f in os.listdir(prob.path):
 			if base.user_skip.match(f) or os.path.isfile(pjoin(prob.path, f)):
 				continue
