@@ -379,26 +379,19 @@ def test_problem(prob):
 
 				# Check expected scores
 				algo_failed = False
-				if '>' in exp:
-					if tot <= exp['>']:
-						algo_failed = True
-				if '<' in exp:
-					if tot >= exp['<']:
-						algo_failed = True
-				if '>=' in exp:
-					if tot < exp['>=']:
-						algo_failed = True
-				if '<=' in exp:
-					if tot > exp['<=']:
-						algo_failed = True
+				if type(exp) == dict:
+					for symbol, value in exp.items():
+						algo_failed |= not eval('tot %s %s' % (symbol, value))
+				elif type(exp) == list:
+					for pred in exp:
+						algo_failed |= not eval('tot %s' % pred)
+				elif type(exp) == str:
+					algo_failed |= not eval('tot %s' % exp)
+				else:
+					log.warning('`expected`字段必须是字符串、数组或字典。')
 
 				if algo_failed:
-					log.error(u'预期分数 %s ，实际得分 %.2f' %
-								(', '.join([
-									'%s %.2f' % (k, v) 
-									for k, v in exp.items()
-								]), tot)
-							)
+					log.error(u'未达到预期。预期分数 %s ，实际得分 %.2f' % (exp, tot))
 					prob_failed = True
 
 				scores = map(lambda i : '%.2f' % i, scores)
