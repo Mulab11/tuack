@@ -360,7 +360,7 @@ def test_problem(prob):
 					for i in range(tc):
 						score_map[prob.test_cases[i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
-					tot = sum(packed[0])
+					tot = sum(packed[0][:-1])
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]
 					reports = reports[:tc] + packed[2] + reports[tc:]
