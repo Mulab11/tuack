@@ -28,6 +28,12 @@ class PostInstallCommand(install):
 		check()
 		install.run(self)
 
+requires = [
+	'jinja2',
+	'natsort',
+	'pyyaml'
+]
+
 setup(
 	name = 'tuack',
 	version = '0.1.1',
@@ -41,11 +47,8 @@ setup(
 		'develop': PostDevelopCommand,
 		'install': PostInstallCommand,
 	},
-	install_requires = [
-		'jinja2',
-		'natsort',
-		'pyyaml'
-	],
+	install_requires = requires,
+	setup_requires = requires,
 	package_data = {
 		'tuack': ['templates/*.*', 'templates/*/*/*', 'sample/*.*', 'sample/*/*']
 	}
