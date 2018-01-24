@@ -23,10 +23,10 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
 	'''
-	t = time.clock()
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)
+		t = time.clock()
 		pro = subprocess.Popen(vm(name, ml) if vm else name, stdin = fin, stdout = fout)
 		if fout:
 			fout.close()

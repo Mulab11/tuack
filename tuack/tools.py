@@ -33,7 +33,7 @@ def comma(num):
 		return str(num)
 	return comma(num // 1000) + ',' + '%03d' % (num % 1000)
 	
-def hn(num):
+def hn(num, style = None):
 	'''
 	适合阅读的数
 	'''
@@ -59,7 +59,13 @@ def hn(num):
 		l += 1
 	ret += '10^{%d}' % n
 	l += 2 + len(str(n))
-	return neg + (comma(num) if l >= len(str(num)) * 4 // 3 else ret)
+	if style == 'x':
+		ret = ret
+	elif style == ',':
+		ret = comma(num)
+	else:
+		ret = (comma(num) if l >= len(str(num)) * 4 // 3 else ret)
+	return neg + ret
 	
 def js_hn(num):
 	'''
