@@ -297,8 +297,9 @@ def test_problem(prob):
 	#	log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (
 	#		prob.route, pjoin(prob.path, 'pre')
 	#	))
-	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
+	log.info(u'共%d组样例，%d个预测试点，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
+		len(prob.pre_cases),
 		len(prob.test_cases),
 		u'是' if prob.packed else u'不是',
 		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob.packed else ''
