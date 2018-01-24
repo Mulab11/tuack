@@ -164,9 +164,9 @@
 		{%- endfor -%}
 		\tabularnewline
 	\hline
-		每个测试点分值
+		测试点是否等分
 		{%- for prob in probs -%}
-			& {{ (100 // prob.test_cases.__len__() if prob.test_cases.__len__() > 0 else '??') if not prob.packed else _("Case related") }}
+			& {{ _("yes") if not prob.packed else _("no") }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline

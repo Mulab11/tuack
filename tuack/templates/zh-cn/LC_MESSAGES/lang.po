@@ -127,3 +127,9 @@ msgstr "对于每组输入数据，你需要提交相应的输出文件 *%s1.out
 
 msgid "Case related"
 msgstr "见题面"
+
+msgid "yes"
+msgstr "是"
+
+msgid "no"
+msgstr "否"

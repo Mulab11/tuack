@@ -173,3 +173,9 @@ msgstr "For each input file, you should accomplish an output file named *%s1.out
 
 msgid "Case related"
 msgstr "Case related"
+
+msgid "yes"
+msgstr "yes"
+
+msgid "no"
+msgstr "no"
