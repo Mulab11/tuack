@@ -357,7 +357,7 @@ class Latex(Base):
 			os.path.join('tmp', 'precautions.md'),
 			os.path.join('tmp', 'precautions.tex')
 		))
-		prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
+		self.prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
 	def ren_prob_tex(self):
 		os.system('pandoc %s -t latex -o %s' % (
