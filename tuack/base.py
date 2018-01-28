@@ -553,7 +553,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format, user_time
 	do_render = True
 	works = []
 	args = []
@@ -565,6 +565,7 @@ def deal_args():
 	do_zip = False
 	do_encript = False
 	git_lfs = False
+	user_time = False
 	dump_format = 'yaml'
 	l = len(sys.argv)
 	i = 1
@@ -594,6 +595,8 @@ def deal_args():
 		elif sys.argv[i] == '-e':
 			do_zip = True
 			do_encript = True
+		elif sys.argv[i] == '-u':
+			user_time = True
 		elif sys.argv[i] == '-l':
 			i += 1
 			langs = set(sys.argv[i].split(','))
@@ -618,6 +621,7 @@ def deal_args():
 			log.info(u'  -r                  对于dump，不先尝试渲染题面。')
 			log.info(u'  -g                  对于gen，使用git-lfs。')
 			log.info(u'  -d json             对于gen，规定配置文件格式，支持json、yaml，默认yaml。')
+			log.info(u'  -u                  对于test，在linux下使用user time做测试，默认real time。')
 			return False
 		else:
 			if len(works) == 0:

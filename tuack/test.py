@@ -19,6 +19,18 @@ from . import base
 from .base import log, pjoin, rjoin
 import traceback
 
+def time2float(inp):
+	m = re.match(r'(\d*)(:|h)(\d*)(:|m)(\d*\.?\d*)s?', inp)
+	if m:
+		return float(m.group(1)) * 3600 + float(m.group(3)) * 60 + float(m.group(5))
+	m = re.match(r'(\d*)(:|m)(\d*\.?\d*)s?', inp)
+	if m:
+		return float(m.group(1)) * 60 + float(m.group(3))
+	m = re.match(r'(\d*\.?\d*)s?', inp)
+	if m:
+		return float(m.group(1))
+	raise Exception('Timer broken')
+
 def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
@@ -54,8 +66,9 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 
 def runner_linux(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; time -f "%%U" -o timer %s %s %s' % (
+		'ulimit -v %d; time -f "%%%s" -o timer %s %s %s' % (
 			int(base.Memory(ml).KB),
+			'U' if base.user_time else 'E',
 			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
 			'> %s' % output if output else '',
@@ -84,8 +97,9 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 		ret = que.get()
 		if ret == 0:
 			try:
-				t = float(open('timer').readline())
-			except:
+				t = time2float(open('timer').readline())
+			except Exception as e:
+				log.debug(e)
 				log.warning('Timer broken.')
 				t = 0.
 			ret = None
@@ -126,7 +140,10 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 			ret = que.get()
 			if ret == 0:
 				try:
-					t = float(open('timer').readline().split()[-1])
+					with open('timer') as f:
+						for i in range(2 if base.user_time else 1):
+							line = f.readline()
+						t = time2float(line.strip().split()[-1])
 				except:
 					base.warning('Timer broken.')
 					t = 0.
@@ -330,13 +347,13 @@ def test_problem(prob):
 					try:
 						shutil.rmtree('tmp')
 					except:
-						pass
+						time.sleep(1e-2)
 				if prob['type'] == 'program':
 					while True:
 						try:
 							os.makedirs('tmp')
 						except:
-							pass
+							time.sleep(1e-2)
 						else:
 							break
 					shutil.copy(path, pjoin('tmp', path.split('/')[-1]))
@@ -345,7 +362,7 @@ def test_problem(prob):
 						try:
 							shutil.copytree(path, 'tmp')
 						except:
-							pass
+							time.sleep(1e-2)
 						else:
 							break
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
