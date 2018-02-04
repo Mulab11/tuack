@@ -33,13 +33,15 @@ work_class = {
 	'tuoi' : {'tuoi'},
 	'tuoj-oi' : {'tuoi', 'tuoj'},
 	'tuoj' : {'tuoj'},
+	'thuoj' : {'thuoj'},
 	'ccc' : {'ccc-tex', 'ccc-md'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-md' : {'ccc-md'},
 	'tsinsen-oj' : {'tsinsen-oj'},
 	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
 	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj'},
-	'html' : {'tsinsen-oj'}
+	'html' : {'tsinsen-oj'},
+	'doku' : {'thuoj'}
 }
 io_styles = {
 	'noi' : 'fio',
@@ -50,7 +52,8 @@ io_styles = {
 	'tuoi' : 'stdio',
 	'tupc' : 'stdio',
 	'tsinsen-oj' : 'stdio',
-	'loj' : 'stdio'
+	'loj' : 'stdio',
+	'thuoj' : 'stdio'
 }
 base_templates = {
 	'noi' : 'tuoi',
@@ -72,7 +75,7 @@ def get_template(fname, lang = None):
 	if env == None or base.system == 'Darwin' or (lang and env['lang'] != lang):
 		env = {
 			'env' : jinja2.Environment(
-				loader = jinja2.FileSystemLoader(os.path.join(os.getcwd(), 'tmp')),
+				loader = jinja2.FileSystemLoader(pjoin(os.getcwd(), 'tmp')),
 				extensions = ['jinja2.ext.do', 'jinja2.ext.with_', 'jinja2.ext.i18n']
 			),
 			'lang' : lang
@@ -90,7 +93,7 @@ def table(path, name, temp, context, options):
 		options = {}
 	for suf in ['.py', '.pyinc', '.json']:
 		try:
-			base.copy(path, name + suf, os.path.join('tmp', 'table' + suf))
+			base.copy(path, name + suf, pjoin('tmp', 'table' + suf))
 			log.info(u'渲染表格`%s`，参数%s' % (base.pjoin(path, name + suf), str(options)))
 			break
 		except base.NoFileException as e:
@@ -102,10 +105,10 @@ def table(path, name, temp, context, options):
 		try:
 			table = json.loads(res)
 		except Exception as e:
-			open(os.path.join('tmp', 'table.tmp.json'), 'w').write(res)
+			open(pjoin('tmp', 'table.tmp.json'), 'w').write(res)
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
-		os.remove(os.path.join('tmp', 'table.json'))
+		os.remove(pjoin('tmp', 'table.json'))
 	elif suf == '.py' or suf == '.pyinc':
 		def merge_ver(table):
 			ret = [row for row in table]
@@ -194,7 +197,7 @@ class Base(object):
 					break
 			if not in_set:
 				return ''
-		if self.work == 'tex' or self.work == 'html':
+		if self.work == 'tex' or self.work == 'html' or self.work == 'doku':
 			id = str(uuid.uuid4())
 			self.secondary_dict[id] = s
 			return id
@@ -257,7 +260,7 @@ class Base(object):
 		)
 		if self.comp == 'tsinsen-oj' and 'tsinsen_files' in dir(self.prob):
 			self.context['resource'] = lambda name : '/RequireFile.do?fid=%s' % self.prob.tsinsen_files[name]
-		open(os.path.join('tmp', 'problem.md'), 'wb') \
+		open(pjoin('tmp', 'problem.md'), 'wb') \
 			.write(get_template('problem_base.md.jinja', self.prob.lang())
 				.render(self.context)
 				.encode('utf-8')
@@ -271,7 +274,7 @@ class Base(object):
 		base.mkdir('statements')
 		shutil.rmtree('tmp', ignore_errors = True)
 		time.sleep(0.1)
-		shutil.copytree(os.path.join(base.path, 'templates'), 'tmp')
+		shutil.copytree(pjoin(base.path, 'templates'), 'tmp')
 		base.mkdir(pjoin('statements', self.comp))
 		if self.conf.folder == 'contest':
 			self.contest = self.conf
@@ -281,10 +284,10 @@ class Base(object):
 			self.prob = self.conf
 
 	def move_resource(self):
-		if os.path.exists(os.path.join(self.prob.path, 'resources')):
+		if os.path.exists(pjoin(self.prob.path, 'resources')):
 			shutil.rmtree(self.path, ignore_errors = True)
 			time.sleep(0.1)
-			shutil.copytree(os.path.join(self.prob.path, 'resources'), (self.path if self.prob.route != '' else pjoin(self.path, self.prob['name'])))
+			shutil.copytree(pjoin(self.prob.path, 'resources'), (self.path if self.prob.route != '' else pjoin(self.path, self.prob['name'])))
 
 	def gen_paths(self):
 		self.path = pjoin('statements', self.comp)
@@ -355,25 +358,25 @@ class Latex(Base):
 		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(get_template('zh-cn.md').render(context, conf = self.conf).encode('utf-8'))
 		os.system('pandoc %s -t latex -o %s' % (
-			os.path.join('tmp', 'precautions.md'),
-			os.path.join('tmp', 'precautions.tex')
+			pjoin('tmp', 'precautions.md'),
+			pjoin('tmp', 'precautions.tex')
 		))
-		self.prec = open(os.path.join('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
+		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
 	def ren_prob_tex(self):
 		os.system('pandoc %s -t latex -o %s' % (
 			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.tex')
 		))
-		tex = open(os.path.join('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
+		tex = open(pjoin('tmp', 'problem.tex'), 'rb').read().decode('utf-8')
 		for key, val in self.secondary_dict.items():	## 如果未来发生了性能问题，这里可以先写到一个文件里然后再解析
-			open(os.path.join('tmp', key + '.tex.jinja'), 'wb').write(
+			open(pjoin('tmp', key + '.tex.jinja'), 'wb').write(
 				('{{ ' + val + ' }}').encode('utf-8')
 			)
 			ret = get_template(key + '.tex.jinja', self.prob.lang()).render(
 				self.context,
 				template = lambda temp_name, **context : get_template(temp_name + '.tex.jinja', self.prob.lang()).render(context),
-				table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.tex.jinja', self.context, options)
+				table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.tex.jinja', self.context, options)
 			)
 			tex = tex.replace(key, ret)
 		self.secondary_dict = {}
@@ -390,11 +393,11 @@ class Latex(Base):
 		self.context['problems'] = self.tex_problems
 		all_problem_statement = get_template('%s.tex.jinja' % base_templates[self.comp]).render(self.context)
 		try:
-			open(os.path.join('tmp', 'problems.tex'), 'wb') \
+			open(pjoin('tmp', 'problems.tex'), 'wb') \
 				.write(all_problem_statement.encode('utf-8'))
 		except Exception as e:
 			log.info(u'渲染出错的文件为`tmp/problems.tmp.tex`')
-			open(os.path.join('tmp', 'problems.tmp.tex'), 'wb') \
+			open(pjoin('tmp', 'problems.tmp.tex'), 'wb') \
 				.write(all_problem_statement.encode('utf-8'))
 			raise e
 		log.info(u'开始使用xelatex渲染题面。')
@@ -402,7 +405,7 @@ class Latex(Base):
 		os.system('xelatex -interaction=batchmode problems.tex')
 		os.system('xelatex -interaction=batchmode problems.tex')
 		os.chdir('..')
-		shutil.copy(os.path.join('tmp', 'problems.pdf'), self.result_path)
+		shutil.copy(pjoin('tmp', 'problems.pdf'), self.result_path)
 
 	def ren_day(self):
 		if self.day:
@@ -426,10 +429,10 @@ class Latex(Base):
 		self.day_template = self.day_templates[self.comp]
 		if self.conf.folder != 'problem':
 			for self.day in base.days():
-				self.result_path = os.path.join('statements', self.comp, self.day.name_lang() + '.pdf')
+				self.result_path = pjoin('statements', self.comp, self.day.name_lang() + '.pdf')
 				self.ren_day()
 		else:
-			self.result_path = os.path.join('statements', self.comp, self.conf.name_lang() + '.pdf')
+			self.result_path = pjoin('statements', self.comp, self.conf.name_lang() + '.pdf')
 			self.ren_day()
 
 class Markdown(Base):
@@ -438,7 +441,7 @@ class Markdown(Base):
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
-			table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
+			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
@@ -453,17 +456,17 @@ class Html(Base):
 
 	def ren_prob_rest(self):
 		if self.comp == 'tsinsen-oj':
-			with open(os.path.join('tmp', 'problem.2.md'), 'wb') as f:
-				for line in open(os.path.join('tmp', 'problem.md'), 'rb'):
+			with open(pjoin('tmp', 'problem.2.md'), 'wb') as f:
+				for line in open(pjoin('tmp', 'problem.md'), 'rb'):
 					if re.match(b'^##[^#]', line):
 						line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
 					f.write(line)
 		else:
 			base.copy('tmp', 'problem.md', pjoin('tmp', 'problem.2.md'))
-		txt = open(os.path.join('tmp', 'problem.2.md'), 'rb').read().decode('utf-8')
+		txt = open(pjoin('tmp', 'problem.2.md'), 'rb').read().decode('utf-8')
 		for key, val in self.secondary_dict.items():
 			txt = txt.replace(key, '{{ ' + val + ' }}')
-		open(os.path.join('tmp', 'problem.3.md'), 'wb').write(
+		open(pjoin('tmp', 'problem.3.md'), 'wb').write(
 			txt.encode('utf-8')
 		)
 		open(base.pjoin('tmp', 'problem.4.md'), 'wb') \
@@ -471,13 +474,50 @@ class Html(Base):
 				.render(
 					self.context,
 					template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
-					table = lambda name, options = None : table(os.path.join(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
+					table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
 				).encode('utf-8')
 			)
 		os.system('pandoc %s -o %s' % (
-			os.path.join('tmp', 'problem.4.md'),
+			pjoin('tmp', 'problem.4.md'),
 			self.result_path
 		))
+
+class DoKuWiki(Base):
+	work = 'doku'
+	def check_install(self):
+		base.check_install('pandoc')
+
+	def ren_prob_rest(self):
+		if self.comp == 'tsinsen-oj':
+			with open(pjoin('tmp', 'problem.2.md'), 'wb') as f:
+				for line in open(pjoin('tmp', 'problem.md'), 'rb'):
+					if re.match(b'^##[^#]', line):
+						line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
+					f.write(line)
+		else:
+			base.copy('tmp', 'problem.md', pjoin('tmp', 'problem.2.md'))
+		os.system('pandoc %s -o %s' % (
+			pjoin('tmp', 'problem.2.md'),
+			pjoin('tmp', 'problem.html')
+		))
+		os.system('pandoc %s -o %s -w dokuwiki' % (
+			pjoin('tmp', 'problem.html'),
+			pjoin('tmp', 'problem.doku')
+		))
+		txt = open(pjoin('tmp', 'problem.doku'), 'rb').read().decode('utf-8')
+		for key, val in self.secondary_dict.items():
+			txt = txt.replace(key, '{{ ' + val + ' }}')
+		open(pjoin('tmp', 'problem.2.doku'), 'wb').write(
+			txt.encode('utf-8')
+		)
+		open(self.result_path, 'wb') \
+			.write(get_template('problem.2.doku', self.prob.lang())
+				.render(
+					self.context,
+					template = lambda temp_name, **context : '<HTML>' + get_template(temp_name + '.html.jinja', self.prob.lang()).render(context) + '</HTML>',
+					table = lambda name, options = None : '<HTML>' + table(pjoin(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options).strip() + '</HTML>'
+				).encode('utf-8')
+			)
 
 class_list = {
 	'ccpc' : Latex,
@@ -489,7 +529,8 @@ class_list = {
 	'ccc-tex' : Latex,
 	'ccc-md' : Markdown,
 	'tsinsen-oj' : Html,
-	'loj' : Markdown
+	'loj' : Markdown,
+	'thuoj' : DoKuWiki
 }
 
 comp_list = {
@@ -502,7 +543,8 @@ comp_list = {
 	'ccc-tex' : 'ccc',
 	'ccc-md' : 'ccc',
 	'tsinsen-oj' : 'tsinsen-oj',
-	'loj' : 'loj'
+	'loj' : 'loj',
+	'thuoj' : 'thuoj'
 }
 
 if __name__ == '__main__':
