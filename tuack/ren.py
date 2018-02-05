@@ -488,20 +488,8 @@ class DoKuWiki(Base):
 		base.check_install('pandoc')
 
 	def ren_prob_rest(self):
-		if self.comp == 'tsinsen-oj':
-			with open(pjoin('tmp', 'problem.2.md'), 'wb') as f:
-				for line in open(pjoin('tmp', 'problem.md'), 'rb'):
-					if re.match(b'^##[^#]', line):
-						line = (u'## 【%s】\n' % line[2:].strip().decode('utf-8')).encode('utf-8')
-					f.write(line)
-		else:
-			base.copy('tmp', 'problem.md', pjoin('tmp', 'problem.2.md'))
-		os.system('pandoc %s -o %s' % (
-			pjoin('tmp', 'problem.2.md'),
-			pjoin('tmp', 'problem.html')
-		))
 		os.system('pandoc %s -o %s -w dokuwiki' % (
-			pjoin('tmp', 'problem.html'),
+			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.doku')
 		))
 		txt = open(pjoin('tmp', 'problem.doku'), 'rb').read().decode('utf-8')
