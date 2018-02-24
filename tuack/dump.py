@@ -316,8 +316,8 @@ def tsinsen_oj():
 	def Solution():
 		for user, codes in prob['users'].items():
 			for name, path in codes.items():
-				if name.startswith('std') or name.endswith('std') or name.endswith('std.cpp'):
-					return read_file(path)
+				if prob.expect(user, name, 100):
+					return read_file(path['path'])
 		for user, codes in prob['users'].items():
 			for name, path in codes.items():
 				return read_file(path)

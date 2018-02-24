@@ -340,7 +340,7 @@ def test_problem(prob):
 					continue
 			for algo, algo_obj in algos.items():
 				path = algo_obj['path']
-				exp = algo_obj['expected']
+				#exp = algo_obj['expected']
 				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
@@ -395,23 +395,8 @@ def test_problem(prob):
 					times = [0.0, 0.0] + times
 					reports = ['', ''] + reports
 
-				# Check expected scores
-				algo_failed = False
-				if type(exp) == dict:
-					for symbol, value in exp.items():
-						algo_failed |= not eval('tot %s %s' % (symbol, value))
-				elif type(exp) == list:
-					for pred in exp:
-						algo_failed |= not eval('tot %s' % pred)
-				elif type(exp) == str:
-					algo_failed |= not eval('tot %s' % exp)
-				elif exp is None:
-					pass
-				else:
-					log.warning('`expected`字段必须是字符串、数组或字典。')
-
-				if algo_failed:
-					log.error(u'未达到预期。预期分数 %s ，实际得分 %.2f' % (exp, tot))
+				if not prob.expect(user, algo, tot):
+					log.error(u'未达到预期。预期分数 %s ，实际得分 %.2f' % (algo_obj['expected'], tot))
 					prob_failed = True
 
 				scores = map(lambda i : '%.2f' % i, scores)

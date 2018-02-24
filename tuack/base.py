@@ -380,8 +380,27 @@ class Problem(Configure):
 				((key, users_pathed(self, val, key, depth + 1)) for key, val in users.items()) \
 				if val
 			}
-
 		return self.getitem('users', users_pathed)
+	
+	def expect(self, user, algo, score):
+		'''
+		Check expected scores
+		'''
+		exp = self.users()[user][algo]['expected']
+		algo_failed = False
+		if type(exp) == dict:
+			for symbol, value in exp.items():
+				algo_failed |= not eval('score %s %s' % (symbol, value))
+		elif type(exp) == list:
+			for pred in exp:
+				algo_failed |= not eval('score %s' % pred)
+		elif type(exp) == str:
+			algo_failed |= not eval('score %s' % exp)
+		elif exp is None:
+			pass
+		else:
+			log.warning('`expected`字段必须是字符串、数组或字典。')
+		return not algo_failed
 
 	def get_data(self, key):
 		def data_pathed(self, data, key, depth):
