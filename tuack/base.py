@@ -303,6 +303,8 @@ class Problem(Configure):
 			log.warning(u'题目`%s`的`packed`字段不再使用，但仍可以使用，用`python -m tuack.gen upgrade`升级。' % self.route)
 		num_unscored = 0
 		total_score = 0.0
+		if not self.data:
+			return
 		for datum in self.data:
 			if 'score' in datum:
 				datum.score = datum['score']
