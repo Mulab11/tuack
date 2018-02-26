@@ -15,6 +15,7 @@ from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
 import platform
+import gettext
 from . import base
 from .base import log, pjoin
 try:
@@ -80,7 +81,6 @@ def get_template(fname, lang = None):
 			),
 			'lang' : lang
 		}
-		import gettext
 		try:
 			tra = gettext.translation('lang', os.getcwd() + '/tmp', [env['lang']])
 			env['env'].install_gettext_translations(tra)
@@ -215,6 +215,25 @@ class Base(object):
 				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
 			ret += line.decode('utf-8')
 		return ret
+		
+	def titlize(self, title, args, lang = None):
+		if base.lang:
+			lang = base.lang
+		if not lang:
+			lang = 'zh-cn'
+		tra = gettext.translation('lang', os.getcwd() + '/tmp', [env['lang']])
+		ret = tra.gettext(title)
+		if len(args) > 0:
+			try:
+				ret = ret % args
+			except Exception as e:
+				ret = ret + ''.join(map(str, args))
+		else:
+			try:
+				ret = ret % ('',)
+			except Exception as e:
+				pass
+		return '##' + ret
 
 	def ren_prob_md_j(self):
 		log.info(u'渲染题目题面 %s %s' % (self.comp, self.prob.route))
@@ -244,7 +263,8 @@ class Base(object):
 			'render' : self.secondary,
 			'precautions' : self.prec,
 			'json' : json,
-			'vars' : {}
+			'vars' : {},
+			's' : lambda title, *args : self.titlize(title, args, self.prob.lang())
 		}
 		self.context['img'] = lambda src, env = None, **argw : self.context['render'](
 			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)),

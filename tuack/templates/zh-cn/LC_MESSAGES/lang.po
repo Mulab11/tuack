@@ -20,43 +20,85 @@ msgstr "从标准输入读入数据。"
 msgid "Sample"
 msgstr "样例"
 
+msgid "sample"
+msgstr "样例"
+
 msgid "Sample Input %s"
+msgstr "样例%s输入"
+
+msgid "sample input"
 msgstr "样例%s输入"
 
 msgid "Input"
 msgstr "输入"
 
+msgid "input"
+msgstr "输入"
+
 msgid "Sample Output %s"
+msgstr "样例%s输出"
+
+msgid "sample output"
 msgstr "样例%s输出"
 
 msgid "Output"
 msgstr "输出"
 
+msgid "output"
+msgstr "输出"
+
 msgid "Explanation"
+msgstr "解释"
+
+msgid "explanation"
 msgstr "解释"
 
 msgid "Sample Explanation %s"
 msgstr "样例%s解释"
 
+msgid "sample explanation"
+msgstr "样例%s解释"
+
 msgid "Input Format"
+msgstr "输入格式"
+
+msgid "input format"
 msgstr "输入格式"
 
 msgid "Output Format"
 msgstr "输出格式"
 
+msgid "output format"
+msgstr "输出格式"
+
 msgid "Description"
+msgstr "题目描述"
+
+msgid "description"
 msgstr "题目描述"
 
 msgid "Background"
 msgstr "题目背景"
 
+msgid "background"
+msgstr "题目背景"
+
 msgid "Hint"
+msgstr "提示"
+
+msgid "hint"
 msgstr "提示"
 
 msgid "Subtasks"
 msgstr "子任务"
 
+msgid "subtasks"
+msgstr "子任务"
+
 msgid "Scoring"
+msgstr "评分方式"
+
+msgid "scoring"
 msgstr "评分方式"
 
 msgid "Time limit:"

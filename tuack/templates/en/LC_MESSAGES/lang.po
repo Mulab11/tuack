@@ -17,24 +17,28 @@ msgstr ""
 msgid "Read from the standard input."
 msgstr "Read from standard input."
 
-#从标准输入读入数据。"
-
 msgid "Sample"
 msgstr "Sample "
 
-#样例"
+msgid "sample"
+msgstr "Sample "
 
 msgid "Sample Input %s"
 msgstr "Sample Input %s"
 
-#样例%s输入"
+msgid "sample input"
+msgstr "Sample Input %s"
 
 msgid "Input"
 msgstr "Input"
 
-#输入"
+msgid "input"
+msgstr "Input"
 
 msgid "Sample Output %s"
+msgstr "Sample Output %s"
+
+msgid "sample output"
 msgstr "Sample Output %s"
 
 #样例%s输出"
@@ -42,9 +46,15 @@ msgstr "Sample Output %s"
 msgid "Output"
 msgstr "Output"
 
+msgid "output"
+msgstr "Output"
+
 #输出"
 
 msgid "Explanation"
+msgstr "Explanation"
+
+msgid "explanation"
 msgstr "Explanation"
 
 #解释"
@@ -52,9 +62,15 @@ msgstr "Explanation"
 msgid "Sample Explanation %s"
 msgstr "Sample Explanation %s"
 
+msgid "sample explanation"
+msgstr "Sample Explanation %s"
+
 #样例%s解释"
 
 msgid "Input Format"
+msgstr "Input Format"
+
+msgid "input format"
 msgstr "Input Format"
 
 #输入格式"
@@ -62,12 +78,21 @@ msgstr "Input Format"
 msgid "Output Format"
 msgstr "Output Format"
 
+msgid "output format"
+msgstr "Output Format"
+
 #输出格式"
 
 msgid "Description"
 msgstr "Problem Statement"
 
+msgid "description"
+msgstr "Description"
+
 msgid "Background"
+msgstr "Background"
+
+msgid "background"
 msgstr "Background"
 
 #题目背景"
@@ -75,14 +100,23 @@ msgstr "Background"
 msgid "Hint"
 msgstr "Hint"
 
+msgid "hint"
+msgstr "Hint"
+
 #提示"
 
 msgid "Subtasks"
 msgstr "Subtasks"
 
+msgid "subtasks"
+msgstr "Subtasks"
+
 #子任务"
 
 msgid "Scoring"
+msgstr "Scoring"
+
+msgid "scoring"
 msgstr "Scoring"
 
 msgid "Time limit:"

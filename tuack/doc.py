@@ -1,0 +1,412 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+import os
+import re
+import sys
+import json
+import datetime
+import shutil
+import subprocess
+import time
+import signal
+import zipfile
+from multiprocessing import Process, Queue
+from functools import wraps
+from threading import Timer
+import platform
+from . import base
+from .base import log, pjoin
+
+title_choices = {
+	'sample' : {
+		u'样例(\\d+)?',
+		u'输入输出样例(\\d+)?',
+		u'样例输入输出(\\d+)?',
+		u'测试用例(\\d+)?',
+		r'sample\s*(\d+)?'
+	},
+	'sample input' : {
+		u'样例(\\d+)?输入(\\d+)?',
+		u'输入(\\d+)?样例(\\d+)?',
+		r'sample\s*input\s*(\d+)?',
+		r'input\s*sample\s*(\d+)?'
+	},
+	'sample output' : {
+		u'样例(\\d+)?输出(\\d+)?',
+		u'输出(\\d+)?样例(\\d+)?',
+		r'sample\s*output\s*(\d+)?',
+		r'output\s*sample\s*(\d+)?'
+	},
+	'sample explanation' : {
+		u'样例(\\d+)?说明(\\d+)?',
+		u'样例(\\d+)?解释(\\d+)?',
+		r'sample\s*explanation\s*(\d+)?'
+	},
+	'input' : {
+		u'输入',
+		'input'
+	},
+	'outout' : {
+		u'输出',
+		'output'
+	},
+	'explanation' : {
+		u'解释',
+		u'说明',
+		'explanation'
+	},
+	'input format' : {
+		u'输入格式',
+		u'输入说明',
+		u'输入要求',
+		'input format'
+	},
+	'output format' : {
+		u'输出格式',
+		u'输出说明',
+		u'输出要求',
+		'output format'
+	},
+	'description' : {
+		u'题目描述',
+		u'题目说明',
+		u'题目',
+		'description',
+		'statement',
+	},
+	'background' : {
+		u'题目背景',
+		u'背景',
+		'background',
+	},
+	'hint' : {
+		u'提示',
+		u'温馨提示',
+		u'hint'
+	},
+	'subtasks' : {
+		u'(数据规模|要求|限制|约束|约定|子任务)(与(数据规模|要求|限制|约束|约定|子任务))?',
+		r'subtask(s?)'
+	},
+	'scoring' : {
+		u'评分方式',
+		'scoring'
+	}
+}
+
+title_re = re.compile('^(' + '|'.join(['|'.join(value) for value in title_choices.values()]) + ')$')
+std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)\) *\}\} *$')
+doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)? *#* *$'
+html_equation_re = re.compile(r'\\\[(.*)\\\]\{\.math \.inline\}')
+
+math_trans = {
+	'*' : '',
+	u'≤' : r' \le',
+	u'≥' : r' \ge',
+	u'←' : r' \leftarrow',
+	u'→' : r' \rightarrow',
+	u'×' : r' \times',
+	u'∑' : r' \sum',
+	r'\$' : ''
+}
+
+def is_digit(s):
+	for c in s:
+		if not '0' <= c <= '9':
+			return False
+	return True
+
+def is_english(s):
+	for c in s:
+		if not('a' <= c <= 'z' and 'A' <= c <= 'Z'):
+			return False
+	return True
+
+def is_chinese(s):
+	for c in s:
+		if not u'\u4e00' <= c <= u'\u9fff':
+			return False
+	return True
+
+def get_text(s):
+	ret = ''
+	for c in s:
+		if is_chinese(c) or is_english(c) or is_digit(c):
+			ret += c
+	return ret.lower()
+	
+def html_math2tex_math(s):
+	ret = ''
+	i = 0
+	l = len(s)
+	in_sup = False
+	in_sub = False
+	while True:
+		if i == l:
+			break
+		if i + 1 < l:
+			flag = False
+			if s[i:i+2] == '\*':
+				ret += '*'
+			elif s[i:i+2] == '\^':
+				if in_sup:
+					ret += ' }'
+				else:
+					ret += '^{ '
+				in_sup ^= True
+			elif s[i:i+2] == '\~':
+				if in_sub:
+					ret += ' }'
+				else:
+					ret += '_{ '
+				in_sub ^= True
+			elif s[i:i+2] in math_trans:
+				ret += math_trans[s[i:i+2]]
+			else:
+				flag = True
+			if not flag:
+				i += 2
+				continue
+		if s[i] in math_trans:
+			ret += math_trans[s[i]]
+		else:
+			ret += s[i]
+		i += 1
+	return ret
+
+class Section:
+	used = {'input' : 0, 'output' : 0}
+	def __init__(self, name = None, args = None):
+		self.name = name
+		if args == None:
+			self.args = []
+		else:
+			self.args = args
+		self.lines = []
+	def write(self, f):
+		if self.name == 'sample' and len(self.lines) == 0:
+			return
+		for name, suf in [('input', '.in'), ('output', '.ans')]:
+			if self.name == 'sample ' + name or self.name == name:
+				self.used[name] += 1
+				with open(pjoin(base.prob.path, 'down', str(self.used[name]) + suf), 'w') as ff:
+					if len(self.lines) > 1 and self.lines[0].startswith('```'):
+						lines = self.lines[1:-1]
+					else:
+						lines = self.lines
+					for line in lines:
+						ff.write(line + '\n')
+				if name == 'input':
+					if self.used['input'] == 1:
+						f.write(b'{% set vars = {} -%}')
+					f.write(b'{%%- do vars.__setitem__(\'sample_id\', %d) -%%} {{ self.sample_text() }}' % self.used[name])
+				return
+		if self.name:
+			f.write(("\n{{ s('%s'%s) }}\n\n" % (
+				self.name,
+				', ' + ', '.join(map(json.dumps, self.args)) if len(self.args) > 0 else ''
+			)).encode('utf-8'))
+		for line in self.lines:
+			f.write((line + '\n').encode('utf-8'))
+	def is_empty(self):
+		return not self.name and len(self.lines) == 0
+	def format_line(self, line):
+		ret = line
+		while True:
+			m = html_equation_re.search(ret)
+			if not m:
+				break
+			while True:
+				sm = m
+				l, r = sm.span()
+				sub = sm.string[l:r - 1]
+				m = html_equation_re.search(sub)
+				if m:
+					continue
+				sub = sm.string[l:r]
+				res = sm.group(1)
+				ret = ret.replace(sub, '$%s$' % html_math2tex_math(res))
+				break
+		return ret
+	def format(self):
+		self.lines = [self.format_line(line) for line in self.lines]
+
+def sure_title(line):
+	inp = line
+	if inp.startswith('##'):
+		return True
+	if inp.startswith(u'【') and inp.endswith(u'】'):
+		return True
+	if std_title_re.match(inp):
+		return True
+	txt = get_text(inp)
+	m = title_re.match(txt)
+	if m:
+		return True
+	return False
+
+def get_title(line):
+	m = std_title_re.match(line)
+	if m:
+		gps = m.groups()
+		name = gps[0]
+		args = json.loads('[' + ','.join(gps[1].split(',')[1:]) + ']')
+		return name, args
+	m = re.match(doc_title_re % '[-+.\'\"a-zA-Z0-9_ \u4e00-\u9fa5\u3040-\u309f\u30a0-\u30ff]+', line.lower())
+	if m:
+		title = m.group(2)
+		m = title_re.match(title)
+		if m:
+			for key, pts in title_choices.items():
+				for pt in pts:
+					m = re.match('^' + pt + '$', title)
+					if m:
+						name = key
+						args = []
+						if key.startswith('sample'):
+							for s in m.groups():
+								if s and s != '':
+									args = [json.loads(s)]
+									break
+						return name, args
+		return title, []
+	return line, []
+
+def to_sections(lines):
+	sections = []
+	cur = Section()
+	buff = ''
+	in_quote = False
+	in_quote_space = False
+	in_quote_tab = False
+	in_equation = False
+	last_title = 0
+	for line in lines:
+		if in_quote_space:
+			if line.startswith('    '):
+				cur.lines.append(line.lstrip(' '))
+				continue
+			else:
+				in_quote_space = False
+				cur.lines.append('```')
+		elif in_quote_tab:
+			if line.startswith('\t'):
+				cur.lines.append(line.lstrip(' '))
+				continue
+			else:
+				in_quote_tab = False
+				cur.lines.append('```')
+		if in_quote:
+			if line == '```':
+				in_quote = False
+			cur.lines.append(line)
+		elif in_equation:
+			if line == '$$':
+				in_quote = False
+			cur.lines.append(line)
+		else:
+			last_title = last_title - 1 if last_title >= 1 else 0
+			if line.startswith('```'):
+				in_quote = True
+				if buff != '':
+					cur.lines.append(buff.rstrip(' '))
+					cur.lines.append('')
+					buff = ''
+				cur.lines.append(line)
+			elif line.startswith('$$'):
+				in_equation = True
+				if buff != '':
+					cur.lines.append(buff.rstrip(' '))
+					cur.lines.append('')
+					buff = ''
+				cur.lines.append(line)
+			elif sure_title(line):
+				if buff != '':
+					cur.lines.append(buff.rstrip(' '))
+					cur.lines.append('')
+					buff = ''
+				title, args = get_title(line)
+				if not cur.is_empty():
+					sections.append(cur)
+				cur = Section(title, args)
+				last_title = 2
+			elif line.startswith('    '):
+				in_quote_space = True
+				cur.lines.append('```')
+				cur.lines.append(line.lstrip(' '))
+			elif line.startswith('\t'):
+				in_quote_space = True
+				cur.lines.append('```')
+				cur.lines.append(line.lstrip(' '))
+			elif line.startswith('------'):
+				if last_title >= 1:
+					continue
+				if buff != '':
+					cur.lines.append(buff.rstrip(' '))
+					cur.lines.append('')
+					buff = ''
+				title, args = get_title(last)
+				if not cur.is_empty():
+					sections.append(cur)
+				cur = Section(title)
+			elif line == '':
+				if buff != '':
+					cur.lines.append(buff.rstrip(' '))
+					cur.lines.append('')
+					buff = ''
+			else:
+				buff += line + ' '
+		last = line
+	if buff != '':
+		cur.lines.append(buff.rstrip(' '))
+		buff = ''
+	if not cur.is_empty():
+		sections.append(cur)
+	return sections
+
+def format():
+	for base.prob in base.probs():
+		prob = base.prob
+		path = pjoin(base.conf.path, 'statement', base.conf.lang() + '.md')
+		lines = [line.rstrip(b'\r\n').decode('utf-8') for line in open(path, 'rb').readlines()]
+		sections = to_sections(lines)
+		for section in sections:
+			section.format()
+		with open(path, 'wb') as f:
+			for section in sections:
+				section.write(f)
+
+def load():
+	if len(base.args) != 1:
+		log.error(u'无法转换，必须传入恰好一个参数。')
+		sys.exit(1)
+	if base.conf.folder != 'problem':
+		log.error(u'只能处理单个题目，请到题目目录下进行操作。')
+		sys.exit(1)
+	os.system('pandoc %s -o %s' % (base.args[0], pjoin(base.conf.path, 'statement', base.conf.lang() + '.md')))
+
+class_list = {
+	'load' : load,
+	'format' : format
+}
+
+if __name__ == '__main__':
+	try:
+		if base.init():
+			base.check_install('pandoc')
+			base.check_install('jinja2')
+			for base.work in base.works:
+				for base.lang in base.langs:
+					base.run_exc(class_list[base.work])
+		else:
+			log.info(u'这是用来处理题面的工具。')
+			log.info(u'支持的工作：')
+			log.info(u'  load     必须包含一个参数输入文件名，表示要导入的题面。')
+			log.info(u'  format   尝试对当前的中文题面进行简单的格式化，危险操作请注意备份。')
+			sys.exit(1)
+	except base.NoFileException as e:
+		log.error(e)
+		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
+		sys.exit(1)
+
