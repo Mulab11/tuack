@@ -198,8 +198,6 @@ class Section:
 					for line in lines:
 						ff.write(line + '\n')
 				if name == 'input':
-					if self.used['input'] == 1:
-						f.write(b'{% set vars = {} -%}')
 					f.write(b'{%%- do vars.__setitem__(\'sample_id\', %d) -%%} {{ self.sample_text() }}' % self.used[name])
 				return
 		if self.name:
