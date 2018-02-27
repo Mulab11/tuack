@@ -72,6 +72,9 @@ title_choices = {
 		u'题目描述',
 		u'题目说明',
 		u'题目',
+		u'问题描述',
+		u'问题说明',
+		u'问题',
 		'description',
 		'statement',
 	},
@@ -192,8 +195,11 @@ class Section:
 		if flag:
 			self.lines = [line for idx, line in enumerate(self.lines) if idx % 2 == 0]
 	def write(self, f, idx = None):
-		if self.name == 'sample' and len(self.lines) == 0:
-			return
+		if self.name == 'sample':
+			if len(self.lines) == 0:
+				return
+			else:
+				self.args.append('')
 		for name, suf in [('input', '.in'), ('output', '.ans')]:
 			if self.name == 'sample ' + name or self.name == name:
 				self.used[name] += 1
@@ -206,7 +212,7 @@ class Section:
 					for line in lines:
 						ff.write(line + '\n')
 				if name == 'input':
-					f.write(b'{%%- do vars.__setitem__(\'sample_id\', %d) -%%} {{ self.sample_text() }}' % self.used[name])
+					f.write(b'{{ s(\'sample\', %d) }}\n\n{{ self.sample_text() }}\n\n' % self.used[name])
 				return
 		if idx == 0:
 			f.write(b'{{ self.title() }}\n')
@@ -278,6 +284,7 @@ def get_title(line):
 							for s in m.groups():
 								if s and s != '':
 									args = [json.loads(s)]
+									log.debug(args)
 									break
 						return name, args
 		return title, []
@@ -368,7 +375,7 @@ def to_sections(lines):
 				title, args = get_title(last)
 				if not cur.is_empty():
 					sections.append(cur)
-				cur = Section(title)
+				cur = Section(title, args)
 			elif line == '':
 				buff = clear(buff)
 			else:

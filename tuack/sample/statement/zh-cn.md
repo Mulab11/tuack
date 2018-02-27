@@ -1,11 +1,12 @@
 {{ self.title() }}
 
-## {{ _('Background') }}
+{{ s('background') }}
 
-这样的子标题是带国际化的，为了方便翻译和提取每个部分等。如果你的子标题不是本文中的这些，并且不需要国际化的话，你可将这些子标题直接写成这样：
+这样的子标题会被程序自动处理，可以方便翻译和提取每个部分等。如果你想自己定义子标签，或者不需要国际化的话，你可将这些子标题直接写成这样：
 
 ```
-## 题目背景
+{{ s('如何使用交互库') }}
+### 对于使用C/C++的选手
 ```
 
 If you want an English statement file, just copy this file as `en.md` and replace any Chinese text into English.
@@ -16,7 +17,7 @@ If you want an English statement file, just copy this file as `en.md` and replac
 
 *子标题请**不要**自己手动加方括号 `【】` 。*
 
-## {{ _('Description') }}
+{{ s('description') }}
 
 **要强调的东西**这么写。
 
@@ -74,7 +75,7 @@ int main(int argc, char** argv);
 
 **不要在题面里直接写tex或html代码！**
 
-## {{ _('Input Format') }}
+{{ s('input format') }}
 
 {{ self.input_file() }}
 
@@ -86,27 +87,29 @@ int main(int argc, char** argv);
 
 `tools` 可以简写成 `tl`，除 `hn` 外，还包括内建函数如 `tl.int`，`math` 中的对象或函数如 `tl.sin`，`datetime` 中的对象或函数如 `tl.time` 类，`num2chinese` 函数（可以把数字转化成中文）。
 
-## {{ _('Output Format') }}
+{{ s('output format') }}
 
 {{ self.output_file() }}
 
 输出一个字符串 `Yes`。出题人在写题面的时候注意不要写成 `“Yes”（不包含引号）`。
 
-下面是自动读入样例 `1.in/ans`（存储在 `down` 文件夹内） 然后渲染到题面中；如果只有一组样例，则去掉第一行或将其替换成空串，样例仍然保存成 `1.in/ans`。其中 `1` 可以是字符串。
+{{ s('sample', 1) }}
 
-{%- do vars.__setitem__('sample_id', 1) -%}
 {{ self.sample_text() }}
+
+上面是自动读入样例 `1.in/ans`（存储在 `down` 文件夹内） 然后渲染到题面中；如果只有一组样例，则去掉 `1` 或将其替换成空串，样例仍然保存成 `1.in/ans`。上面的 `1` 可以是字符串。
 
 {{ self.title_sample_description() }}
 
 这是第一组数据的样例说明。
 
-下面是只提示存在第二组样例，但不渲染到题面中。
+{{ s('sample', 2) }}
 
-{% do vars.__setitem__('sample_id', 2) -%}
 {{ self.sample_file() }}
 
-## {{ _('Subtasks') }}
+上面是只提示存在第二组样例，但不渲染到题面中。
+
+{{ s('subtasks') }}
 
 不要使用markdown原生的表格，使用下列方式渲染一个表格，其中表格存放在试题目录的 `tables` 子目录下。
 
@@ -116,10 +119,10 @@ int main(int argc, char** argv);
 
 表格的例子见 `oi_tools/sample/tables`。原理上用一个二维的 json 表格存储，`null` 表示和上一行合并，不支持横向合并。建议用 python 的格式写，如例子中的 `data.pyinc`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
 
-## {{ _('Scoring') }}
+{{ s('scoring') }}
 
 这是评分方法，如果有必要的话。
 
-## {{ _('Hint') }}
+{{ s('hint') }}
 
 这里是一个非常温馨的提示。

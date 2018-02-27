@@ -221,6 +221,10 @@ class Base(object):
 			lang = base.lang
 		if not lang:
 			lang = 'zh-cn'
+		if title == 'sample':
+			self.context['vars']['sample_id'] = args[0] if len(args) > 0 else ''
+			if len(args) <= 1:
+				return ''
 		tra = gettext.translation('lang', os.getcwd() + '/tmp', [env['lang']])
 		ret = tra.gettext(title)
 		if len(args) > 0:
