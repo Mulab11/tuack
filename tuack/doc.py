@@ -97,7 +97,7 @@ title_choices = {
 
 title_re = re.compile('^(' + '|'.join(['|'.join(value) for value in title_choices.values()]) + ')$')
 std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)\) *\}\} *$')
-doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)? *#* *$'
+doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *$'
 html_equation_re = re.compile(r'\\\[(.*)\\\]\{\.math \.inline\}')
 
 math_trans = {
@@ -184,12 +184,20 @@ class Section:
 		else:
 			self.args = args
 		self.lines = []
-	def write(self, f):
+	def clear_paragraph(self):
+		flag = True
+		for idx, line in enumerate(self.lines):
+			if idx % 2 == 1 and line.rstrip('\n\r') != '':
+				flag = False
+		if flag:
+			self.lines = [line for idx, line in enumerate(self.lines) if idx % 2 == 0]
+	def write(self, f, idx = None):
 		if self.name == 'sample' and len(self.lines) == 0:
 			return
 		for name, suf in [('input', '.in'), ('output', '.ans')]:
 			if self.name == 'sample ' + name or self.name == name:
 				self.used[name] += 1
+				self.clear_paragraph()
 				with open(pjoin(base.prob.path, 'down', str(self.used[name]) + suf), 'w') as ff:
 					if len(self.lines) > 1 and self.lines[0].startswith('```'):
 						lines = self.lines[1:-1]
@@ -200,7 +208,11 @@ class Section:
 				if name == 'input':
 					f.write(b'{%%- do vars.__setitem__(\'sample_id\', %d) -%%} {{ self.sample_text() }}' % self.used[name])
 				return
-		if self.name:
+		if idx == 0:
+			f.write(b'{{ self.title() }}\n')
+		if idx == 0 and self.name not in title_choices:
+			base.prob['title'][base.prob.lang()] = self.name.strip()
+		elif self.name:
 			f.write(("\n{{ s('%s'%s) }}\n\n" % (
 				self.name,
 				', ' + ', '.join(map(json.dumps, self.args)) if len(self.args) > 0 else ''
@@ -272,13 +284,20 @@ def get_title(line):
 	return line, []
 
 def to_sections(lines):
+	def clear(buff):
+		if buff != []:
+			cur.lines.append(' '.join(buff))
+			cur.lines.append('')
+			buff = []
+		return buff
 	sections = []
 	cur = Section()
-	buff = ''
+	buff = []
 	in_quote = False
 	in_quote_space = False
 	in_quote_tab = False
 	in_equation = False
+	in_table = False
 	last_title = 0
 	for line in lines:
 		if in_quote_space:
@@ -295,6 +314,12 @@ def to_sections(lines):
 			else:
 				in_quote_tab = False
 				cur.lines.append('```')
+		elif in_table:
+			if line.startswith('  '):
+				cur.lines.append(line)
+				continue
+			else:
+				in_table = False
 		if in_quote:
 			if line == '```':
 				in_quote = False
@@ -307,23 +332,14 @@ def to_sections(lines):
 			last_title = last_title - 1 if last_title >= 1 else 0
 			if line.startswith('```'):
 				in_quote = True
-				if buff != '':
-					cur.lines.append(buff.rstrip(' '))
-					cur.lines.append('')
-					buff = ''
+				buff = clear(buff)
 				cur.lines.append(line)
-			elif line.startswith('$$'):
+			elif line.strip() == '$$':
 				in_equation = True
-				if buff != '':
-					cur.lines.append(buff.rstrip(' '))
-					cur.lines.append('')
-					buff = ''
+				buff = clear(buff)
 				cur.lines.append(line)
 			elif sure_title(line):
-				if buff != '':
-					cur.lines.append(buff.rstrip(' '))
-					cur.lines.append('')
-					buff = ''
+				buff = clear(buff)
 				title, args = get_title(line)
 				if not cur.is_empty():
 					sections.append(cur)
@@ -331,34 +347,34 @@ def to_sections(lines):
 				last_title = 2
 			elif line.startswith('    '):
 				in_quote_space = True
+				buff = clear(buff)
 				cur.lines.append('```')
 				cur.lines.append(line.lstrip(' '))
 			elif line.startswith('\t'):
 				in_quote_space = True
+				buff = clear(buff)
 				cur.lines.append('```')
 				cur.lines.append(line.lstrip(' '))
+			elif line.startswith('  '):
+				in_table = True
+				buff = clear(buff)
+				cur.lines.append(line)
 			elif line.startswith('------'):
 				if last_title >= 1:
 					continue
-				if buff != '':
-					cur.lines.append(buff.rstrip(' '))
-					cur.lines.append('')
-					buff = ''
+				if buff != []:
+					buff.pop()
+				buff = clear(buff)
 				title, args = get_title(last)
 				if not cur.is_empty():
 					sections.append(cur)
 				cur = Section(title)
 			elif line == '':
-				if buff != '':
-					cur.lines.append(buff.rstrip(' '))
-					cur.lines.append('')
-					buff = ''
+				buff = clear(buff)
 			else:
-				buff += line + ' '
+				buff.append(line)
 		last = line
-	if buff != '':
-		cur.lines.append(buff.rstrip(' '))
-		buff = ''
+	buff = clear(buff)
 	if not cur.is_empty():
 		sections.append(cur)
 	return sections
@@ -372,8 +388,9 @@ def format():
 		for section in sections:
 			section.format()
 		with open(path, 'wb') as f:
-			for section in sections:
-				section.write(f)
+			for idx, section in enumerate(sections):
+				section.write(f, idx)
+	base.save_json(base.conf)
 
 def load():
 	if len(base.args) != 1:
