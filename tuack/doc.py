@@ -262,7 +262,7 @@ def sure_title(line):
 	if re.match(vars_re, inp):
 		return True
 	txt = get_text(inp)
-	if title_re.match(txt)
+	if title_re.match(txt):
 		return True
 	return False
 
