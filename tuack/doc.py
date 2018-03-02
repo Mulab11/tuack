@@ -18,13 +18,16 @@ import platform
 from . import base
 from .base import log, pjoin
 
+vars_re = r"\{%-? *do *vars\.__setitem__\( *'sample_id' *, *(\d+) *\) -%\}"
+
 title_choices = {
 	'sample' : {
 		u'样例(\\d+)?',
 		u'输入输出样例(\\d+)?',
 		u'样例输入输出(\\d+)?',
 		u'测试用例(\\d+)?',
-		r'sample\s*(\d+)?'
+		r'sample\s*(\d+)?',
+		vars_re
 	},
 	'sample input' : {
 		u'样例(\\d+)?输入(\\d+)?',
@@ -256,9 +259,10 @@ def sure_title(line):
 		return True
 	if std_title_re.match(inp):
 		return True
+	if re.match(vars_re, inp):
+		return True
 	txt = get_text(inp)
-	m = title_re.match(txt)
-	if m:
+	if title_re.match(txt)
 		return True
 	return False
 
