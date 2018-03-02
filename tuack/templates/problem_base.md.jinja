@@ -82,7 +82,7 @@
 	{%- if comp == 'uoj' -%}
 ### {{ _('Explanation') }}
 	{%- else -%}
-## {{ _('Sample') }}{{ vars['sample_id'] if 'sample_id' in vars else '' }}{{ _('Explanation') }}
+## {{ _('Sample Explanation %s') % (vars['sample_id'] if 'sample_id' in vars else '') }}
 	{%- endif -%}
 {%- endblock %}
 

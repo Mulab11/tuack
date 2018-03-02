@@ -240,7 +240,8 @@ class Base(object):
 			'resource' : self.resource,
 			'render' : self.secondary,
 			'precautions' : self.prec,
-			'json' : json
+			'json' : json,
+			'vars' : {}
 		}
 		self.context['img'] = lambda src, env = None, **argw : self.context['render'](
 			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)),
