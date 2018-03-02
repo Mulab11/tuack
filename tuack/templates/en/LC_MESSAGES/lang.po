@@ -65,7 +65,7 @@ msgstr "Output Format"
 #输出格式"
 
 msgid "Description"
-msgstr "Description"
+msgstr "Problem Statement"
 
 msgid "Background"
 msgstr "Background"
