@@ -293,10 +293,10 @@ def test_problem(prob):
 		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m tuack.gen samples`在文件夹`%s`下搜索样例数据。' % (
 			prob.route, pjoin(prob.path, 'down')
 		))
-	if 'pre' not in prob or len(prob.pre_cases) == 0:
-		log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (
-			prob.route, pjoin(prob.path, 'pre')
-		))
+	#if 'pre' not in prob or len(prob.pre_cases) == 0:
+	#	log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (
+	#		prob.route, pjoin(prob.path, 'pre')
+	#	))
 	log.info(u'共%d组样例，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
 		len(prob.test_cases),
