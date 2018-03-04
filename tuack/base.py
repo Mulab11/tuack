@@ -173,7 +173,14 @@ class Configure(dict):
 			self['name'] = path
 		return self
 
-	def probs(self, pick = False):
+	def probs(self, pick = False, no_repeat = False):
+		if no_repeat == True:
+			no_repeat = set()
+		if no_repeat != False:
+			path = os.path.abspath(self.path)
+			if path in no_repeat:
+				return
+			no_repeat.add(path)
 		pick |= not sub_set or self.route in sub_set
 		if type(self) == Problem:
 			if pick or any_prefix(self.route):
@@ -181,10 +188,17 @@ class Configure(dict):
 				yield self
 		else:
 			for sub in self.sub:
-				for prob in sub.probs(pick):
+				for prob in sub.probs(pick, no_repeat = no_repeat):
 					yield prob
 
-	def days(self, pick = False):
+	def days(self, pick = False, no_repeat = False):
+		if no_repeat == True:
+			no_repeat = set()
+		if no_repeat != False:
+			path = os.path.abspath(self.path)
+			if path in no_repeat:
+				return
+			no_repeat.add(path)
 		pick |= not sub_set or self.route in sub_set
 		if type(self) == Problem:
 			return
@@ -194,7 +208,7 @@ class Configure(dict):
 				yield self
 		else:
 			for sub in self.sub:
-				for day in sub.days(pick):
+				for day in sub.days(pick, no_repeat = no_repeat):
 					yield day
 
 	def name_lang(self):
@@ -400,12 +414,12 @@ class Problem(Configure):
 	def memory_limit(self):
 		return self.ml()
 
-mem_json = {}	# 题目复用的话，需要记忆化
+#mem_json = {}	# 题目复用的话，需要记忆化
 
 def load_json(path = '.', route = None):
-	abs_path = os.path.abspath(path)
-	if abs_path in mem_json:
-		return mem_json[abs_path]
+	#abs_path = os.path.abspath(path)
+	#if abs_path in mem_json:
+	#	return mem_json[abs_path]
 	for name in ['conf.yaml', 'conf.json', 'prob.json']:
 		try:
 			full_path = pjoin(path, name)
@@ -438,7 +452,7 @@ def load_json(path = '.', route = None):
 						load_json(pjoin(path, sub), conf.route) \
 						for sub in conf['subdir']
 					]
-				mem_json[abs_path] = conf
+				#mem_json[abs_path] = conf
 				return conf
 		except Exception as e:
 			log.error(u'文件`%s`错误或子目录下文件错误。' % pjoin(path, name))

@@ -44,7 +44,7 @@ def find_all_data(kind, folder, key, conf = None):
 			except Exception as e:
 				ret.append(i)
 		return ret
-	for prob in conf.probs():
+	for prob in conf.probs(no_repeat = True):
 		log.info(u'在题目`%s`下搜索%s数据。' % (prob.route, key))
 		new_data = set()
 		exist_data = set(map(str, prob.__getattribute__(key)))
@@ -83,7 +83,7 @@ def find_all_code():
 			else:
 				find_code(user, base.rjoin(path, f))
 
-	for prob in base.probs():
+	for prob in base.probs(no_repeat = True):
 		if prob['type'] == 'output':
 			log.info(u'题目`%s`是提交答案题，跳过。' % prob.route)
 			continue
@@ -166,6 +166,7 @@ def new_dir(folder, args = None):
 
 def upgrade():
 	if base.conf:	#是conf.json格式的老版本
+		used = {}
 		def upgrade_r(conf):
 			'''
 			非最新版本return False
@@ -221,10 +222,15 @@ def upgrade():
 			def upgrade_2(conf):
 				log.info(u'`%s`是最新版本。' % conf.route)
 				return True
+			path = os.path.abspath(conf.path)
+			if path in used:
+				for key in used[path]:
+					conf[key] = used[path][key]
 			while not eval('upgrade_' + str(conf['version']))(conf):
 				pass
 			for sub in conf.sub:
 				upgrade_r(sub)
+			used[path] = conf
 		upgrade_r(base.conf)
 		base.save_json(base.conf)
 	else:			#是prob(s).json格式的老版本
@@ -245,12 +251,12 @@ def upgrade():
 		upgrade()
 
 def copy_lfs():
-	for prob in base.probs():
+	for prob in base.probs(no_repeat = True):
 		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
 		copy('problem.gitattributes', '.gitattributes')
 
 def copy_chk():
-	for prob in base.probs():
+	for prob in base.probs(no_repeat = True):
 		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
 		if not os.path.exists(pjoin(prob.path, 'data', 'chk')):
 			os.makedirs(pjoin(prob.path, 'data', 'chk'))
