@@ -214,15 +214,15 @@ class Configure(dict):
 	def name_lang(self):
 		return self['name'] + ('-' + globals()['lang'] if globals()['lang'] else '')
 
-def probs(item = None, pick = False):
+def probs(item = None, pick = False, no_repeat = False):
 	if not item:
 		item = conf
-	return conf.probs(pick)
+	return conf.probs(pick, no_repeat)
 
-def days(item = None, pick = False):
+def days(item = None, pick = False, no_repeat = False):
 	if not item:
 		item = conf
-	return conf.days(pick)
+	return conf.days(pick, no_repeat)
 
 class Contest(Configure):
 	def __init__(self, *args):
