@@ -7,10 +7,10 @@
 \begin{document}
 
 {% if contest and 'title' in contest %}
-	\title{ {{contest.tr('title')}} }
-	\def\mytitle{ {{contest.tr('title')}} }
+	\title{ {{- contest.tr('title') -}} }
+	\def\mytitle{ {{- contest.tr('title') -}} }
 	{% if contest.tr('title').__len__() > 10 %}
-		\def\longtitle{ contest.tr('title') }
+		\def\longtitle{ {{- contest.tr('title') -}} }
 	{% endif %}
 {% else %}
 	\title{ 预览输出 }
@@ -18,19 +18,19 @@
 {% endif %}
 
 {% if contest and 'subtitle' in contest %}
-	\def\subtitle{ {{contest.tr('subtitle')}} }
+	\def\subtitle{ {{- contest.tr('subtitle') -}} }
 {% endif %}
 
 {% if contest and 'subsubtitle' in contest %}
-	\def\subsubtitle{ {{contest.tr('subsubtitle')}} }
+	\def\subsubtitle{ {{- contest.tr('subsubtitle') -}} }
 {% endif %}
 
 {% if contest and 'short title' in contest %}
-	\def\engtitle{ {{contest.tr('short title')}} }
+	\def\engtitle{ {{- contest.tr('short title') -}} }
 {% endif %}
 
 {% if day and 'title' in day %}
-	\def\theday{ {{day.tr('title')}} }
+	\def\theday{ {{- day.tr('title') -}} }
 {% endif %}
 
 {% if day and 'start time' in day and 'end time' in day %}
@@ -59,10 +59,9 @@
 	\fi
 	\nouppercase \rightmark
 }}}
-\lhead{\parbox{\textwidth}{\textnormal{
-	\footnotesize \mytitle
+\lhead{\parbox{\textwidth}{\textnormal{\footnotesize\mytitle
 	\ifdefined\subtitle
-		\!\subtitle
+		~\subtitle
 	\fi
 }}}
 \chead{}

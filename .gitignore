@@ -7,5 +7,5 @@ build
 tuack.egg-info
 dist
 build
-
+.eggs
 .*.sw[a-p]
