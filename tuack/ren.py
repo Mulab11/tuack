@@ -210,9 +210,11 @@ class Base(object):
 	def down_file(self, name):
 		ret = ''
 		fname = pjoin(self.prob.path, 'down', name)
+		length_warned = False
 		for idx, line in enumerate(open(fname, 'rb')):
-			if len(line) > 60:
+			if len(line) > 60 and not length_warned:
 				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
+				length_warned = True
 			ret += line.decode('utf-8')
 		return ret
 		
