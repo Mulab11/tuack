@@ -101,6 +101,18 @@ title_choices = {
 	}
 }
 
+new_re_symbols = {
+	r'\C' : '[\u4e00-\u9fbf]'
+	r'\P' : '[\uff00-\uffef\u3000-\u303f\u2000-\u203f]'
+}
+
+text_patterns = {
+	u'中文和英文、字符串或公式中间没有空格' : r'\C(?:\w|`|\$)',
+	u'英文、字符串或公式和中文中间没有空格' : r'(?:\w|`|\$)\C',
+	u'中文之间有空格' : r'\C \C',
+	u'使用了英文标点或不在公式中的运算符号' : '[,\\.\\?\\:;\'"\\[\\]\\{\\}!\\\\\\|\\(\\)\\+=]'
+}
+
 title_re = re.compile('^(' + '|'.join(['|'.join(value) for value in title_choices.values()]) + ')$')
 std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)\) *\}\} *$')
 doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *$'
@@ -131,7 +143,7 @@ def is_english(s):
 
 def is_chinese(s):
 	for c in s:
-		if not u'\u4e00' <= c <= u'\u9fff':
+		if not u'\u4e00' <= c <= u'\u9fbf':
 			return False
 	return True
 
@@ -403,6 +415,100 @@ def format():
 				section.write(f, idx)
 	base.save_json(base.conf)
 
+def spell_check_one(lines, path):
+	in_quote = False
+	in_quote_space = False
+	in_quote_tab = False
+	in_equation = False
+	in_table = False
+	last_title = 0
+	for idx, line in enumerate(lines, 1):
+		if in_quote_space:
+			if line.startswith('    '):
+				cur.lines.append(line.lstrip(' '))
+				continue
+			else:
+				in_quote_space = False
+				cur.lines.append('```')
+		elif in_quote_tab:
+			if line.startswith('\t'):
+				cur.lines.append(line.lstrip(' '))
+				continue
+			else:
+				in_quote_tab = False
+				cur.lines.append('```')
+		elif in_table:
+			if line.startswith('  '):
+				cur.lines.append(line)
+				continue
+			else:
+				in_table = False
+		if in_quote:
+			if line == '```':
+				in_quote = False
+			cur.lines.append(line)
+		elif in_equation:
+			if line == '$$':
+				in_quote = False
+			cur.lines.append(line)
+		else:
+			last_title = last_title - 1 if last_title >= 1 else 0
+			if line.startswith('```'):
+				in_quote = True
+				buff = clear(buff)
+				cur.lines.append(line)
+			elif line.strip() == '$$':
+				in_equation = True
+				buff = clear(buff)
+				cur.lines.append(line)
+			elif sure_title(line):
+				buff = clear(buff)
+				title, args = get_title(line)
+				if not cur.is_empty():
+					sections.append(cur)
+				cur = Section(title, args)
+				last_title = 2
+			elif line.startswith('    '):
+				in_quote_space = True
+				buff = clear(buff)
+				cur.lines.append('```')
+				cur.lines.append(line.lstrip(' '))
+			elif line.startswith('\t'):
+				in_quote_space = True
+				buff = clear(buff)
+				cur.lines.append('```')
+				cur.lines.append(line.lstrip(' '))
+			elif line.startswith('  '):
+				in_table = True
+				buff = clear(buff)
+				cur.lines.append(line)
+			elif line.startswith('------'):
+				if last_title >= 1:
+					continue
+				if buff != []:
+					buff.pop()
+				buff = clear(buff)
+				title, args = get_title(last)
+				if not cur.is_empty():
+					sections.append(cur)
+				cur = Section(title, args)
+			elif line == '':
+				buff = clear(buff)
+			else:
+				buff.append(line)
+		last = line
+	buff = clear(buff)
+	if not cur.is_empty():
+		sections.append(cur)
+	return sections
+
+def spell_check():
+	for base.prob in base.probs():
+		prob = base.prob
+		path = pjoin(base.conf.path, 'statement', base.conf.lang() + '.md')
+		lines = [line.rstrip(b'\r\n').decode('utf-8') for line in open(path, 'rb').readlines()]
+		spell_check_one(lines, path)
+
 def load():
 	if len(base.args) != 1:
 		log.error(u'无法转换，必须传入恰好一个参数。')
@@ -415,6 +521,7 @@ def load():
 class_list = {
 	'load' : load,
 	'format' : format
+	'check' : spell_check
 }
 
 if __name__ == '__main__':
