@@ -219,7 +219,7 @@ class Section:
 				return
 		if idx == 0:
 			f.write(b'{{ self.title() }}\n')
-		if idx == 0 and self.name not in title_choices:
+		if idx == 0 and self.name and self.name not in title_choices:
 			base.prob['title'][base.prob.lang()] = self.name.strip()
 		elif self.name:
 			f.write(("\n{{ s('%s'%s) }}\n\n" % (
