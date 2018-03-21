@@ -102,7 +102,7 @@ title_choices = {
 }
 
 new_re_symbols = {
-	r'\C' : '[\u4e00-\u9fbf]'
+	r'\C' : '[\u4e00-\u9fbf]',
 	r'\P' : '[\uff00-\uffef\u3000-\u303f\u2000-\u203f]'
 }
 
@@ -520,7 +520,7 @@ def load():
 
 class_list = {
 	'load' : load,
-	'format' : format
+	'format' : format,
 	'check' : spell_check
 }
 
