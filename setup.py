@@ -41,8 +41,8 @@ setup(
 	author = 'Chen Xumin, Zhang Ruizhe, Liu Xiaoyi, Chen Junkun',
 	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com, 1261954105@qq.com',
 	url = '',
-	license = 'http://www.apache.org/licenses/LICENSE-2.0.html',
-	description = 'Tools for generating an OI/ICPC-styled problem or contest for multiple judges.',
+	license = 'https://git.thusaac.org/publish/tuack/blob/master/LICENSE',
+	description = 'Tools for generating an Tsinghua/OI/ICPC-styled problem or contest for multiple judges.',
 	cmdclass={
 		'develop': PostDevelopCommand,
 		'install': PostInstallCommand,
