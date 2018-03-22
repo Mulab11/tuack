@@ -239,7 +239,7 @@ class Base(object):
 				ret = ret % ('',)
 			except Exception as e:
 				pass
-		return '##' + ret
+		return '## ' + ret
 
 	def ren_prob_md_j(self):
 		log.info(u'渲染题目题面 %s %s' % (self.comp, self.prob.route))
