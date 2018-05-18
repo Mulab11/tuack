@@ -19,24 +19,24 @@ def check():
 class PostDevelopCommand(develop):
 	"""Post-installation for development mode."""
 	def run(self):
-		check()
+		#check()
 		develop.run(self)
 
 class PostInstallCommand(install):
 	"""Post-installation for installation mode."""
 	def run(self):
-		check()
+		#check()
 		install.run(self)
 
 requires = [
-	'jinja2',
-	'natsort',
-	'pyyaml'
+	'jinja2 >= 2.9.6',
+	'natsort >= 5.0.3',
+	'pyyaml >= 3.11'
 ]
 
 setup(
 	name = 'tuack',
-	version = '0.1.2.1',
+	version = '0.1.2.3',
 	packages = find_packages(),
 	author = 'Chen Xumin, Zhang Ruizhe, Liu Xiaoyi, Chen Junkun',
 	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com, 1261954105@qq.com',
@@ -47,7 +47,7 @@ setup(
 		'develop': PostDevelopCommand,
 		'install': PostInstallCommand,
 	},
-	requires = requires,
+	#requires = requires,
 	install_requires = requires,
 	setup_requires = requires,
 	package_data = {
