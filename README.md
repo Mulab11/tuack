@@ -1,6 +1,6 @@
 ## 简介
 
-更新到了 0.1.3 版本，新特性见最后。
+更新到了 0.1.4 版本，新特性见最后。
 
 这个gitlab没有注册的用户似乎是不能提issue的，所以有issue可以给我发邮件 [chen.xm.mu@gmail.com](mailto:chen.xm.mu@gmail.com)，或是到[这个废弃的老工程](http://git.oschina.net/mulab/oi_tools)上面提issue，知道我QQ或微信的小伙伴也可以用这些工具告诉我。
 
@@ -19,6 +19,10 @@
 [文档在这里](https://git.thusaac.org/publish/tuack/wikis/home)
 
 ## 更新记录
+
+## v0.1.4
+
+
 
 ### v0.1.3
 
