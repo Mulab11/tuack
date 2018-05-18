@@ -46,6 +46,7 @@ def find_all_data(kind, folder, key, conf = None):
 		return ret
 	for prob in conf.probs(no_repeat = True):
 		log.info(u'在题目`%s`下搜索%s数据。' % (prob.route, key))
+		is_lfs = os.path.exists(pjoin(prob.path, '.gitattributes'))
 		new_data = set()
 		exist_data = set(map(str, prob.__getattribute__(key)))
 		try:
@@ -55,6 +56,20 @@ def find_all_data(kind, folder, key, conf = None):
 		new_data = parse(new_data)
 		for datum in new_data:
 			log.info(u'发现新数据`%s`。' % (pjoin(prob.path, folder, str(datum))))
+		if not is_lfs:
+			for tdata in (exist_data, new_data):
+				for datum in tdata:
+					for suf in ('.in', '.out', '.ans'):
+						fname = pjoin(prob.path, folder, str(datum) + suf)
+						if os.path.exists(fname) and os.path.getsize(fname) >= 1024 * 1024:
+							log.warning(u'题目`%s`下%s数据达到了1MiB，建议在该题下使用`python tuack.gen lfs`。' % (prob.route, key))
+							break
+					else:
+						continue
+					break
+				else:
+					continue
+				break
 		prob.__getattribute__(key).__iadd__(new_data)
 		if kind not in prob:
 			prob[kind] = []
