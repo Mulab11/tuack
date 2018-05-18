@@ -1,6 +1,6 @@
 ## 简介
 
-更新了 0.1.2 版本，新特性见最后。
+更新到了 0.1.3 版本，新特性见最后。
 
 这个gitlab没有注册的用户似乎是不能提issue的，所以有issue可以给我发邮件 [chen.xm.mu@gmail.com](mailto:chen.xm.mu@gmail.com)，或是到[这个废弃的老工程](http://git.oschina.net/mulab/oi_tools)上面提issue，知道我QQ或微信的小伙伴也可以用这些工具告诉我。
 
@@ -20,6 +20,11 @@
 
 ## 更新记录
 
+### v0.1.3
+
+- 添加 `tuack.doc` 可以导入其他格式的题面和进行简单的格式化。这项功能还有一堆 bug，注意备份。
+- 添加 `tuack.ren thuoj`，用于输出为 dokuwiki 的数据结构课程 OJ。
+
 ### v0.1.2.1
 
 * 修复若干 bug，尝试用此版本推到pypi上。
@@ -27,7 +32,7 @@
 ### v0.1.2
 
 *   添加yaml格式的配置文件；
-*   添加loj format，gen auto；
+*   添加 `tuack.ren loj`，`tuack.gen auto`；
 *   现在可以设置字体颜色了；
 *   现在json里面的中文在gen之后还会变回中文而不会是unicode了；
 *   去掉了packed标记，判断是否是打包评测只依赖于score字段是否设置；
