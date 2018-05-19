@@ -430,6 +430,12 @@ class Latex(Base):
 		os.chdir('tmp')
 		os.system('xelatex -interaction=batchmode problems.tex')
 		os.system('xelatex -interaction=batchmode problems.tex')
+		if not os.path.exists('problems.pdf'):
+			log.warning(u'题面渲染失败，尝试使用关闭静默模式渲染。')
+			os.system('xelatex problems.tex')
+			os.system('xelatex problems.tex')
+		if not os.path.exists('problems.pdf'):
+			log.error(u'题面渲染失败，请检查`tmp`目录下各文件。')
 		os.chdir('..')
 		shutil.copy(pjoin('tmp', 'problems.pdf'), self.result_path)
 
