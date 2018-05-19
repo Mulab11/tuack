@@ -408,6 +408,32 @@ class Latex(Base):
 		self.secondary_dict = {}
 		return tex
 
+	def gen_compile(self):
+		clangs = {l for prob in self.probs for l in prob['compile'].keys()}
+		ret = {}
+		for clang in clangs:
+			cur = []
+			for prob in self.probs:
+				if prob['type'] != 'output':
+					if clang in prob['compile']:
+						cur.append({
+							'option' : prob['compile'][clang] + (' -Wl,--stack=%d' % prob.memory_limit().B if clang in {'cpp', 'c'} and base.out_system == 'Windows' else ''),
+							'cnt' : 1,
+							'use' : True
+						})
+					else:
+						cur.append({'option' : u'不可用', 'cnt' : 1, 'use' : False})
+				else:
+					cur.append({'option' : 'N/A', 'cnt' : 1, 'use' : False})
+			last = []
+			for p in cur:
+				if len(last) == 0 or p['option'] != last[-1]['option']:
+					last.append(p)
+				else:
+					last[-1]['cnt'] += 1
+			ret[clang] = last
+		return ret
+
 	def ren_day_pdf(self):
 		log.info(u'渲染比赛日题面 %s %s' % (self.comp, self.day.route if self.day else self.conf.route))
 		self.context.pop('prob')
@@ -417,6 +443,7 @@ class Latex(Base):
 		self.context.pop('render')
 		self.context['probs'] = self.probs
 		self.context['problems'] = self.tex_problems
+		self.context['compile'] = self.gen_compile()
 		all_problem_statement = get_template('%s.tex.jinja' % base_templates[self.comp]).render(self.context)
 		try:
 			open(pjoin('tmp', 'problems.tex'), 'wb') \
