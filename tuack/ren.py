@@ -409,7 +409,7 @@ class Latex(Base):
 		return tex
 
 	def gen_compile(self):
-		clangs = {l for prob in self.probs for l in prob['compile'].keys()}
+		clangs = {l for prob in self.probs for l in prob.get('compile', {}).keys()}
 		ret = {}
 		for clang in clangs:
 			cur = []

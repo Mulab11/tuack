@@ -138,7 +138,7 @@ def tsinsen_oj():
 			
 	class OutData(File):
 		def __init__(self):
-			super(OutData, self).__init__('data', '%d.out' % InData.last_in)
+			super(OutData, self).__init__('data', '%d.ans' % InData.last_in)
 			
 	class Checkers(File):
 		fname = ('data', 'chk', 'chk.cpp')
