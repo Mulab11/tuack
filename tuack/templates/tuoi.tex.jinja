@@ -103,7 +103,9 @@
 		输入{% if io_style == 'fio' %}文件名{% endif %}
 		{%- for prob in probs -%}
 			&
-			{%- if io_style == 'fio' -%}
+			{%- if 'input_table' in prob -%}
+				{{ prob.tr('input_table') }}
+			{%- elif io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
 					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.in }
 				{%- else -%}
@@ -122,7 +124,9 @@
 		输出{% if io_style == 'fio' %}文件名{% endif %}
 		{%- for prob in probs -%}
 			&
-			{%- if io_style == 'fio' -%}
+			{%- if 'output_table' in prob -%}
+				{{ prob.tr('output_table') }}
+			{%- elif io_style == 'fio' -%}
 				{%- if prob['type'] != 'output' -%}
 					{\ttfamily {{ prob['name'].replace('_', '\\_') }}.out }
 				{%- else -%}
