@@ -547,6 +547,7 @@ def copy(source, name, target):
 			os.chdir(pjoin(source, name))
 			cpp_file = name + '.cpp'
 			elf_file = name + elf_suffix
+			check_install('g++')
 			if os.system('g++ %s -o %s -O2 -std=c++14 -Wall' % (cpp_file, elf_file)) != 0:
 				os.chdir(ret)
 				log.error(u'`%s`编译失败。' % pjoin(full_source, cpp_file))
@@ -794,6 +795,62 @@ def check_install(pack):
 			log.info(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
 			raise Exception('git lfs not found')
 
+	def check_gpp():
+		ret = os.system('g++ -v')
+		if ret != 0:
+			log.warning(u'g++未安装，将可能无法测试C++代码。')
+			raise Exception('g++ not found')
+	
+	def check_gcc():
+		ret = os.system('gcc -v')
+		if ret != 0:
+			log.warning(u'gcc未安装，将可能无法测试C代码。')
+			raise Exception('gcc not found')
+			
+	def check_java():
+		ret = os.system('javac -version')
+		if ret != 0:
+			log.warning(u'javac未安装，将可能无法测试Java代码。')
+			raise Exception('javac not found')
+		ret = os.system('java -version')
+		if ret != 0:
+			log.warning(u'java未安装，将可能无法测试Java代码。')
+			raise Exception('java not found')
+
+	def check_py2():
+		ret = os.system('python2 --version')
+		if ret != 0:
+			log.warning(u'python2未安装，将可能无法测试Python2代码。')
+			raise Exception('python2 not found')
+
+	def check_py3():
+		ret = os.system('python3 --version')
+		if ret != 0:
+			log.warning(u'python3未安装，将可能无法测试Python3代码。')
+			raise Exception('python3 not found')
+
+	def check_py():
+		ret = os.system('python --version')
+		if ret != 0:
+			log.warning(u'python未安装，将可能无法测试Python代码。')
+			raise Exception('python not found')
+			
+	def check_flex():
+		ret = os.system('flex --version')
+		if ret != 0:
+			log.warning(u'flex未安装，将可能无法检查题面格式。')
+			raise Exception('flex not found')
+
+	def check_bison():
+		ret = os.system('bison --version')
+		if ret != 0:
+			log.warning(u'bison未安装，将可能无法检查题面格式。')
+			raise Exception('bison not found')
+
+	if pack in {'g++', 'cpp'}:
+		pack = 'gpp'
+	if pack == 'c':
+		pack = 'gcc'
 	tool_conf = get_tool_conf()
 	if 'installed' not in env_conf:
 		env_conf['installed'] = {}

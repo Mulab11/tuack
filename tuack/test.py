@@ -166,6 +166,7 @@ else:
 def compile(prob, name):
 	for lang, args in prob['compile'].items():
 		if os.path.exists(pjoin('tmp', name + '.' + lang)):
+			base.check_install(lang)
 			os.chdir('tmp')
 			ret = subprocess.call(
 				base.compilers[lang](name, args, base.macros[base.work]),
