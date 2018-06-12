@@ -1,0 +1,50 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+import os
+import re
+import sys
+import json
+import datetime
+import shutil
+import subprocess
+import time
+import signal
+import zipfile
+from multiprocessing import Process, Queue
+from functools import wraps
+from threading import Timer
+import platform
+import traceback
+
+system = platform.system()
+
+commands = [
+	'flex lex.l 2> compile.log',
+	'bison -d yacc.y 2>> compile.log',
+	'g++ lex.yy.c yacc.tab.c -static -o main.exe 2>> compile.log'
+]
+
+def main():
+	for command in commands:
+		ret = os.system(command)
+		if ret != 0:
+			with open('compile.log', 'a') as f:
+				f.write('Run `%s` failed.\n' % (command))
+			return
+	if system == 'Windows':
+		fname = 'format-win.exe'
+	elif system == 'Darwin':
+		fname = 'format-mac'
+	else:
+		fname = 'format-ubuntu18.04'
+	try:
+		os.remove(fname)
+	except Exception as e:
+		pass
+	os.rename('main.exe', fname)
+
+if __name__ == '__main__':
+	main()
+	
+	

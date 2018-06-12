@@ -70,6 +70,13 @@ tool_path = (path if system == 'Windows' else pjoin(os.path.expanduser("~"), '.t
 if not os.path.exists(tool_path):
 	os.makedirs(tool_path)
 
+if base.system == 'Windows':
+	format_checker_name = 'format-win.exe'
+elif base.system == 'Darwin':
+	format_checker_name = 'format-mac'
+else:
+	format_checker_name = 'format-ubuntu'
+
 class Memory(str):
 	'''
 	'5KB'，'10 MB'，'8M'格式的字符串s，允许用Memory(s).GB，Memory(s).B等形式转换单位
