@@ -70,9 +70,9 @@ tool_path = (path if system == 'Windows' else pjoin(os.path.expanduser("~"), '.t
 if not os.path.exists(tool_path):
 	os.makedirs(tool_path)
 
-if base.system == 'Windows':
+if system == 'Windows':
 	format_checker_name = 'format-win.exe'
-elif base.system == 'Darwin':
+elif system == 'Darwin':
 	format_checker_name = 'format-mac'
 else:
 	format_checker_name = 'format-ubuntu'
@@ -853,6 +853,12 @@ def check_install(pack):
 		if ret != 0:
 			log.warning(u'bison未安装，将可能无法检查题面格式。')
 			raise Exception('bison not found')
+			
+	def check_format():
+		ret = os.system('%s -v' % pjoin(tool_path, format_checker_name))
+		if ret != 0:
+			log.warning(u'format checker未安装，使用`python -m tuack.install format`安装。')
+			raise Exception('format not found')
 
 	if pack in {'g++', 'cpp'}:
 		pack = 'gpp'

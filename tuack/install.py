@@ -37,10 +37,20 @@ def format():
 	log.info(u'2. 在目录tuack/lex下运行`python compile.pyinc`或在其他地方运行后将编译好的文件复制进该目录。')
 	log.info(u'3. 重新运行`python -m tuack.install format`。')
 
-work_list = {
-	'format' : format
-}
-work_list['full'] = lambda : [work_list[key]() for key in work_list]
+def pre_check(name):
+	def runner():
+		log.info(u'尝试安装`%s`。' % name)
+		try:
+			base.check_install(name)
+			log.info(u'`%s`已安装，跳过安装。' % name)
+			return
+		except Exception as e:
+			eval(name)
+	return runner
+
+packages = ['format']
+work_list = {key : pre_check(key) for key in packages}
+work_list['full'] = lambda : [work_list[key]() for key in work_list if key not in {'full', 'std'}]
 work_list['std'] = lambda : [work_list[key]() for key in ('format',)]
 
 if __name__ == '__main__':
