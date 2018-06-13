@@ -429,6 +429,8 @@ def format_check_one(path):
 		(120831, 1), (262141, 2), (1114109, 1),
 	]
 	def get_width(o):
+		if o == '\t':
+			return 4
 		o = ord(o)
 		if o == 0xe or o == 0xf:
 			return 0
@@ -446,11 +448,11 @@ def format_check_one(path):
 		level(u'第%d行，第%d个字：%s' % (lineno, col, logs[idx][2]))
 		lef = col - 10 if col > 10 else 0
 		rig = min(lef + 21, len(code.rstrip()))
-		level(code[lef:rig].replace('\u200b', '?'))
+		log.info(code[lef:rig].replace('\u200b', '?').replace('\t', '    '))
 		lef_cur = 0
 		for c in code[:lef]:
 			lef_cur += get_width(c)
-		level(' ' * (cur - lef_cur) + u'↑')
+		log.info(' ' * (cur - lef_cur) + u'↑')
 	os.system('%s < %s > format.tmp 2> format.log' % (
 		pjoin(base.tool_path, base.format_checker_name),
 		path
