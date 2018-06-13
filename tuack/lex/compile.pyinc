@@ -37,7 +37,7 @@ def main():
 	elif system == 'Darwin':
 		fname = 'format-mac'
 	else:
-		fname = 'format-ubuntu18.04'
+		fname = 'format-linux'
 	try:
 		os.remove(fname)
 	except Exception as e:

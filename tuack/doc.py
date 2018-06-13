@@ -117,6 +117,7 @@ title_re = re.compile('^(' + '|'.join(['|'.join(value) for value in title_choice
 std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)\) *\}\} *$')
 doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *$'
 html_equation_re = re.compile(r'\\\[(.*)\\\]\{\.math \.inline\}')
+format_log_re = re.compile(r'^(\w) (\d+) (.*)$')
 
 math_trans = {
 	'*' : '',
@@ -415,99 +416,72 @@ def format():
 				section.write(f, idx)
 	base.save_json(base.conf)
 
-def spell_check_one(lines, path):
-	in_quote = False
-	in_quote_space = False
-	in_quote_tab = False
-	in_equation = False
-	in_table = False
-	last_title = 0
-	for idx, line in enumerate(lines, 1):
-		if in_quote_space:
-			if line.startswith('    '):
-				cur.lines.append(line.lstrip(' '))
-				continue
-			else:
-				in_quote_space = False
-				cur.lines.append('```')
-		elif in_quote_tab:
-			if line.startswith('\t'):
-				cur.lines.append(line.lstrip(' '))
-				continue
-			else:
-				in_quote_tab = False
-				cur.lines.append('```')
-		elif in_table:
-			if line.startswith('  '):
-				cur.lines.append(line)
-				continue
-			else:
-				in_table = False
-		if in_quote:
-			if line == '```':
-				in_quote = False
-			cur.lines.append(line)
-		elif in_equation:
-			if line == '$$':
-				in_quote = False
-			cur.lines.append(line)
-		else:
-			last_title = last_title - 1 if last_title >= 1 else 0
-			if line.startswith('```'):
-				in_quote = True
-				buff = clear(buff)
-				cur.lines.append(line)
-			elif line.strip() == '$$':
-				in_equation = True
-				buff = clear(buff)
-				cur.lines.append(line)
-			elif sure_title(line):
-				buff = clear(buff)
-				title, args = get_title(line)
-				if not cur.is_empty():
-					sections.append(cur)
-				cur = Section(title, args)
-				last_title = 2
-			elif line.startswith('    '):
-				in_quote_space = True
-				buff = clear(buff)
-				cur.lines.append('```')
-				cur.lines.append(line.lstrip(' '))
-			elif line.startswith('\t'):
-				in_quote_space = True
-				buff = clear(buff)
-				cur.lines.append('```')
-				cur.lines.append(line.lstrip(' '))
-			elif line.startswith('  '):
-				in_table = True
-				buff = clear(buff)
-				cur.lines.append(line)
-			elif line.startswith('------'):
-				if last_title >= 1:
-					continue
-				if buff != []:
-					buff.pop()
-				buff = clear(buff)
-				title, args = get_title(last)
-				if not cur.is_empty():
-					sections.append(cur)
-				cur = Section(title, args)
-			elif line == '':
-				buff = clear(buff)
-			else:
-				buff.append(line)
-		last = line
-	buff = clear(buff)
-	if not cur.is_empty():
-		sections.append(cur)
-	return sections
+def format_check_one(path):
+	log.info(u'检查文件`%s`。' % path)
+	widths = [
+		(126, 1), (159, 0), (687, 1), (710, 0), (711, 1), 
+		(727, 0), (733, 1), (879, 0), (1154, 1), (1161, 0), 
+		(4347, 1), (4447, 2), (7467, 1), (7521, 0), (8369, 1), 
+		(8426, 0), (9000, 1), (9002, 2), (11021, 1), (12350, 2), 
+		(12351, 1), (12438, 2), (12442, 0), (19893, 2), (19967, 1),
+		(55203, 2), (63743, 1), (64106, 2), (65039, 1), (65059, 0),
+		(65131, 2), (65279, 1), (65376, 2), (65500, 1), (65510, 2),
+		(120831, 1), (262141, 2), (1114109, 1),
+	]
+	def get_width(o):
+		o = ord(o)
+		if o == 0xe or o == 0xf:
+			return 0
+		for num, wid in widths:
+			if o <= num:
+				return wid
+		return 1
+	def output():
+		level = {
+			'E' : log.error,
+			'W' : log.warning,
+			'I' : log.info,
+			'D' : log.debug,
+		}[logs[idx][0]]
+		level(u'第%d行，第%d个字：%s' % (lineno, col, logs[idx][2]))
+		lef = col - 10 if col > 10 else 0
+		rig = min(lef + 21, len(code.rstrip()))
+		level(code[lef:rig].replace('\u200b', '?'))
+		lef_cur = 0
+		for c in code[:lef]:
+			lef_cur += get_width(c)
+		level(' ' * (cur - lef_cur) + u'↑')
+	os.system('%s < %s > format.tmp 2> format.log' % (
+		pjoin(base.tool_path, base.format_checker_name),
+		path
+	))
+	tot = 0
+	logs = []
+	for line in open('format.log', 'rb'):
+		m = format_log_re.match(line.decode('utf-8').rstrip())
+		if m:
+			logs.append((m.group(1), int(m.group(2)), m.group(3)))
+	if len(logs) == 0:
+		return
+	idx = 0
+	for lineno, line in enumerate(open(path, 'rb'), 1):
+		code = line.decode('utf-8')
+		cur = 0
+		for col, ch in enumerate(code):
+			tot += len(ch.encode('utf-8'))
+			if tot >= logs[idx][1]:
+				output()
+				idx += 1
+			if idx >= len(logs):
+				return
+			cur += get_width(ch)
 
-def spell_check():
+def format_check():
+	base.check_install('format')
 	for base.prob in base.probs():
 		prob = base.prob
-		path = pjoin(base.conf.path, 'statement', base.conf.lang() + '.md')
-		lines = [line.rstrip(b'\r\n').decode('utf-8') for line in open(path, 'rb').readlines()]
-		spell_check_one(lines, path)
+		path = pjoin(prob.path, 'statement', 'zh-cn.md')
+		format_check_one(path)
 
 def load():
 	if len(base.args) != 1:
@@ -521,7 +495,7 @@ def load():
 class_list = {
 	'load' : load,
 	'format' : format,
-	'check' : spell_check
+	'check' : format_check
 }
 
 if __name__ == '__main__':
@@ -537,6 +511,7 @@ if __name__ == '__main__':
 			log.info(u'支持的工作：')
 			log.info(u'  load     必须包含一个参数输入文件名，表示要导入的题面。')
 			log.info(u'  format   尝试对当前的中文题面进行简单的格式化，危险操作请注意备份。')
+			log.info(u'  check    对题面进行格式检查。')
 			sys.exit(1)
 	except base.NoFileException as e:
 		log.error(e)

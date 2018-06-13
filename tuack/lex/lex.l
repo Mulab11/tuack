@@ -12,9 +12,9 @@
 extern "C" {
 	int yywrap(void);
 	int yylex(void);
-	ostream& warn();
-	ostream& info();
-	ostream& error();
+	ostream& warn(int cur = 0);
+	ostream& info(int cur = 0);
+	ostream& error(int cur = 0);
 	int myoffset;
 }
 
@@ -23,13 +23,19 @@ extern "C" {
 %x TXT1
 %x EQU1
 %x EQU1T
+%x EQU1JJV
+%x EQU1JJC
 
 %x TXTS
 %x EQUS
 %x EQUST
+%x EQUSJJV
+%x EQUSJJC
 
 %x JJV
 %x JJC
+
+%x ITAL
 
 zhpunc		(，|。|《|》|？|；|〈|〉|：|“|”|‘|’|【|】|（|）|、|！|—|·|…|「|」|『|』|〔|〕|–|．)
 zhchar		(\xE2[\xBA-\xBF][\x80-\xBF]|\xE3\x80\x87|\xE3[\x81-\xBF][\x80-\xBF]|[\xE4-\xEE][\x80-\xBF][\x80-\xBF]|\xEF[\x80-\xAB][\x80-\xBF])
@@ -44,7 +50,7 @@ blank		([\ \t\f\r\v])
 digit		([0-9])
 langchar	(digit|enpunc|enchar)
 
-number		([+-]?((({digit}|,)+\.?{digit}*|\.{digit}+))(e[+-]?{digit}+)?)
+number		([+-]?(({digit}+\.?{digit}*|\.{digit}+))(e[+-]?{digit}+)?)
 enword		({enchar}+)
 langname	({langchar}+)
 
@@ -65,32 +71,68 @@ ltxtt		(    )
 	//cout << "【首】" << yytext;
 }
 
+^#+.*$		{
+	//cout << "【题】" << yytext << endl;
+}
+
 ，，|，。|，；|，：|，！|，、|，！|。，|。。|。？|。；|。：|。、|。！|？，|？。|？；|？：|？、|；，|；。|；？|；；|；：|；、|；！|：，|：。|：？|：；|：：|：、|：！|、，|、。|、？|、；|、：|、、|、！|！，|！。|！；|！：|！、		{
 	warn() << "下列标点不应该连用`" << yytext << "`。" << endl;
+}
+
+\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<TXT1>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<EQU1>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<EQU1T>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<TXTS>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<EQUS>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<EQUST>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
+}
+
+<ITAL>\xe2\x80\x8b		{
+	error() << "下列不可见字符应该删除。" << endl;
 }
 
 ！！|！？|？！|？？		{
 	info() << "下列标点连用前请认真检查语气是否足够强烈`" << yytext << "`。" << endl;
 }
 
-({zhchar}|{zhpunc}){blank}({zhchar}|{zhpunc})		{
-	warn() << "下列中文或标点之间不应该插入空白符`" << yytext << "`。" << endl;
+({zhchar}|{zhpunc})(\*\*)?{blank}(\*\*)?({zhchar}|{zhpunc})		{
+	warn() << "下列中文或标点之间不应该插入空白符。" << endl;
 }
 
-({enword}|{elchar}){blank}{zhpunc}		{
-	warn() << "下列外文和标点之间不应该插入空白符`" << yytext << "`。" << endl;
+({enword}|{elchar})(\*\*)?{blank}(\*\*)?{zhpunc}		{
+	warn() << "下列外文和标点之间不应该插入空白符。" << endl;
 }
 
-{zhpunc}{blank}({enword}|{elchar})		{
-	warn() << "下列标点和外文之间不应该插入空白符`" << yytext << "`。" << endl;
+{zhpunc}(\*\*)?{blank}(\*\*)?({enword}|{elchar})		{
+	warn() << "下列标点和外文之间不应该插入空白符。" << endl;
 }
 
-{zhchar}({enchar}|{elchar})|({enchar}|{elchar}){zhchar}					{
-	warn() << "下列中文和外文之间应当插入空格`" << yytext << "`。" << endl;
+{zhchar}(\*\*)?({enchar}|{elchar})|({enchar}|{elchar})(\*\*)?{zhchar}			{
+	warn() << "下列中文和外文之间应当插入空格。" << endl;
 }
 
-({zhchar}|{enword}|{elchar})$		{
-	warn() << "行末应当有标点符号`" << yytext << "`。" << endl;
+({zhchar}|{enword}|{elchar})(\*\*)?\n\n		{
+	warn(-1) << "段末应当有标点符号。" << endl;
 }
 
 {zhchar}		{
@@ -106,9 +148,13 @@ ltxtt		(    )
 	if(yyleng == 1 && (('b' <= yytext[0] && yytext[0] <= 'z') || ('K' <= yytext[0] && yytext[0] <= 'N')))
 		info() << "字符`" << yytext << "`可能是一个变量，是的话请放在公式中。" << endl;
 }
-				
+
+\d\d\d,\d\d\d		{
+	warn() << "数`" << yytext << "`比较长，考虑放入公式中并使用变量保存。" << endl;
+}
+
 {number}		{
-	if(yyleng >= 3)
+	if(yyleng >= 6)
 		warn() << "数`" << yytext << "`比较长，考虑放入公式中并使用变量保存。" << endl;
 	//cout << "【数】" << yytext;
 }
@@ -125,12 +171,12 @@ ltxtt		(    )
 	//cout << "【符】" << yytext;
 }
 
-{ltxtq}{langname}?$			{
+^{ltxtq}{langname}?$			{
 	//cout << "【↓块1】" << yytext + 3;
 	BEGIN TXT1;
 }
 
-<TXT1>{ltxtq}$			{
+<TXT1>^{ltxtq}$			{
 	//cout << "【↑块1】" << endl;
 	BEGIN INITIAL;
 }
@@ -139,12 +185,12 @@ ltxtt		(    )
 	//cout << yytext;
 }
 
-({zhchar}|{enword}|{elchar}){stxtq}		{
-	warn() << "文字和字符串之间应当插入空格`" << yytext << "`。" << endl;
+({zhchar}|{enword}|{elchar})(\*\*)?{stxtq}		{
+	warn() << "文字和字符串之间应当插入空格。" << endl;
 	BEGIN TXTS;
 }
 
-{zhpunc}{blank}{stxtq}		{
+{zhpunc}(\*\*)?{blank}(\*\*)?{stxtq}		{
 	warn() << "标点和字符串之间不应当插入空格。" << endl;
 	BEGIN TXTS;
 }
@@ -154,12 +200,12 @@ ltxtt		(    )
 	BEGIN TXTS;
 }
 
-<TXTS>{stxtq}({zhchar}|{enword}|{elchar})		{
-	warn() << "字符串和文字之间应当插入空格`" << yytext << "`。" << endl;
+<TXTS>{stxtq}(\*\*)?({zhchar}|{enword}|{elchar})		{
+	warn() << "字符串和文字之间应当插入空格。" << endl;
 	BEGIN INITIAL;
 }
 
-<TXTS>{stxtq}{blank}{zhpunc}		{
+<TXTS>{stxtq}(\*\*)?{blank}(\*\*)?{zhpunc}		{
 	warn() << "字符串和标点之间不应当插入空格。" << endl;
 	BEGIN INITIAL;
 }
@@ -178,8 +224,13 @@ ltxtt		(    )
 	//cout << yytext;
 }
 
-{lequq}$				{
+^{lequq}$				{
 	//cout << "【↓式1】" << endl;
+	BEGIN EQU1;
+}
+
+{lequq}				{
+	error() << "行内公式只使用一个`$`。" << endl;
 	BEGIN EQU1;
 }
 
@@ -216,13 +267,21 @@ ltxtt		(    )
 }
 
 <EQUS>{number}		{
-	if(yyleng >= 3)
+	if(yyleng >= 6)
 		warn() << "数`" << yytext << "`比较长，考虑使用变量保存。" << endl;
 }
 
 <EQU1>{number}		{
-	if(yyleng >= 3)
+	if(yyleng >= 6)
 		warn() << "数`" << yytext << "`比较长，考虑使用变量保存。" << endl;
+}
+
+<EQUS>\d\d\d,\d\d\d		{
+	warn() << "数`" << yytext << "`比较长，考虑使用变量保存。" << endl;
+}
+
+<EQU1>\d\d\d,\d\d\d		{
+	warn() << "数`" << yytext << "`比较长，考虑使用变量保存。" << endl;
 }
 
 <EQU1>\\				{
@@ -240,8 +299,13 @@ ltxtt		(    )
 	BEGIN EQU1;
 }
 
-<EQU1>{lequq}$			{
+<EQU1>^{lequq}$			{
 	//cout << "【↑式1】" << endl;
+	BEGIN INITIAL;
+}
+
+<EQU1>{lequq}			{
+	error() << "行内公式只使用一个`$`。" << endl;
 	BEGIN INITIAL;
 }
 
@@ -249,17 +313,17 @@ ltxtt		(    )
 	//cout << yytext;
 }
 
-{sequq}{blank}		{
+{sequq}(\*\*)?{blank}		{
 	error() << "行内公式前$后不能加空格。" << endl;
 	BEGIN EQUS;
 }
 
-({zhchar}|{enword}|{elchar}){sequq}		{
-	warn() << "文字和公式之间应当插入空格`" << yytext << "`。" << endl;
+({zhchar}|{enword}|{elchar})(\*\*)?{sequq}		{
+	warn() << "文字和公式之间应当插入空格。" << endl;
 	BEGIN EQUS;
 }
 
-{zhpunc}{blank}{sequq}		{
+{zhpunc}(\*\*)?{blank}(\*\*)?{sequq}		{
 	warn() << "标点和公式之间不应当插入空格。" << endl;
 	BEGIN EQUS;
 }
@@ -294,12 +358,12 @@ ltxtt		(    )
 	BEGIN INITIAL;
 }
 
-<EQUS>{sequq}({zhchar}|{enword}|{elchar})		{
-	warn() << "公式和文字之间应当插入空格`" << yytext << "`。" << endl;
+<EQUS>{sequq}(\*\*)?({zhchar}|{enword}|{elchar})		{
+	warn() << "公式和文字之间应当插入空格。" << endl;
 	BEGIN INITIAL;
 }
 
-<EQUS>{sequq}{blank}{zhpunc}		{
+<EQUS>{sequq}(\*\*)?{blank}(\*\*)?{zhpunc}		{
 	warn() << "公式和标点之间不应当插入空格。" << endl;
 	BEGIN INITIAL;
 }
@@ -327,6 +391,34 @@ ltxtt		(    )
 	//cout << yytext;
 }
 
+<EQUS>{jjvlq}			{
+	//cout << "【<v】";
+	BEGIN EQUSJJV;
+}
+
+<EQUSJJV>{jjvrq}	{
+	//cout << "【v>】";
+	BEGIN EQUS;
+}
+
+<EQUSJJV>.			{
+	//cout << yytext;
+}
+
+<EQU1>{jjvlq}			{
+	//cout << "【<v】";
+	BEGIN EQU1JJV;
+}
+
+<EQU1JJV>{jjvrq}	{
+	//cout << "【v>】";
+	BEGIN EQU1;
+}
+
+<EQU1JJV>.			{
+	//cout << yytext;
+}
+
 {jjclq}			{
 	//cout << "【<c】";
 	BEGIN JJV;
@@ -341,12 +433,62 @@ ltxtt		(    )
 	//cout << yytext;
 }
 
+<EQUS>{jjclq}			{
+	//cout << "【<v】";
+	BEGIN EQUSJJC;
+}
+
+<EQUSJJC>{jjcrq}	{
+	//cout << "【v>】";
+	BEGIN EQUS;
+}
+
+<EQUSJJC>.			{
+	//cout << yytext;
+}
+
+<EQU1>{jjclq}			{
+	//cout << "【<v】";
+	BEGIN EQU1JJC;
+}
+
+<EQU1JJC>{jjcrq}	{
+	//cout << "【v>】";
+	BEGIN EQU1;
+}
+
+<EQU1JJC>.			{
+	//cout << yytext;
+}
+
 {sp}			{
 	//cout << "【空】";
 }
 
 \n				{
 	//cout << "【换】" << endl;
+}
+
+\*\*		{
+	//cout << "【粗】"
+}
+
+\*			{
+	//cout << "【斜】"
+	BEGIN ITAL;
+}
+
+<ITAL>\n		{
+	error() << "斜体中不能换行。" << endl;
+}
+
+<ITAL>{zhchar}|{zhpunc}|{elchar}		{
+	warn() << "斜体一般只用于表示文件名，强调请用加粗。" << endl;
+}
+
+<ITAL>\*		{
+	//cout << "【斜】";
+	BEGIN INITIAL;
 }
 
 .				{
@@ -360,14 +502,14 @@ int yywrap(void)
 	return 1;
 }
 
-ostream& error(){
-	return cerr << "E " << myoffset << " ";
+ostream& error(int cur){
+	return cerr << "E " << myoffset + cur << " ";
 }
 
-ostream& warn(){
-	return cerr << "W " << myoffset << " ";
+ostream& warn(int cur){
+	return cerr << "W " << myoffset + cur << " ";
 }
 
-ostream& info(){
-	return cerr << "I " << myoffset << " ";
+ostream& info(int cur){
+	return cerr << "I " << myoffset + cur << " ";
 }

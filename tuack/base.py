@@ -75,7 +75,7 @@ if system == 'Windows':
 elif system == 'Darwin':
 	format_checker_name = 'format-mac'
 else:
-	format_checker_name = 'format-ubuntu'
+	format_checker_name = 'format-linux'
 
 class Memory(str):
 	'''

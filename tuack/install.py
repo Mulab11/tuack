@@ -31,6 +31,7 @@ def format():
 	else:
 		ret = os.system('%s -v' % fpath)
 	if ret == 0:
+		log.info(u'`format`安装成功。')
 		return
 	log.info(u'直接安装format checker失败，请尝试用以下方式手工编译：')
 	log.info(u'1. 先安装flex和bison两个工具。')
@@ -40,12 +41,14 @@ def format():
 def pre_check(name):
 	def runner():
 		log.info(u'尝试安装`%s`。' % name)
+		'''
 		try:
 			base.check_install(name)
 			log.info(u'`%s`已安装，跳过安装。' % name)
 			return
 		except Exception as e:
-			eval(name)
+		'''
+		eval(name)()
 	return runner
 
 packages = ['format']
