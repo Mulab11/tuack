@@ -22,12 +22,12 @@ import __main__
 
 def format():
 	fname = base.format_checker_name
-	install_path = __main__.__file__ + '/../lex'
+	install_path = '/'.join(__main__.__file__.split('/')[:-1]) + '/lex'
 	shutil.copy(pjoin(install_path, fname), base.tool_path)
 	fpath = pjoin(base.tool_path, fname)
 	if base.system != 'Windows':
 		os.system('chmod +x %s' % fpath)
-		ret = os.system('./%s -v' % fpath)
+		ret = os.system('%s -v' % fpath)
 	else:
 		ret = os.system('%s -v' % fpath)
 	if ret == 0:

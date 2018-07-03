@@ -22,7 +22,7 @@ system = platform.system()
 commands = [
 	'flex lex.l 2> compile.log',
 	'bison -d yacc.y 2>> compile.log',
-	'g++ lex.yy.c yacc.tab.c -static -o main.exe 2>> compile.log'
+	'g++ lex.yy.c yacc.tab.c %s -o main.exe 2>> compile.log' % ('-static' if system != 'Darwin' else '')
 ]
 
 def main():
