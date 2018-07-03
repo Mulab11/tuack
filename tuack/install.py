@@ -22,7 +22,10 @@ import __main__
 
 def format():
 	fname = base.format_checker_name
-	install_path = '/'.join(__main__.__file__.split('/')[:-1]) + '/lex'
+	if base.system != 'Windows':
+		install_path = '/'.join(__main__.__file__.split('/')[:-1]) + '/lex'
+	else:
+		install_path = __main__.__file__ + '\\..\\lex'
 	shutil.copy(pjoin(install_path, fname), base.tool_path)
 	fpath = pjoin(base.tool_path, fname)
 	if base.system != 'Windows':
