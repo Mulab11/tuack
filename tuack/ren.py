@@ -66,6 +66,23 @@ base_templates = {
 
 secondary_dict = {}
 env = None
+pandoc_version = None
+
+def detect_pandoc_version():
+	global pandoc_version
+	if pandoc_version is not None:
+		return
+	cp = subprocess.run(['pandoc', '-v'], capture_output=True)
+	line = cp.stdout.decode().splitlines()[0]
+	pandoc_version = line.split()[-1]
+
+def get_pandoc_option():
+	detect_pandoc_version()
+	if pandoc_version.startswith('2.'):
+		option = '-f markdown-smart'
+	else:
+		option = '--no-tex-ligatures'
+	return option
 
 def get_template(fname, lang = None):
 	global env
@@ -384,14 +401,16 @@ class Latex(Base):
 		base.copy(base.pjoin(self.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
 		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(get_template('zh-cn.md').render(context, conf = self.conf).encode('utf-8'))
-		os.system('pandoc --no-tex-ligatures %s -t latex -o %s' % (
+		os.system('pandoc %s %s -t latex -o %s' % (
+			get_pandoc_option(),
 			pjoin('tmp', 'precautions.md'),
 			pjoin('tmp', 'precautions.tex')
 		))
 		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
 	def ren_prob_tex(self):
-		os.system('pandoc --no-tex-ligatures %s -t latex -o %s' % (
+		os.system('pandoc %s %s -t latex -o %s' % (
+			get_pandoc_option(),
 			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.tex')
 		))
