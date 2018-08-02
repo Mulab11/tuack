@@ -1,8 +1,14 @@
 ## 简介
 
-更新到了 0.1.4 版本，新特性见最后。
+更新到了 0.1.4.2 版本，新特性见最后。
 
-这个gitlab没有注册的用户似乎是不能提issue的，所以有issue可以给我发邮件 [chen.xm.mu@gmail.com](mailto:chen.xm.mu@gmail.com)，或是到[这个废弃的老工程](http://git.oschina.net/mulab/oi_tools)上面提issue，知道我QQ或微信的小伙伴也可以用这些工具告诉我。
+一般在三个地方更新：
+
+* https://git.thusaac.org/publish/tuack：主要的工作地址，所有分支都会在这里；非清华贵系算协成员不能提 issue。
+* https://gitee.com/mulab/oi_tools：可以提 issue。
+* https://github.com/Mulab11/tuack：可以提 issue，可能不会及时更新。
+
+此外如果有任何疑问或建议，知道我 QQ 或微信的小伙伴也可以用这些工具告诉我。
 
 这个轮子打算逐步实现：
 
@@ -19,6 +25,10 @@
 [文档在这里](https://git.thusaac.org/publish/tuack/wikis/home)
 
 ## 更新记录
+
+### v0.1.4.2
+
+* 修复若干 bug，主要是对 python2 的一些支持。
 
 ### v0.1.4.1
 
