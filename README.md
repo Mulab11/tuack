@@ -4,9 +4,9 @@
 
 一般在三个地方更新：
 
-* https://git.thusaac.org/publish/tuack：主要的工作地址，所有分支都会在这里；非清华贵系算协成员不能提 issue。
-* https://gitee.com/mulab/oi_tools：可以提 issue。
-* https://github.com/Mulab11/tuack：可以提 issue，可能不会及时更新。
+* [https://git.thusaac.org/publish/tuack](https://git.thusaac.org/publish/tuack)：主要的工作地址，所有分支都会在这里；非清华贵系算协成员不能提 issue。
+* [https://gitee.com/mulab/oi_tools](https://gitee.com/mulab/oi_tools)：可以提 issue。
+* [https://github.com/Mulab11/tuack](https://github.com/Mulab11/tuack)：可以提 issue，可能不会及时更新。
 
 此外如果有任何疑问或建议，知道我 QQ 或微信的小伙伴也可以用这些工具告诉我。
 
