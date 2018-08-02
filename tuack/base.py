@@ -19,7 +19,8 @@ import logging
 import traceback
 import yaml
 
-if sys.version_info.major == 2:
+python_version = sys.version_info.major
+if python_version == 2:
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
@@ -329,6 +330,7 @@ class Problem(Configure):
 		num_unscored = 0
 		total_score = 0.0
 		if not self.data:
+			self.packed = False
 			return
 		for datum in self.data:
 			if 'score' in datum:
@@ -701,7 +703,11 @@ def init():
 	custom_conf()
 	if not deal_args():
 		return False
-	log.info(u'脚本%s，工程路径%s，参数%s，开始于%s。' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
+	log.info(
+		('脚本%s，工程路径%s，参数%s，开始于%s。' if python_version == 2 else u'脚本%s，工程路径%s，参数%s，开始于%s。') % (
+			__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())
+		)
+	)
 	conf = load_json()
 	try:
 		check_install('git')

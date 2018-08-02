@@ -72,8 +72,8 @@ def detect_pandoc_version():
 	global pandoc_version
 	if pandoc_version is not None:
 		return
-	cp = subprocess.run(['pandoc', '-v'], capture_output=True)
-	line = cp.stdout.decode().splitlines()[0]
+	cp = subprocess.Popen('pandoc -v', stdout = subprocess.PIPE)
+	line = cp.stdout.read().decode().splitlines()[0]
 	pandoc_version = line.split()[-1]
 
 def get_pandoc_option():

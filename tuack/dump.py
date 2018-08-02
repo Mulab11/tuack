@@ -82,7 +82,7 @@ def lemon(conf = None):
 				for c in tc:
 					ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
 		else:
-			score = 100. / len(prob.test_cases)
+			score = (100. / len(prob.test_cases) if len(prob.test_cases) > 0 else 0.)
 			ost.writeInt32(len(prob.test_cases))
 			for c in prob.test_cases:
 				ost.writeInt32(score)
