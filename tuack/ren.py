@@ -24,6 +24,7 @@ except:
 	pass
 from . import tools
 import uuid
+import traceback
 
 work_class = {
 	'noi' : {'noi'},
@@ -72,7 +73,7 @@ def detect_pandoc_version():
 	global pandoc_version
 	if pandoc_version is not None:
 		return
-	cp = subprocess.Popen('pandoc -v', stdout = subprocess.PIPE)
+	cp = subprocess.Popen(['pandoc', '-v'], stdout = subprocess.PIPE)
 	line = cp.stdout.read().decode().splitlines()[0]
 	pandoc_version = line.split()[-1]
 
@@ -144,7 +145,24 @@ def table(path, name, temp, context, options):
 			code += '\t' + line.decode('utf-8').rstrip() + '\n'
 		namespace = {}
 		exec(code, namespace)
-		table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
+		try:
+			table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
+		except Exception as e:
+			log.error(e)
+			lines = traceback.format_exc().splitlines()
+			for idx, line in enumerate(lines):
+				if '<string>' in line:
+					m = re.match(r'^.*line (\d*),.*$', line)
+					if m:
+						lineno = int(m.group(1)) - 4
+						log.info('  File "%s", line %d' % (base.pjoin(path, name + suf), lineno))
+						log.info(code.splitlines()[lineno + 3][1:])
+						for i in range(idx + 1, len(lines)):
+							log.info(lines[i])
+						break
+			else:
+				raise e
+			raise e
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
 	for i in range(len(table) - 2, -1, -1):
