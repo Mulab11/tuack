@@ -21,11 +21,14 @@ extern "C" {
 %}
 
 %x TXT1
+%x TXT1P
 %x EQU1
 %x EQU1T
 %x EQU1JJV
 %x EQU1JJC
 
+%x TXTS1
+%x TXTS2
 %x TXTS
 %x EQUS
 %x EQUST
@@ -48,7 +51,7 @@ tab			(\t)
 fbblank		([\f\r\v])
 blank		([\ \t\f\r\v])
 digit		([0-9])
-langchar	(digit|enpunc|enchar)
+langchar	([+]|digit|enpunc|enchar)
 
 number		([+-]?(({digit}+\.?{digit}*|\.{digit}+))(e[+-]?{digit}+)?)
 enword		({enchar}+)
@@ -197,6 +200,30 @@ ltxtt		(    )
 
 {stxtq}			{
 	//cout << "【<s】";
+	BEGIN TXTS1;
+}
+
+<TXTS1>{stxtq}		{
+	BEGIN TXTS2;
+}
+
+<TXTS2>{stxtq}	{
+	//cout << "【↓块1】";
+	BEGIN TXT1P;
+}
+
+<TXT1P>{langname}?$		{
+	//cout << "lang = " << yytext << endl;
+	BEGIN TXT1;
+}
+
+<TXTS2>[^`]		{
+	error() << "不允许出现连续两个反引号`。" << endl;
+	BEGIN INITIAL;
+}
+
+<TXTS1>[^`]		{
+	//cout << "【<s】" << yytext;
 	BEGIN TXTS;
 }
 
