@@ -311,6 +311,14 @@ ltxtt		(    )
 	warn() << "数`" << yytext << "`比较长，考虑使用变量保存。" << endl;
 }
 
+<EQUS>({zhchar}|{zhpunc})		{
+	error() << "公式中不能存在汉字和中文标点。" << endl;
+}
+
+<EQU1>({zhchar}|{zhpunc})		{
+	error() << "公式中不能存在汉字和中文标点。" << endl;
+}
+
 <EQU1>\\				{
 	//cout << yytext;
 	BEGIN EQU1T;
