@@ -106,4 +106,24 @@ def time_range(start, end, year = '-', month = '-', day = ''):
 
 def json_dumps_twice(s):
 	return json.dumps(json.dumps(s))
-	
+
+class Args(object):
+	def __init__(self, *data):
+		self.data = data
+	def get(self, key, d = None, skip_none = False):
+		return (j.get(key, d) for i in self.data for j in i if not skip_none or key in j != None)
+	def keys(self):
+		ky = set()
+		for i in self.data:
+			ky |= set(i.keys())
+		return ky
+	def __getitem__(self, key):
+		return self.get(key)
+	def sum(self, key, d = None):
+		return sum(self.get(key, d, True))
+	def min(self, key, d = None):
+		return min(self.get(key, d, True))
+	def max(self, key, d = None):
+		return max(self.get(key, d, True))
+
+a = Args
