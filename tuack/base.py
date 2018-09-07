@@ -505,7 +505,7 @@ def del_redundance(conf, red):
 
 dump_formats = {
 	'json' : lambda conf : json.dumps(conf, indent = 2, sort_keys = True, ensure_ascii = False).encode('utf-8'),
-	'yaml' : lambda conf : yaml.dump(dict(conf), encoding = 'utf-8', allow_unicode = True)
+	'yaml' : lambda conf : yaml.safe_dump(dict(conf), encoding = 'utf-8', allow_unicode = True)
 }
 
 def save_json(conf):

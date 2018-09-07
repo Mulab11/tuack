@@ -24,6 +24,7 @@ except:
 	pass
 from . import tools
 import uuid
+import traceback
 
 work_class = {
 	'noi' : {'noi'},
@@ -79,9 +80,9 @@ def detect_pandoc_version():
 def get_pandoc_option():
 	detect_pandoc_version()
 	if pandoc_version.startswith('2.'):
-		option = '-f markdown-smart'
+		option = '-f markdown-smart -t latex-smart'
 	else:
-		option = '--no-tex-ligatures'
+		option = '--no-tex-ligatures -t latex'
 	return option
 
 def get_template(fname, lang = None):
@@ -144,7 +145,24 @@ def table(path, name, temp, context, options):
 			code += '\t' + line.decode('utf-8').rstrip() + '\n'
 		namespace = {}
 		exec(code, namespace)
-		table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
+		try:
+			table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
+		except Exception as e:
+			log.error(e)
+			lines = traceback.format_exc().splitlines()
+			for idx, line in enumerate(lines):
+				if '<string>' in line:
+					m = re.match(r'^.*line (\d*),.*$', line)
+					if m:
+						lineno = int(m.group(1)) - 4
+						log.info('  File "%s", line %d' % (base.pjoin(path, name + suf), lineno))
+						log.info(code.splitlines()[lineno + 3][1:])
+						for i in range(idx + 1, len(lines)):
+							log.info(lines[i])
+						break
+			else:
+				raise e
+			raise e
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
 	for i in range(len(table) - 2, -1, -1):
@@ -273,6 +291,10 @@ class Base(object):
 			'data' : self.prob.get('data'),
 			'samples' : self.prob.get('samples'),
 			'pre' : self.prob.get('pre'),
+			'dargs' : tools.a(self.prob.get('data')),
+			'pargs' : tools.a(self.prob.get('pre')),
+			'sargs' : tools.a(self.prob.get('samples')),
+			'aargs' : tools.a(self.prob.get('data'), self.prob.get('pre'), self.prob.get('samples')),
 			'day' : self.day,
 			'contest' : self.contest,
 			'io_style' : self.io_style,
@@ -401,7 +423,7 @@ class Latex(Base):
 		base.copy(base.pjoin(self.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
 		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(get_template('zh-cn.md').render(context, conf = self.conf).encode('utf-8'))
-		os.system('pandoc %s %s -t latex -o %s' % (
+		os.system('pandoc %s %s -o %s' % (
 			get_pandoc_option(),
 			pjoin('tmp', 'precautions.md'),
 			pjoin('tmp', 'precautions.tex')
@@ -409,7 +431,7 @@ class Latex(Base):
 		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
 	def ren_prob_tex(self):
-		os.system('pandoc %s %s -t latex -o %s' % (
+		os.system('pandoc %s %s -o %s' % (
 			get_pandoc_option(),
 			pjoin('tmp', 'problem.md'),
 			pjoin('tmp', 'problem.tex')
