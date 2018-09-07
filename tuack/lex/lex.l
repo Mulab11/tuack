@@ -269,12 +269,36 @@ ltxtt		(    )
 	warn() << "在公式中`" << yytext << "`应该写成`\\" << yytext << "`。" << endl;
 }
 
+<EQUS>\<=|≤	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\le`。" << endl;
+}
+
+<EQU1>\<=|≤	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\le`。" << endl;
+}
+
+<EQUS>\>=|≥	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\ge`。" << endl;
+}
+
+<EQU1>\>=|≥	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\ge`。" << endl;
+}
+
+<EQUS>\.\.\.|…	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\dots`（对于分隔逗号等符号）或`\\cdots`（对于分隔加号、小于号等符号）等。" << endl;
+}
+
+<EQU1>\.\.\.|…	{
+	warn() << "在公式中`" << yytext << "`应该写成`\\dots`（对于分隔逗号等符号）或`\\cdots`（对于分隔加号、小于号等符号）等。" << endl;
+}
+
 <EQUS>mod	{
-	info() << "在公式中`mod`一般写成`\\bmod`。" << endl;
+	info() << "在公式中`mod`一般写成`\\bmod`或`\\pmod`。" << endl;
 }
 
 <EQU1>mod	{
-	info() << "在公式中`mod`一般写成`\\bmod`。" << endl;
+	info() << "在公式中`mod`一般写成`\\bmod`或`\\pmod`。" << endl;
 }
 
 <EQUS>\*	{
@@ -322,6 +346,11 @@ ltxtt		(    )
 <EQU1>\\				{
 	//cout << yytext;
 	BEGIN EQU1T;
+}
+
+<EQU1T>pmod				{
+	//cout << yytext;
+	BEGIN EQU1;
 }
 
 <EQU1T>bmod				{
@@ -374,6 +403,11 @@ ltxtt		(    )
 }
 
 <EQUST>bmod				{
+	//cout << yytext;
+	BEGIN EQUS;
+}
+
+<EQUST>pmod				{
 	//cout << yytext;
 	BEGIN EQUS;
 }
