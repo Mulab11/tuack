@@ -271,11 +271,27 @@ def copy_lfs():
 		copy('problem.gitattributes', '.gitattributes')
 
 def copy_chk():
+	if base.conf['folder'] != 'problem':
+		log.error(u'答案校验器只能添加给题目工程，请到题目目录下运行。')
+		return
 	for prob in base.probs(no_repeat = True):
 		copy = lambda src, tgt = None: sample_copy(src, tgt, prob.path)
 		if not os.path.exists(pjoin(prob.path, 'data', 'chk')):
 			os.makedirs(pjoin(prob.path, 'data', 'chk'))
 		copy('chk.cpp', pjoin('data', 'chk'))
+
+def copy_prec():
+	if base.conf['folder'] != 'contest':
+		log.error(u'考生须知只能添加给比赛工程。')
+		return
+	path = '.'
+	copy = lambda src, tgt = None: sample_copy(src, tgt, path)
+	for ff in ('precautions', ):
+		st_path = pjoin(path, ff)
+		if not os.path.exists(st_path):
+			os.makedirs(st_path)
+		for f in os.listdir(pjoin(base.path, 'sample', ff)):
+			copy(pjoin(ff, f), pjoin(ff, f))
 
 work_list = {
 	'data' : lambda conf = None: find_all_data('data', 'data', 'test_cases', conf),
@@ -287,9 +303,17 @@ work_list = {
 	'problem' : lambda : new_dir('problem'),
 	'upgrade' : upgrade,
 	'lfs' : copy_lfs,
-	'chk' : copy_chk
+	'chk' : copy_chk,
+	'prec' : copy_prec
 }
 work_list['auto'] = lambda : [work_list[key]() for key in ['data', 'samples', 'pre', 'code']]
+work_list['n'] = work_list['contest']
+work_list['d'] = work_list['day']
+work_list['p'] = work_list['problem']
+work_list['t'] = work_list['data']
+work_list['s'] = work_list['samples']
+work_list['u'] = work_list['upgrade']
+work_list['a'] = work_list['auto']
 
 if __name__ == '__main__':
 	try:
@@ -303,19 +327,28 @@ if __name__ == '__main__':
 	else:
 		log.info(u'这个工具用于快速建立一道题目。')
 		log.info(u'支持的工作：')
-		log.info(u'  upgrade  升级老版本工程到现在版本的工程。')
 		log.info(u'  contest  在当前目录下生成一场比赛，不支持参数。')
+		log.info(u'  n        同contest。')
 		log.info(u'  day      无参数表示在当前目录下生成一个比赛日，比赛日可以是独立的工程；')
 		log.info(u'           有参数表示在当前比赛下依次生成名叫参数1，参数2，…的比赛日，')
 		log.info(u'           有参数必须保证当前目录是比赛。')
+		log.info(u'  d        同day。')
 		log.info(u'  problem  无参数表示在当前目录下生成一道题目，题目可以是独立的工程；')
 		log.info(u'           有参数表示在当前比赛日下依次生成名叫参数1，参数2，…的题目，')
 		log.info(u'           有参数必须保证当前目录是比赛日。')
+		log.info(u'  p        同problem。')
 		log.info(u'  data     在题目工程的data文件夹中搜索数据并添加到配置文件。')
 		log.info(u'           对于比赛工程和比赛日工程，此操作将应用于所有子题目工程，下同。')
+		log.info(u'  t        同data。')
 		log.info(u'  samples  在题目工程的down文件夹中搜索样例并添加到配置文件。')
+		log.info(u'  s        同samples。')
 		log.info(u'  pre      在题目工程的pre文件夹中搜索预测试数据并添加到配置文件。')
 		log.info(u'  code     在题目工程的非数据文件夹中搜索源代码并添加到配置文件。')
+		log.info(u'  c        同code。')
 		log.info(u'  auto     等于一次性做了上述4件事情。')
+		log.info(u'  a        同auto。')
 		log.info(u'  lfs      用git-lfs维护所有的*.in/out/ans，当数据较大时使用。')
 		log.info(u'  chk      添加一个空的答案校验器或称spj，建议在此基础上修改以兼容。')
+		log.info(u'  prec     对于比赛工程，添加考生须知文件。')
+		log.info(u'  upgrade  升级老版本工程到现在版本的工程。')
+		log.info(u'  u        同upgrade。')
