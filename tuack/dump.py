@@ -72,8 +72,8 @@ def lemon(conf = None):
 			ost.writeInt32(len(prob['data']))
 			for datum in prob['data']:
 				ost.writeInt32(datum['score'])
-				ost.writeInt32((datum['time limit'] if 'time limit' in datum else conf['time limit']) * 1000)
-				ost.writeInt32(datum.memory_limit().MB)
+				ost.writeInt32(datum.get('time limit', prob['time limit']) * 1000)
+				ost.writeInt32(base.Memory(datum.get('memory limit', prob['memory limit'])).MB)
 				tc = datum['cases']
 				ost.writeInt32(len(tc))
 				for c in tc:
