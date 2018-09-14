@@ -316,12 +316,13 @@ def packed_score(scores, times, reports, score_map, prob):
 def test_problem(prob):
 	log.info(u'尝试评测题目`%s`。' % prob.route)
 	if 'users' not in prob:
-		log.warning(u'题目`%s`缺少`users`字段，使用`python -m tuack.gen code`搜索源代码。' % prob.route)
+		log.warning(u'题目`%s`缺少`users`字段，没有找到出题人的程序。' % prob.route)
+		log.info(u'你需要在工程中放置你的代码，然后使用`python -m tuack.gen code`搜索源代码，或直接配置`users`字段。')
 		return
 	if 'data' not in prob or len(prob.test_cases) == 0:
-		log.warning(u'题目`%s`缺少`data`字段，使用`python -m tuack.gen data`在文件夹`%s`下搜索测试数据。' % (
-			prob.route, pjoin(prob.path, 'data')
-		))
+		log.warning(u'题目`%s`缺少`data`字段，找不到测试数据。' % prob.route)
+		log.info(u'你需要在文件夹`%s`下按*.in和*.ans格式存放测试数据，' % pjoin(prob.path, 'data'))
+		log.info(u'然后使用`python -m tuack.gen data`添加它们或直接配置`data`字段。')
 	if 'samples' not in prob or len(prob.sample_cases) == 0:
 		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m tuack.gen samples`在文件夹`%s`下搜索样例数据。' % (
 			prob.route, pjoin(prob.path, 'down')
