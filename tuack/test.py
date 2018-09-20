@@ -324,22 +324,30 @@ def test_problem(prob):
 		log.info(u'你需要在文件夹`%s`下按*.in和*.ans格式存放测试数据，' % pjoin(prob.path, 'data'))
 		log.info(u'然后使用`python -m tuack.gen data`添加它们或直接配置`data`字段。')
 	if 'samples' not in prob or len(prob.sample_cases) == 0:
-		log.warning(u'题目`%s`缺少`samples`字段，使用`python -m tuack.gen samples`在文件夹`%s`下搜索样例数据。' % (
-			prob.route, pjoin(prob.path, 'down')
-		))
-	#if 'pre' not in prob or len(prob.pre_cases) == 0:
-	#	log.warning(u'题目`%s`缺少`pre`字段，使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (
-	#		prob.route, pjoin(prob.path, 'pre')
-	#	))
+		log.warning(u'题目`%s`缺少`samples`字段，找不到样例数据。' % prob.route)
+		log.info(u'你需要在文件夹`%s`下按*.in和*.ans格式存放样例数据，' % pjoin(prob.path, 'down'))
+		log.info(u'然后使用`python -m tuack.gen samples`添加它们或直接配置`samples`字段。')
+	if 'pre' in prob and len(prob.pre_cases) == 0:
+		log.warning(u'题目`%s`的`pre`字段为空，找不到预测试数据。' % prob.route)
+		log.info(u'如果这道题目有预测试数据，你需要在文件夹`%s`下按*.in和*.ans格式存放预测试数据，' % pjoin(prob.path, 'pre'))
+		log.info(u'然后使用`python -m tuack.gen pre`在文件夹`%s`下搜索预测试数据。' % (pjoin(prob.path, 'pre')))
+		log.info(u'如果这道题目没有预测试数据，你需要删除`conf.*`中的`pre`字段。')
+	if len(prob.data) == 1 and prob.data[0].get('score') != 100:
+		log.warning(u'题目`%s`的`data`字段只有一个元素，可能没有正确配置数据。' % prob.route)
+		log.info(u'如果是一个包的CPC赛制，需要在这个元素中配置`score`项为100。')
+		log.info(u'如果是多点或多子任务的赛制，需要将每类数据分类配置或打包配置。')
+		log.info(u'详情请见%s。' % base.wiki(u'配置题目#数据'))
 	log.info(u'共%d组样例，%d个预测试点，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
 		len(prob.pre_cases),
 		len(prob.test_cases),
 		u'是' if prob.packed else u'不是',
-		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的ICPC赛制）') if prob.packed else ''
+		(u'（共%d个包）' % len(prob.data) if len(prob.data) != 1 else u'（看样子是一个包的CPC赛制）') if prob.packed else ''
 	))
 
 	prob_failed = False
+
+	case_features = [[] for i in range(len(prob.data))]
 
 	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
 		fres.write('%s,%s%s,summary,sample%s,pre%s\n' % (
@@ -357,7 +365,12 @@ def test_problem(prob):
 					continue
 			for algo, algo_obj in algos.items():
 				path = algo_obj['path']
-				#exp = algo_obj['expected']
+				expe = algo_obj.get('expected')
+				if not expe or len(expe) == 0:
+					log.warning(u'程序`%s/%s`没有设置期望得分。' % (user, algo))
+					log.info(u'如果该程序是标程、部分分程序或骗分程序等，需要设置它的`expected`字段。')
+					log.info(u'有多种设置的格式，例如：`== 60`表示该程序应该得到60分。')
+					log.info(u'如果该程序是其他功能程序，例如数据生成器，请将该程序从配置文件中移除。')
 				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
 				while os.path.exists('tmp'):
@@ -401,21 +414,26 @@ def test_problem(prob):
 					except:
 						pass
 				tc = len(prob.test_cases)
+				score_map = {}
+				for i in range(tc):
+					score_map[prob.test_cases[i]] = i
 				if prob.packed:
-					score_map = {}
-					for i in range(tc):
-						score_map[prob.test_cases[i]] = i
 					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
 					tot = sum(packed[0][:-1])
 					scores = scores[:tc] + packed[0] + scores[tc:]
 					times = times[:tc] + packed[1] + times[tc:]
 					reports = reports[:tc] + packed[2] + reports[tc:]
+					for i, s in enumerate(packed[0][:-1]):
+						case_features[i].append(s)
 				elif tc > 0:
 					ratio = 100. / tc
 					scores = [score * ratio for score in scores[:tc] + [sum(scores[:tc])] + scores[tc:]]
+					packed = packed_score(scores[:tc], times[:tc], reports[:tc], score_map, prob)
 					tot = sum(scores[:tc])
 					times = times[:tc] + [sum((val for idx, val in enumerate(times[:tc]) if scores[idx] > 0))] + times[tc:]
 					reports = reports[:tc] + [''] + reports[tc:]
+					for i, s in enumerate(packed[0][:-1]):
+						case_features[i].append(s)
 				else:
 					# FIXME: Do I do this?
 					tot = sum(scores)
@@ -432,6 +450,14 @@ def test_problem(prob):
 				reports = map(lambda i : i.replace('\n', '\\n').replace(',', ';').replace('\r', ''), reports)
 				for title, line in [(user, scores), (algo, times), ('', reports)]:
 					fres.write('%s,%s\n' % (title, ','.join(line)))
+	used_features = {}
+	for i, f in enumerate(case_features):
+		tf = tuple(f)
+		if tf in used_features:
+			log.warning(u'没有程序区分数据包%s和%s。' % (prob.data[used_features[tf]]['cases'], prob.data[i]['cases']))
+			log.info(u'对每种不同类型的数据，都应当有程序可以被这些数据区分。')
+		else:
+			used_features[tf] = i
 	if base.start_file:
 		base.xopen_file(pjoin('result', prob.route) + '.csv')
 	return not prob_failed

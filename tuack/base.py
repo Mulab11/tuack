@@ -326,7 +326,7 @@ class Problem(Configure):
 			self.__setattr__(attr, sorter()(list(tc)))
 	def set_score(self):
 		if 'packed' in self:
-			log.warning(u'题目`%s`的`packed`字段不再使用，但仍可以使用，用`python -m tuack.gen upgrade`升级。' % self.route)
+			log.warning(u'题目`%s`的`packed`字段不再有效，但仍可以存在，用`python -m tuack.gen upgrade`升级。' % self.route)
 		num_unscored = 0
 		total_score = 0.0
 		if not self.data:
@@ -357,6 +357,7 @@ class Problem(Configure):
 					100 - total_score
 				))
 				log.info(u'如果你需要不等分+打包测试，请每个包设置`score`；否则请每个包都不设置`score`，此时是每个测试点同分而不是每个包同分。')
+				log.info(u'一部分包设置`score`，另一部分不设置将可能导致导出其他格式时出现问题。')
 				self.score = 100.0
 			else:
 				if abs(total_score - 100) > 1e-6:
