@@ -24,6 +24,36 @@ if python_version == 2:
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
+class Memory(str):
+	'''
+	'5KB'，'10 MB'，'8M'格式的字符串s，允许用Memory(s).GB，Memory(s).B等形式转换单位
+	'''
+	units = {
+		'B' : 1,
+		'K' : 2 ** 10,
+		'KB' : 2 ** 10,
+		'M' : 2 ** 20,
+		'MB' : 2 ** 20,
+		'G' : 2 ** 30,
+		'GB' : 2 ** 30,
+		'T' : 2 ** 40,
+		'TB' : 2 ** 40
+	}
+	def __new__(self, val):
+		return super(Memory, self).__new__(self, val)
+	def byte(self):
+		if self[-1] == 'B':
+			sp = 2 if self[-2] in self.units else 1
+		else:
+			sp = 1
+		un = self.units[self[-sp:]]
+		return float(self[:-sp]) * un
+	def __init__(self, val):
+		super(Memory, self).__init__()
+		b = self.byte()
+		for key, val in self.units.items():
+			self.__setattr__(key, b / val)
+
 json_version = 2
 work = None
 system = platform.system()
@@ -35,18 +65,18 @@ elf_suffix = '' if system != 'Windows' else '.exe'
 problem_skip = re.compile(r'^(data|down|tables|resources|gen|pre)$')
 user_skip = re.compile(r'^(data|down|pre|val|.*validate.*|gen|chk|checker|report|check.*|make_data|data_maker|data_make|make|dmk|generate|generator|makedata|spj|judge|tables|tmp|.*\.tmp|.*\.temp|temp|.*\.test|.*\.dir)(\..*)?$')
 compilers = {
-	'cpp' : lambda name, args, macros = '': 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
-	'c' : lambda name, args, macros = '': 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
+	'cpp' : lambda name, args, macros = '', ml = Memory('512 MB'): 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
+	'c' : lambda name, args, macros = '', ml = Memory('512 MB'): 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
 	# I don't know how to change stack size, nor add #define in pascal
-	'pas' : lambda name, args, macros = '': 'fpc %s.pas %s' % (name, args),
-	'java' : lambda name, args, macros = '': 'javac %s.java %s' % (name, args),
-	'py' : lambda name, args, macros = '': ''
+	'pas' : lambda name, args, macros = '', ml = Memory('512 MB'): 'fpc %s.pas %s' % (name, args),
+	'java' : lambda name, args, macros = '', ml = Memory('512 MB'): 'javac %s.java %s -J-Xms%dm -J-Xmx%dm' % (name, args, int(Memory(ml).MB) // 16, int(Memory(ml).MB) // 4),
+	'py' : lambda name, args, macros = '', ml = Memory('512 MB'): ''
 }
 runners = {
 	'cpp' : None,
 	'c' : None,
 	'pas' : None,
-	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm %s' % (int(Memory(ml).MB) // 16, int(Memory(ml).MB) // 4, name),
+	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm %s' % (int(Memory(ml).MB) // 16, int(Memory(ml).MB), name),
 	'py' : lambda name, ml = None: 'python %s.py' % name
 }
 macros = {
@@ -81,36 +111,6 @@ elif system == 'Darwin':
 	format_checker_name = 'format-mac'
 else:
 	format_checker_name = 'format-linux'
-
-class Memory(str):
-	'''
-	'5KB'，'10 MB'，'8M'格式的字符串s，允许用Memory(s).GB，Memory(s).B等形式转换单位
-	'''
-	units = {
-		'B' : 1,
-		'K' : 2 ** 10,
-		'KB' : 2 ** 10,
-		'M' : 2 ** 20,
-		'MB' : 2 ** 20,
-		'G' : 2 ** 30,
-		'GB' : 2 ** 30,
-		'T' : 2 ** 40,
-		'TB' : 2 ** 40
-	}
-	def __new__(self, val):
-		return super(Memory, self).__new__(self, val)
-	def byte(self):
-		if self[-1] == 'B':
-			sp = 2 if self[-2] in self.units else 1
-		else:
-			sp = 1
-		un = self.units[self[-sp:]]
-		return float(self[:-sp]) * un
-	def __init__(self, val):
-		super(Memory, self).__init__()
-		b = self.byte()
-		for key, val in self.units.items():
-			self.__setattr__(key, b / val)
 
 class Configure(dict):
 	'''
@@ -919,6 +919,8 @@ def change_eol(path, eol):
 
 unix2dos = lambda path : change_eol(path, b'\r\n')
 dos2unix = lambda path : change_eol(path, b'\n')
+
+wiki = lambda name : name
 
 def run_exc(func):
 	try:

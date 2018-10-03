@@ -66,8 +66,8 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 
 def runner_linux(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; time -f "%%%s" -o timer %s %s %s' % (
-			int(base.Memory(ml).KB),
+		'%s time -f "%%%s" -o timer %s %s %s' % (
+			'ulimit -v %d;' % int(base.Memory(ml).KB) if vm != base.runners['java'] else '',
 			'U' if base.user_time else 'E',
 			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
@@ -86,7 +86,7 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 	pro.start()
 	pro.join(tl * base.time_multiplier)
 	if que.qsize() == 0:
-		fatal('Runner broken.')
+		log.error('Runner broken.')
 	elif que.qsize() == 1:
 		ret = 'Time out.'
 		pid = que.get()
@@ -129,7 +129,7 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 	pro.start()
 	pro.join(tl * base.time_multiplier)
 	if que.empty():
-		base.fatal('Runner broken.')
+		log.error('Runner broken.')
 	else:
 		pid = que.get()
 		if que.empty():
@@ -168,21 +168,36 @@ def compile(prob, name):
 		if os.path.exists(pjoin('tmp', name + '.' + lang)):
 			base.check_install(lang)
 			os.chdir('tmp')
-			ret = subprocess.call(
-				base.compilers[lang](name, args, base.macros[base.work]),
-				shell = True,
-				stdout = open('stdout', 'w'),
-				stderr = open('stderr', 'w')
-			)
+			try:
+				ret = subprocess.call(
+					base.compilers[lang](name, args, base.macros[base.work], ml = prob['memory limit']),
+					shell = True,
+					stdout = open('stdout', 'w'),
+					stderr = open('stderr', 'w')
+				)
+			except Exception as e:
+				with open('stderr', 'a') as f:
+					f.write(str(e))
+				ret = -1
 			os.chdir('..')
 			if ret:
-				log.info('`' + name + '.' + lang + u'`编译失败，详情见`compile.log`.')
+				log.info('`' + name + '.' + lang + u'`编译失败，详情见`compile.log`。')
 				with open('compile.log', 'a') as f:
 					import __main__
 					f.write(u'## 脚本%s/，工程路径%s，参数%s，开始于%s。\n' % (__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())))
 					f.write(u'## 测试题目`%s`，编译失败代码名称`%s.%s`\n' % (prob['name'], name, lang))
-					f.write(open('tmp/stdout').read())
-					f.write(open('tmp/stderr').read())
+					try:
+						f.write(u'编译器输出的stdout为：\n')
+						f.write(open('tmp/stdout').read())
+					except Exception as e:
+						f.write(u'编译器没有输出stdout，具体错误为：\n')
+						f.write(str(e) + '\n')
+					try:
+						f.write(u'编译器输出的stderr为：\n')
+						f.write(open('tmp/stderr').read())
+					except Exception as e:
+						f.write(u'编译器没有输出stderr，具体错误为：\n')
+						f.write(str(e) + '\n')
 				raise Exception('`' + name + '.' + lang + '` compile failed.')
 			return lang
 	else:
