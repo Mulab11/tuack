@@ -33,6 +33,7 @@
 \usepackage{ulem}
 \usepackage{hyperref}
 \usepackage{ifxetex,ifluatex}
+\usepackage{caption}
 
 \XeTeXlinebreaklocale "zh"
 \XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt

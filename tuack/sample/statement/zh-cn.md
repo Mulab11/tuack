@@ -58,9 +58,9 @@ int main(int argc, char** argv);
 
 不要用 markdown 自带的语法插入图片（因为目前支持不好），用下列语法插入图片：
 
-{{ img('sample.png', size = 0.5, align = 'middle', inline = False) }}
+{{ img('sample.png', size = 0.5, align = 'middle', inline = False, caption='图片样例', label='fig:sample') }}
 
-其中 `inline` 为 `False` 表示这是一个独占一行的图片，此时支持 `align`，选项为 `left`，`middle` 或 `right`。后面这些参数可以不写。
+其中 `inline` 为 `False` 表示这是一个独占一行的图片，此时支持 `align`，选项为 `left`，`middle` 或 `right`。后面这些参数可以不写。如果添加了 `caption` 字段，则对于 tex 的渲染结果，会在图片下方出现类似于“图1：图片样例”字样。
 
 图片需要保存在试题目录的 `resources` 子目录下。
 

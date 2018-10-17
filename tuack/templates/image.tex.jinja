@@ -4,13 +4,19 @@
 	\begin{figure}[ht]
 {%- endif -%}
 {%- if align -%}
-	{{ '\\centering' if align == 'middle' else '\\ragged' + align }}
+	{{ '\\centering' if align == 'middle' else '\\raggedright' if align == 'left' else '\\left' if align == 'right' else '\\' + align }}
 {%- endif -%}
 \includegraphics
 	{%- if size -%}
 		[scale={{size}}]
 	{%- endif -%}
 { {{- resource -}} }
+{%- if label -%}
+	\label{ {{ label }} }
+{%- endif -%}
+{%- if caption -%}
+	\caption{ {{caption}} }
+{%- endif -%}
 {%- if inline -%}
 	}
 {%- else -%}

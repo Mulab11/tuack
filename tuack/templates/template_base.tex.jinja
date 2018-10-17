@@ -1,5 +1,9 @@
 \documentclass{tuack}
 
+{% if not base.lang or base.lang == 'zh-cn' %}
+	\renewcommand{\figurename}{图}
+{% endif %}
+
 \def\thecontent { {{_('Content')}} }
 
 {% block base %}{% endblock %}
