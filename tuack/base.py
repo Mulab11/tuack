@@ -784,7 +784,7 @@ def check_install(pack):
 			if system == 'Windows':
 				log.info(u'Windows下可以先安装MiKTeX，在首次运行的时候会再提示安装后续文件。')
 			if system == 'Linux':
-				log.info(u'Ubuntu下先用 sudo apt install texlive-xetex,texlive-fonts-recommended,texlive-latex-extra 安装工具；')
+				log.info(u'Ubuntu下先用 sudo apt install texlive-xetex texlive-fonts-recommended texlive-latex-extra 安装工具；')
 				log.info(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
 				log.info(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
 				log.info(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
