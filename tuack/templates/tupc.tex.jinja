@@ -5,14 +5,18 @@
 \thispagestyle{Cover}
 \begin{center}
 	\ifdefined\thetitle
-		{\hei \yihao \thetitle \par}
+		\ifdefined\longtitle\centerline\fi{\yihao \bf \thetitle} \par
 	\fi
 	\ifdefined\subtitle
 		{\hei \yihao \subtitle \par}
 	\fi
 	\ifdefined\subsubtitle
 		{\hei \yihao \subsubtitle \par}
-	\fi \vskip 1em 
+	\fi
+	\ifdefined\engtitle
+		{\xiaoyi \hei \engtitle \par}
+	\fi
+	\vskip 1em 
 	\ifdefined\theday
 		{\kai \chuhao \theday \par} \vskip 1em 
 	\fi
