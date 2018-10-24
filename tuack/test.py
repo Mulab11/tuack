@@ -372,15 +372,26 @@ def test_problem(prob):
 							time.sleep(1e-2)
 						else:
 							break
-					shutil.copy(path, pjoin('tmp', path.split('/')[-1]))
+					try:
+						shutil.copy(path, pjoin('tmp', path.split('/')[-1]))
+					except Exception as e:
+						log.error(u'程序`%s`没有找到。' % path)
+						log.info(e)
+						log.info(u'如果该程序是测试程序，请确保该程序存在；如果不是，请将其从`conf.*`中移除。')
+						continue
 				elif prob['type'] == 'output':
-					while True:
+					for i in range(20):
 						try:
 							shutil.copytree(path, 'tmp')
-						except:
+						except Exception as e:
 							time.sleep(1e-2)
+							log.error(u'测试输出文件包`%s`没有找到或复制失败，正在重试 %d / 20。' % (path, i + 1))
+							log.info(e)
 						else:
 							break
+					else:
+						log.error(u'跳过该输出文件包。')
+						log.info(u'如果该文件包是测试输出，请确保该文件包存在；如果不是，请将其从`conf.*`中移除。')
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob, path.split('/')[-1].split('.')[0])
 				while os.path.exists('tmp'):
