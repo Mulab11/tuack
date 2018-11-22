@@ -104,7 +104,7 @@
 **{{ _('Time limit:') }}** {{ prob['time limit'] }} {{ _('second(s)') }} 
 {% endif %}
 {% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc') %}
-**{{ _('Memory limit:') }}** {{ prob['memory limit'] }}
+**{{ _('Memory limit:') }}** {{ prob.get('memory limit', '见各测试点') }}
 {% endif %}
 {% if comp == 'tuoj' -%}
 **{{ _('Related files:') }}** {{ self.user_path() }}

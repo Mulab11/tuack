@@ -441,7 +441,7 @@ class Problem(Configure):
 		return self.getitem(key, data_pathed)
 
 	def ml(self):
-		return Memory(self['memory limit'])
+		return Memory(self.get('memory limit', '2 GB'))
 
 	def memory_limit(self):
 		return self.ml()

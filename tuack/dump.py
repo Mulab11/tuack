@@ -51,13 +51,13 @@ def lemon(conf = None):
 		ost.writeQString(prob['name'] + '.out')
 		ost.writeBool(False)
 		ost.writeBool(False)
-		ost.writeInt32(1 if prob['type'] == 'answer' else 0)
+		ost.writeInt32(1 if prob['type'] == 'output' else 0)
 		ost.writeInt32(1)		# Judge Type TODO: What if there is spj (code = 4)
 		ost.writeQString('--ignore-space-change --text --brief')
 		ost.writeInt32(3)		# real precision (float number error bound)
 		ost.writeQString('')	# spj route TODO: What if there is spj
-		ost.writeInt32(len([i for i in prob['compile'] if i in {'cpp', 'c', 'pas'}]))
-		for key, val in prob['compile'].items():
+		ost.writeInt32(len([i for i in prob.get('compile', {}) if i in {'cpp', 'c', 'pas'}]))
+		for key, val in prob.get('compile', {}).items():
 			try:
 				ost.writeQString({
 					'cpp' : 'g++',
@@ -72,8 +72,8 @@ def lemon(conf = None):
 			ost.writeInt32(len(prob['data']))
 			for datum in prob['data']:
 				ost.writeInt32(datum['score'])
-				ost.writeInt32(datum.get('time limit', prob['time limit']) * 1000)
-				ost.writeInt32(base.Memory(datum.get('memory limit', prob['memory limit'])).MB)
+				ost.writeInt32(datum.get('time limit', prob.get('time limit', 0)) * 1000)
+				ost.writeInt32(base.Memory(datum.get('memory limit', prob.get('memory limit', '0 B'))).MB)
 				tc = datum['cases']
 				ost.writeInt32(len(tc))
 				for c in tc:
