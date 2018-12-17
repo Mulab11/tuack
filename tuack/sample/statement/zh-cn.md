@@ -2,7 +2,7 @@
 
 {{ s('background') }}
 
-这样的子标题会被程序自动处理，可以方便翻译和提取每个部分等。如果你想自己定义子标签，或者不需要国际化的话，你可将这些子标题直接写成这样：
+这样的子标题会被程序自动处理，可以方便翻译和提取每个部分等。如果你想自己定义子标签（尽管我们一般**不推荐**自己定义 s 标签），或者不需要国际化的话，你可将这些子标题直接写成这样：
 
 ```
 {{ s('如何使用交互库') }}
@@ -87,7 +87,9 @@ int main(int argc, char** argv);
 
 引用 *conf.yaml* 的方法是使用变量 `prob`，例如可以写成 `prob.args['n']`，还可以写成 `prob['args']['n']`。引用 `args` 项、`data` 项、`samples` 项和 `pre` 项可以简写成例如 `args['n']` 或 `args.n`。在下文的表格中也一样。
 
-输入的第二行包含一个正整数 $m$，保证 $m \le {{ tl.hn(aargs.min('m')) }}$。←`aargs.min` 是取出 `data` 项、`samples` 项和 `pre` 项中的所有同名变量的最小值，类似的函数还有 `max` 和 `sum`。形如 `aargs['m']` 可以取出所有同名变量的迭代器。和 python 的 `dict` 类似，还可以用形如 `aargs.get('m', 0)` 指定“如果没有某项用什么对象补空”，`sum`、`min` 和 `max` 类似。如果只取出 `data` 项、`samples` 项或 `pre` 项中的同名函数，使用 `dargs`、`sargs` 或 `pargs`。
+输入的第二行包含一个正整数 $m$，保证 $m \le {{ tl.hn(aargs.max('m')) }}$。
+
+↑`aargs.min` 是取出 `data` 项、`samples` 项和 `pre` 项中的所有同名变量的最小值，类似的函数还有 `max` 和 `sum`。形如 `aargs['m']` 可以取出所有同名变量的迭代器。和 python 的 `dict` 类似，还可以用形如 `aargs.get('m', 0)` 指定“如果没有某项用什么对象补空”，`sum`、`min` 和 `max` 类似。如果只取出 `data` 项、`samples` 项或 `pre` 项中的同名函数，使用 `dargs`、`sargs` 或 `pargs`。
 
 `tl` 是 `tools` 的简写，是一组工具。除 `hn` 外，还包括内建函数如 `tl.int`，`math` 中的对象或函数如 `tl.sin`，`datetime` 中的对象或函数如 `tl.time` 类，`num2chinese` 函数（可以把数字转化成中文）。
 

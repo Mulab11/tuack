@@ -111,7 +111,7 @@ class Args(object):
 	def __init__(self, *data):
 		self.data = data
 	def get(self, key, d = None, skip_none = False):
-		return (j.get(key, d) for i in self.data for j in i if not skip_none or key in j != None)
+		return (j['args'].get(key, d) for i in self.data for j in i if not skip_none or key in j['args'] != None)
 	def keys(self):
 		ky = set()
 		for i in self.data:

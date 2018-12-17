@@ -14,6 +14,7 @@ import zipfile
 from multiprocessing import Process, Queue
 from functools import wraps
 from threading import Timer
+from . import num2chinese
 import platform
 from . import base
 from .base import log, pjoin
@@ -143,10 +144,23 @@ def new_dir(folder, args = None):
 			log.error(u'当前文件夹下没有找到合法的`conf.json`文件。')
 			log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
 			return
+		if folder == 'contest':
+			log.error(u'文件夹层次错误：比赛工程不能放在其他工程中。')
+			return
+		if folder == 'day' and base.conf.folder != 'contest':
+			log.error(u'文件夹层次错误：比赛日工程只能放在比赛工程中。')
+			return
+		if folder == 'problem' and base.conf.folder != 'day':
+			log.error(u'文件夹层次错误：题目工程只能放在比赛日工程中。')
+			return
 		dirs = args
 	for path in dirs:
 		if not os.path.exists(path):
 			os.makedirs(path)
+		if path != '.' and path in base.conf['subdir']:
+			log.warning(u'`%s`已经在工程中了，跳过它的建立。' % path)
+			log.info(u'如果需要强制建立，需要将其从`conf.yaml`中移除。')
+			continue
 		copy = lambda src, tgt = None: sample_copy(src, tgt, path)
 		def copy_conf(inp):
 			if base.dump_format != 'json':
@@ -174,9 +188,19 @@ def new_dir(folder, args = None):
 			conf = base.load_json(path)
 			conf['name'] = path
 			conf.path = path
+			if path == 'day0':
+				conf['title']['zh-cn'] = u'试机'
+			elif path[:3] == 'day':
+				try:
+					num = int(path[3:])
+					conf['title']['zh-cn'] = u'第' + num2chinese.num2chinese(num) + u'试'
+				except Exception as e:
+					pass
 			base.save_json(conf)
 	if len(args) != 0:
-		base.conf['subdir'] += args
+		for arg in args:
+			if arg not in base.conf['subdir']:
+				base.conf['subdir'].append(arg)
 		base.save_json(base.conf)
 
 def upgrade():
