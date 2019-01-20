@@ -31,7 +31,6 @@
 \usepackage{enumitem}
 \usepackage{tabto}
 \usepackage{ulem}
-\usepackage{hyperref}
 \usepackage{ifxetex,ifluatex}
 \usepackage{caption}
 
@@ -227,8 +226,8 @@
     \usepackage{eurosym}
   \fi
 \fi
-\DefineShortVerb[commandchars=\\\{\}]{\|}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+%\DefineShortVerb[commandchars=\\\{\}]{\|}
+%\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
 % Add ',fontsize=\small' for more characters per line
 \newenvironment{Shaded}{\definecolor{shadecolor}{rgb}{0.8,0.8,0.8} \begin{shaded*} }{ \end{shaded*}}
 
