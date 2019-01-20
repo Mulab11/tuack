@@ -164,7 +164,7 @@
 		{%- endfor -%}
 		\tabularnewline
 	\hline
-		测试点/包数目
+		子任务数目
 		{%- for prob in probs -%}
 			& {{ prob.test_cases.__len__() if not prob.packed else prob.data.__len__() }}
 		{%- endfor -%}
@@ -177,9 +177,9 @@
 		\tabularnewline
 	\hline
 	{% if probs.__len__() >= 1 and probs[0].pre_cases.__len__() >= 1 %}
-		预测试点/包数目
+		预测试点数目
 		{%- for prob in probs -%}
-			& {{ prob.pre_cases.__len__() }}
+			& {{ prob.pre.__len__() }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
