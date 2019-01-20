@@ -179,7 +179,7 @@
 	{% if probs.__len__() >= 1 and probs[0].pre_cases.__len__() >= 1 %}
 		预测试点数目
 		{%- for prob in probs -%}
-			& {{ prob.pre.__len__() }}
+			& {{ prob.pre_cases.__len__() }}
 		{%- endfor -%}
 		\tabularnewline
 	\hline
