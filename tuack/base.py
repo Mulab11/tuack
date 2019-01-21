@@ -65,8 +65,8 @@ elf_suffix = '' if system != 'Windows' else '.exe'
 problem_skip = re.compile(r'^(data|down|tables|resources|gen|pre)$')
 user_skip = re.compile(r'^(data|down|pre|val|.*validate.*|gen|chk|checker|report|check.*|make_data|data_maker|data_make|make|dmk|generate|generator|makedata|spj|judge|tables|tmp|.*\.tmp|.*\.temp|temp|.*\.test|.*\.dir)(\..*)?$')
 compilers = {
-	'cpp' : lambda name, args, macros = '', ml = Memory('512 MB'): 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
-	'c' : lambda name, args, macros = '', ml = Memory('512 MB'): 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % windows_stack_size),
+	'cpp' : lambda name, args, macros = '', ml = Memory('512 MB'): 'g++ %s.cpp -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % int(ml.B)),
+	'c' : lambda name, args, macros = '', ml = Memory('512 MB'): 'gcc %s.c -o %s %s %s %s' % (name, name, args, macros, '' if system != 'Windows' else '-Wl,--stack=%d' % int(ml.B)),
 	# I don't know how to change stack size, nor add #define in pascal
 	'pas' : lambda name, args, macros = '', ml = Memory('512 MB'): 'fpc %s.pas %s' % (name, args),
 	'java' : lambda name, args, macros = '', ml = Memory('512 MB'): 'javac %s.java %s -J-Xms%dm -J-Xmx%dm' % (name, args, int(Memory(ml).MB) // 16, int(Memory(ml).MB) // 4),
