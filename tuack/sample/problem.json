@@ -11,7 +11,7 @@
 	"partial score" : false,
 	"compile" : {
 		"cpp" : "-O2 -std=c++14",
-		"c" : "-O2 -std=c14",
+		"c" : "-O2 -std=c11",
 		"pas" : "-O2",
 		"java" : "",
 		"py" : ""
