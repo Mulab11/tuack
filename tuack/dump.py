@@ -212,7 +212,7 @@ def arbiter_main(conf = None,daynum = 0):
 				os.makedirs(base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				shutil.copy(codedir,base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
-		shutil.copy(base.pjoin(base.path,'sample','arbiter_e'),base.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
+		shutil.copy(base.pjoin(base.path,'sample','arbiter_e.sample'),base.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
 		arbiter_info(probinfo,base.pjoin('arbiter', 'main','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 def arbiter_down(conf = None):
