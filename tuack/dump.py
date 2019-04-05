@@ -184,25 +184,32 @@ def arbiter_main(conf = None,daynum = 0):
 		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
 		probinfo['SAMPLES='] = len(prob.test_cases)
 		score_per_case = 100 // len(prob.test_cases)
-		if score_per_case * len(prob.test_cases) != 100:
-			log.info(u'满分不是100哦。')
+		if not prob.packed and score_per_case * len(prob.test_cases) != 100:
+			log.warning(u'测试点数量不是100的约数，分数无法均分为整数。')
 		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
 		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
 		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
-		if prob.packed:
-			raise Exception('Can\'t dump packed problem for arbiter.')
-		for idx, case in enumerate(prob.test_cases, start = 1):
-			'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.in'))'''
-			shutil.copy(
-				base.pjoin(prob.path,'data',str(case)+'.in'),
-				base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.in')
-			)
-			'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.ans'))'''
-			shutil.copy(
-				base.pjoin(prob.path,'data',str(case)+'.ans'),
-				base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.ans')
-			)
-			probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
+		idx = 0
+		for datum in prob.data:
+			if prob.packed and len(datum['cases']) > 1:
+				log.warning(u'Arbiter不支持打包评测，将把该包得分均分给包中各测试点，无法整除时总分将不正确。')
+			for case in datum['cases']:
+			#for idx, case in enumerate(prob.test_cases, start = 1):
+				idx += 1
+				'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.in'))'''
+				shutil.copy(
+					base.pjoin(prob.path,'data',str(case)+'.in'),
+					base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.in')
+				)
+				'''print('copyfile %s'%base.pjoin(prob.path,'data',case+'.ans'))'''
+				shutil.copy(
+					base.pjoin(prob.path,'data',str(case)+'.ans'),
+					base.pjoin('arbiter', 'main','data',prob['name']+str(idx)+'.ans')
+				)
+				if prob.packed:
+					probinfo['MARK='+str(idx)+'@'] = str(int(datum['score'] / len(datum['cases'])))
+				else:
+					probinfo['MARK='+str(idx)+'@'] = str(int(score_per_case))
 		'''for idx, userdir in enumerate(prob['users'],start = 1):
 			for idx2, code in enumerate(prob['users'][userdir],start = 1):
 				dirname = prob['name']+'-'+str(idx)+str(idx2)
