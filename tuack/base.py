@@ -926,6 +926,7 @@ def change_eol(path, eol):
 			is_test = False
 	if is_text:
 		os.remove(path)
+		time.sleep(0.1)
 		os.rename(ufname, path)
 	else:
 		os.remove(ufname)
