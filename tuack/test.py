@@ -170,7 +170,7 @@ def compile(prob, name):
 			os.chdir('tmp')
 			try:
 				ret = subprocess.call(
-					base.compilers[lang](name, args, base.macros[base.work], ml = prob['memory limit']),
+					base.compilers[lang](name, args, base.macros[base.work], ml = prob.ml()),
 					shell = True,
 					stdout = open('stdout', 'w'),
 					stderr = open('stderr', 'w')
