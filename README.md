@@ -1,10 +1,11 @@
 ## 简介
 
-更新到了 0.1.4.5 版本，新特性见最后。
+更新到了 0.1.4.6 版本，新特性见最后。
 
-一般在三个地方更新：
+一般在 4 个地方更新：
 
 * [https://git.thusaac.org/publish/tuack](https://git.thusaac.org/publish/tuack)：主要的工作地址，所有分支都会在这里；非清华贵系算协成员不能提 issue。
+* [https://git.thusaac.com/publish/tuack](https://git.thusaac.org/publish/tuack)：算协的校外服务器，校内地址被干的时候可以用，会把工程都迁移过去。
 * [https://gitee.com/mulab/oi_tools](https://gitee.com/mulab/oi_tools)：可以提 issue。
 * [https://github.com/Mulab11/tuack](https://github.com/Mulab11/tuack)：可以提 issue，可能不会及时更新。
 
@@ -22,7 +23,7 @@
 
 ## 文档
 
-[文档在这里](https://git.thusaac.org/publish/tuack/wikis/home)
+[文档在这里](https://git.thusaac.com/publish/tuack/wikis/home)
 
 ## 更新记录
 
