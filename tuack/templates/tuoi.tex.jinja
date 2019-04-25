@@ -264,7 +264,7 @@
 					{%- if prob['use'] -%}
 						\ttfamily {{ prob['option'] }}
 					{%- else -%}
-						prob['option']
+						{{ prob['option'] }}
 					{%- endif -%}
 				{%- if prob['cnt'] > 1 -%}
 				} }
@@ -283,7 +283,7 @@
 					{%- if prob['use'] -%}
 						\ttfamily {{ prob['option'] }}
 					{%- else -%}
-						prob['option']
+						{{ prob['option'] }}
 					{%- endif -%}
 				{%- if prob['cnt'] > 1 -%}
 				} }
@@ -302,7 +302,7 @@
 					{%- if prob['use'] -%}
 						\ttfamily {{ prob['option'] }}
 					{%- else -%}
-						prob['option']
+						{{ prob['option'] }}
 					{%- endif -%}
 				{%- if prob['cnt'] > 1 -%}
 				} }
