@@ -278,6 +278,7 @@ class Base(object):
 		return '## ' + ret
 
 	def ren_prob_md_j(self):
+		time.sleep(0.5)
 		log.info(u'渲染题目题面 %s %s' % (self.comp, self.prob.route))
 		try:
 			shutil.copy(self.prob.statement(), pjoin('tmp', 'problem.md.jinja'))
