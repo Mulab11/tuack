@@ -265,7 +265,7 @@
 					{%- if prob['use'] -%}
 						\ttfamily {{ prob['option'] }}
 					{%- else -%}
-						{{ prob['option'] }}
+						{ {{ prob['option'] }} }
 					{%- endif -%}
 					{%- if prob['cnt'] == probs.__len__() -%}
 						} }
