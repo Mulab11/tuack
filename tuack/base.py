@@ -650,7 +650,7 @@ def deal_args():
 			i += 1
 			time_multiplier = float(sys.argv[i])
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
-			log.info(u'详细用法见文档：https://git.thusaac.org/publish/tuack/wikis。')
+			log.info(u'详细用法见文档：https://git.thusaac.com/publish/tuack/wikis。')
 			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
 			log.info(u'工作必须在参数前面，工作用逗号隔开，选项和参数用空格隔开。')
 			log.info(u'只有有逗号的项目可以用逗号获得多个结果，逗号前后不能有空白符。')
@@ -887,6 +887,7 @@ def check_install(pack):
 		pack = 'gpp'
 	if pack == 'c':
 		pack = 'gcc'
+	global tool_conf
 	tool_conf = get_tool_conf()
 	if 'installed' not in env_conf:
 		env_conf['installed'] = {}

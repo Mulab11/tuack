@@ -17,6 +17,8 @@ from threading import Timer
 import platform
 from . import base
 from .base import log, pjoin
+import requests
+
 
 def lemon(conf = None):
 	base.check_install('pyside')
@@ -391,13 +393,99 @@ def tuoj_down(conf = None):
 			)
 		base.run_r(base.dos2unix, base.pjoin(pjoin('tuoj', 'down', prob.route)))
 
+def loj_prob(conf):
+	global save_flag
+	if base.do_render:
+		from . import ren
+		tmp = base.start_file
+		base.start_file = False
+		ren.Markdown('loj').run()
+		base.start_file = tmp
+	else:
+		pass
+	path = pjoin('statements', 'loj', conf.route if conf.route != '' else conf['name']) + '.md'
+	data = {
+		'title' : conf.tr('title'),
+		'description' : open(path, 'rb').read(),
+		'input_format' : 'place holder',
+		'output_format' : 'place holder',
+		'example' : 'place holder',
+		'limit_and_hint' : 'place holder'
+	}
+	headers = {
+		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+	}
+	tool_conf = base.tool_conf['loj']['default']
+	cookies = tool_conf['cookies']
+	pid = conf.get('pid', {}).get('loj-default', 0)
+	host = tool_conf['main']
+	r = requests.post(host + '/problem/%d/edit' % pid, headers = headers, stream = True, cookies = cookies, data = data)
+	if pid == 0:
+		pid = int(r.url.split('/')[-1])
+		conf.setdefault('pid', {})
+		conf['pid']['loj-default'] = pid
+		save_flag = True
+	import zipfile, uuid
+	def pack(z, path, fname):
+		id = str(uuid.uuid4()) + '.tmp'
+		shutil.copy(pjoin(path, fname), id)
+		time.sleep(0.1)
+		base.dos2unix(id)
+		z.write(id, fname)
+		os.remove(id)
+	with zipfile.ZipFile(pjoin('loj', 'data', conf.route + '.zip'), 'w') as z:
+		for id in conf.test_cases:
+			pack(z, pjoin(conf.path, 'data'), id + '.in')
+			pack(z, pjoin(conf.path, 'data'), id + '.ans')
+	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
+		for id in conf.sample_cases:
+			pack(z, pjoin(conf.path, 'down'), id + '.in')
+			pack(z, pjoin(conf.path, 'down'), id + '.ans')
+	files = [
+		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
+		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
+	]
+	data = {
+		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interactive'}[conf['type']],
+		# LOJ的交互叫什么名字我还没搞清楚
+		'time_limit' : int(conf.get('time limit', 0) * 1000),
+		'memory_limit' : int(conf.ml().MB)
+	}
+	requests.post(host + '/problem/%d/manage' % pid, headers = headers, stream = True, cookies = cookies, data = data, files = files)
+
+def loj():
+	global save_flag
+	save_flag = False
+	syz_host = base.tool_conf.get('loj', {}).get('default')
+	if not syz_host:
+		log.error(u'没有配置loj的地址。')
+		if base.system == 'Windows':
+			log.info(u'在tuack的安装目录中找到conf.json。')
+		else:
+			log.info(u'在~/.tuack中找到conf.json。')
+		log.info(u'添加loj的相关字段，详见`https://git.thusaac.com/publish/tuack/wikis/导出题目`。')
+		return
+	if not os.path.exists('loj'):
+		base.remkdir('loj')
+	base.remkdir(pjoin('loj', 'data'))
+	base.remkdir(pjoin('loj', 'down'))
+	if base.conf.folder == 'contest':
+		for day in base.days():
+			os.makedirs(base.pjoin(pjoin('loj', 'data'), day.route))
+			os.makedirs(base.pjoin(pjoin('loj', 'down'), day.route))
+	for prob in base.probs():
+		loj_prob(prob)
+	if save_flag:
+		base.save_json(base.conf)
+		
 work_list = {
 	'lemon' : lemon,
 	'arbiter' : arbiter,
 	'arbiter-main' : arbiter_main,
 	'arbiter-down' : arbiter_down,
 	'tsinsen-oj' : tsinsen_oj,
-	'tuoj-down' : tuoj_down
+	'tuoj-down' : tuoj_down,
+	'loj' : loj
 }
 
 if __name__ == '__main__':
