@@ -16,7 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 from . import base
-from .base import log
+from .base import log, pjoin
 
 def tsinsen_oj():
 	new_tc = []
@@ -188,8 +188,76 @@ def tsinsen_oj():
 		base.conf['data'].append({'cases' : new_tc})
 	base.save_json(base.conf)
 
+def loj():
+	if base.conf.folder != 'problem':
+		log.error(u'只能导入到一个problem的工程中。')
+		return
+	import requests
+	try:
+		headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+		r = requests.get(base.args[0] + '/export', headers = headers)
+		data = json.loads(r.content)
+		assert(data['success'])
+		data = data['obj']
+	except Exception as e:
+		log.error(u'下载或解析`' + base.args[0] + '/export`失败。')
+		log.info(e)
+	conf = base.conf
+	conf['time limit'] = float(data.get('time_limit', 1000)) / 1000.
+	conf['memory limit'] = str(data.get('memory_limit', 512)) + ' MiB'
+	conf['type'] = {'traditional' : 'program', 'submit-answer' : 'output'}.get(data.get('type'), 'interactive')
+	conf['key words'] = data.get('tags', [])
+	conf.setdefault('title', {})
+	conf['title']['zh-cn'] = data.get('title', u'标题读取失败')
+	with open('statement/zh-cn.md', 'wb') as f:
+		f.write(b'{{ self.title() }}\n\n')
+		for key, name in [
+			('description', u'题目描述'),
+			('input_format', u'输入格式'),
+			('output_format', u'输出格式'),
+			('example', u'样例'),
+			('limit_and_hint', u'子任务')
+		]:
+			if key in data:
+				f.write(('## %s\n\n' % name).encode('utf-8'))
+				f.write(data[key].encode('utf-8'))
+				f.write(b'\n\n')
+	def download_file(url, local_filename):
+		with requests.get(url, headers = headers, stream = True) as r:
+			r.raise_for_status()
+			with open(local_filename, 'wb') as f:
+				for chunk in r.iter_content(chunk_size = 8192): 
+					if chunk:
+						f.write(chunk)
+						f.flush()
+	import zipfile
+	download_file(base.args[0] + '/testdata/download', 'data.zip')
+	with zipfile.ZipFile('data.zip', 'r') as z:
+		z.extractall('data')
+		for name in os.listdir('data'):
+			if name.endswith('.out'):
+				if os.path.exists(pjoin('data', name[:-4] + '.ans')):
+					os.remove(pjoin('data', name[:-4] + '.ans'))
+					time.sleep(.1)
+				os.rename(pjoin('data', name), pjoin('data', name[:-4] + '.ans'))
+	if data.get('have_additional_file'):
+		download_file(base.args[0] + '/download/additional_file', 'down.zip')
+		with zipfile.ZipFile('down.zip', 'r') as z:
+			z.extractall('down')
+	else:
+		shutil.rmtree('down')
+		time.sleep(.1)
+		os.makedirs('down')
+	shutil.rmtree('pre')
+	time.sleep(.1)
+	os.makedirs('pre')
+	base.save_json(base.conf)
+	from . import gen
+	base.run_exc(gen.work_list['auto'])
+
 work_list = {
-	'tsinsen-oj' : tsinsen_oj
+	'tsinsen-oj' : tsinsen_oj,
+	'loj' : loj
 }
 
 if __name__ == '__main__':
@@ -199,7 +267,10 @@ if __name__ == '__main__':
 				base.run_exc(work_list[base.work])
 		else:
 			log.info(u'这个工具用于导入其他类型的工程，参数1必须是来源路径。')
-			log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
+			#log.info(u'支持的工作：%s' % ','.join(sorted(work_list.keys())))
+			log.info(u'支持的工作：')
+			log.info(u'  tsinsen-oj  参数1是符合清澄OJ“我来出题”的上传下载格式的本地文件。')
+			log.info(u'  loj         参数1是SYZ系OJ的题目网站如“https://loj.ac/problem/1”。')
 	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')
