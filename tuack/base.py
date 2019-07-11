@@ -55,7 +55,7 @@ class Memory(str):
 		return super(Memory, self).__new__(self, val)
 	def byte(self):
 		if self[-1] == 'B':
-			sp = 2 if self[-2] in self.units else 1
+			sp = 2 if self[-2] in self.units else 3 if self[-3:-1] in self.units else 1
 		else:
 			sp = 1
 		un = self.units[self[-sp:]]
