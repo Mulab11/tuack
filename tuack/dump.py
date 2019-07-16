@@ -438,9 +438,8 @@ def loj_prob(conf):
 			pack(z, pjoin(conf.path, 'data'), id + '.in')
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
-		for id in conf.sample_cases:
-			pack(z, pjoin(conf.path, 'down'), id + '.in')
-			pack(z, pjoin(conf.path, 'down'), id + '.ans')
+		for name in os.listdir(pjoin(conf.path, 'down')):
+			pack(z, pjoin(conf.path, 'down'), name)
 	files = [
 		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
 		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
