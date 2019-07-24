@@ -23,7 +23,7 @@ void ret(double result, const char* info){
 int main(int argc, char **argv){
 	//You'd better not change this swith block
 	switch(argc){
-		case 1:		//LOJ
+		case 0:		//LOJ
 			inFile = fopen("input", "r");
 			outFile = fopen("user_out", "r");
 			ansFile = fopen("answer", "r");
