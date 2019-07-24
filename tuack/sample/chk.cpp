@@ -23,6 +23,14 @@ void ret(double result, const char* info){
 int main(int argc, char **argv){
 	//You'd better not change this swith block
 	switch(argc){
+		case 1:		//LOJ
+			inFile = fopen("input", "r");
+			outFile = fopen("user_out", "r");
+			ansFile = fopen("answer", "r");
+			scoreFile = stdout;
+			infoFile = stderr;
+			score = 100;
+			break;
 		case 4:		//Arbiter
 			inFile = fopen(argv[1], "r");
 			outFile = fopen(argv[2], "r");
