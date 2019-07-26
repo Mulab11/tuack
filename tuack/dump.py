@@ -437,7 +437,8 @@ def loj_prob(conf):
 		for id in conf.test_cases:
 			pack(z, pjoin(conf.path, 'data'), id + '.in')
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
-		z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
+		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
+			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
 		for name in os.listdir(pjoin(conf.path, 'down')):
 			pack(z, pjoin(conf.path, 'down'), name)
