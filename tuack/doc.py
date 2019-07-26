@@ -50,7 +50,7 @@ title_choices = {
 		u'输入',
 		'input'
 	},
-	'outout' : {
+	'output' : {
 		u'输出',
 		'output'
 	},
