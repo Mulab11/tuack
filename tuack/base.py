@@ -473,7 +473,7 @@ def load_json(path = '.', route = None):
 				if name.endswith('json'):
 					conf = json.loads(inp)
 				elif name.endswith('yaml'):
-					conf = yaml.load(inp)
+					conf = yaml.full_load(inp)
 				if conf.get('version', -1) > json_version:
 					log.warning(u'`conf.*`版本高于`tuack`，请升级`tuack`。')
 				if 'folder' not in conf:
