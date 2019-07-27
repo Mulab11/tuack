@@ -540,10 +540,11 @@ class Latex(Base):
 class Markdown(Base):
 	work = 'md'
 	def ren_prob_rest(self):
+		table_suf = 'html' if self.comp != 'loj' else 'md'
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
-			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.html.jinja', self.context, options)
+			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.'+ table_suf +'.jinja', self.context, options)
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
