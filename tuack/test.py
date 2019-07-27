@@ -35,10 +35,11 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
 	'''
+	timer = time.process_time if sys.version >= '3.3' else time.clock
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)
-		t = time.clock()
+		t = timer()
 		pro = subprocess.Popen(vm(name, ml) if vm else name, stdin = fin, stdout = fout)
 		if fout:
 			fout.close()
@@ -49,13 +50,13 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	while True:
 		ret = pro.poll()
 		if ret != None:
-			t = time.clock() - t
+			t = timer() - t
 			if ret == 0:
 				ret = None
 			else:
 				ret = 'Runtime error %d.' % ret
 			break
-		if (time.clock() - t) >= tl * base.time_multiplier:
+		if (timer() - t) >= tl * base.time_multiplier:
 			pro.kill()
 			t = 0.0
 			ret = 'Time out.'
