@@ -51,7 +51,13 @@ setup(
 	install_requires = requires,
 	setup_requires = requires,
 	package_data = {
-		'tuack': ['templates/*.*', 'templates/*/*/*', 'sample/*.*', 'sample/*/*', 'lex/*.*', 'lex/*']
+		'tuack': [
+			'templates/*.*', 'templates/*/*/*',
+			'sample/*.*', 'sample/*/*',
+			'sample-problem/*.*', 'sample-problem/*/*',
+			'sample-empty/*.*', 'sample-empty/*/*',
+			'lex/*.*', 'lex/*'
+		]
 	}
 )
 

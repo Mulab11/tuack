@@ -120,7 +120,7 @@ def find_all_code():
 				prob['users'].pop(f)
 		base.save_json(prob)
 
-def sample_copy(src, tgt = None, path = ''):
+def sample_copy(src, tgt = None, path = '', base_path = 'sample'):
 	if not tgt:
 		tgt = src
 	full_tgt = pjoin(path, tgt)
@@ -129,7 +129,7 @@ def sample_copy(src, tgt = None, path = ''):
 	if not os.path.exists(full_tgt):
 		log.info(u'生成文件`%s`' % full_tgt)
 		base.copy(
-			pjoin(base.path, 'sample'),
+			pjoin(base.path, base_path),
 			src,
 			full_tgt
 		)
@@ -150,7 +150,7 @@ def new_dir(folder, args = None):
 		if folder == 'day' and base.conf.folder != 'contest':
 			log.error(u'文件夹层次错误：比赛日工程只能放在比赛工程中。')
 			return
-		if folder == 'problem' and base.conf.folder != 'day':
+		if (folder == 'problem' or folder == 'empty') and base.conf.folder != 'day':
 			log.error(u'文件夹层次错误：题目工程只能放在比赛日工程中。')
 			return
 		dirs = args
@@ -173,7 +173,7 @@ def new_dir(folder, args = None):
 				copy(inp, 'conf.json')
 		copy(folder + '.gitignore', '.gitignore')
 		copy_conf(folder + '.json')
-		if folder == 'problem':
+		if folder == 'problem' or folder == 'empty':
 			if base.git_lfs:
 				copy(folder + '.gitattributes', '.gitattributes')
 			else:
@@ -182,8 +182,10 @@ def new_dir(folder, args = None):
 				st_path = pjoin(path, ff)
 				if not os.path.exists(st_path):
 					os.makedirs(st_path)
-				for f in os.listdir(pjoin(base.path, 'sample', ff)):
-					copy(pjoin(ff, f), pjoin(ff, f))
+				if not os.path.exists(pjoin(base.path, 'sample-' + folder, ff)):
+					continue
+				for f in os.listdir(pjoin(base.path, 'sample-' + folder, ff)):
+					sample_copy(pjoin(ff, f), pjoin(ff, f), path, 'sample-' + folder)
 		if path != '.':
 			conf = base.load_json(path)
 			conf['name'] = path
@@ -325,6 +327,7 @@ work_list = {
 	'contest' : lambda : new_dir('contest'),
 	'day' : lambda : new_dir('day'),
 	'problem' : lambda : new_dir('problem'),
+	'empty' : lambda : new_dir('empty'),
 	'upgrade' : upgrade,
 	'lfs' : copy_lfs,
 	'chk' : copy_chk,
@@ -334,6 +337,7 @@ work_list['auto'] = lambda : [work_list[key]() for key in ['data', 'samples', 'p
 work_list['n'] = work_list['contest']
 work_list['d'] = work_list['day']
 work_list['p'] = work_list['problem']
+work_list['e'] = work_list['empty']
 work_list['t'] = work_list['data']
 work_list['s'] = work_list['samples']
 work_list['u'] = work_list['upgrade']
@@ -361,6 +365,10 @@ if __name__ == '__main__':
 		log.info(u'           有参数表示在当前比赛日下依次生成名叫参数1，参数2，…的题目，')
 		log.info(u'           有参数必须保证当前目录是比赛日。')
 		log.info(u'  p        同problem。')
+		log.info(u'  empty    无参数表示在当前目录下生成一道无例子的题目，题目可以是独立的工程；')
+		log.info(u'           有参数表示在当前比赛日下依次生成名叫参数1，参数2，…的题目，')
+		log.info(u'           有参数必须保证当前目录是比赛日。')
+		log.info(u'  e        同empty。')
 		log.info(u'  data     在题目工程的data文件夹中搜索数据并添加到配置文件。')
 		log.info(u'           对于比赛工程和比赛日工程，此操作将应用于所有子题目工程，下同。')
 		log.info(u'  t        同data。')

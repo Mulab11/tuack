@@ -1,0 +1,23 @@
+{
+	"version": 2,
+	"folder" : "problem",
+	"type" : "program",
+	"name" : "name for programers",
+	"title" : {
+		"zh-cn" : "用于试题标题的中文名称"
+	},
+	"time limit" : 1.0,
+	"memory limit" : "512 MiB",
+	"partial score" : false,
+	"compile" : {
+		"cpp" : "-O2 -std=c++14",
+		"c" : "-O2 -std=c11",
+		"pas" : "-O2",
+		"java" : "",
+		"py" : ""
+	},
+	"samples" : [],
+	"args" : {},
+	"data" : [],
+	"users" : {}
+}
