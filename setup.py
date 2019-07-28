@@ -31,12 +31,13 @@ class PostInstallCommand(install):
 requires = [
 	'jinja2 >= 2.8',
 	'natsort >= 5.0.3',
-	'pyyaml >= 3.11'
+	'pyyaml >= 3.11',
+	'rarfile >= 3.0'
 ]
 
 setup(
 	name = 'tuack',
-	version = '0.1.4.6',
+	version = '0.1.4.7',
 	packages = find_packages(),
 	author = 'Chen Xumin, Zhang Ruizhe, Liu Xiaoyi, Chen Junkun',
 	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com, 1261954105@qq.com',

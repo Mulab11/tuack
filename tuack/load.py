@@ -255,9 +255,98 @@ def loj():
 	from . import gen
 	base.run_exc(gen.work_list['auto'])
 
+def data_folder(bpath = None):
+	if base.conf.folder != 'problem':
+		log.error(u'只能导入到一个problem的工程中。')
+		return
+	if bpath is None:
+		bpath = base.args[0]
+	cases = set(base.conf.test_cases)
+	idx = [1]	# python2居然不支持nonlocal，只能用这种鬼畜方法实现闭包了
+	while idx[0] in cases or str(idx[0]) in cases:
+		idx[0] += 1
+	def save(path, iname, oname):
+		log.info(u'找到数据`%s/{%s,%s}`' % (path, iname, oname))
+		shutil.copyfile(pjoin(path, iname), pjoin(base.conf.path, 'data', str(idx[0]) + '.in'))
+		shutil.copyfile(pjoin(path, oname), pjoin(base.conf.path, 'data', str(idx[0]) + '.ans'))
+		idx[0] += 1
+	re_inp = re.compile('(.*)input(.*)')
+	re_in = re.compile('(.*)\\.in(.*)')
+	def scan(path):
+		for fname in os.listdir(path):
+			flag = False
+			fpath = pjoin(path, fname)
+			if os.path.isfile(fpath):
+				for re_i, ostrs in ((re_inp, ('answer', 'output')), (re_in, ('.ans', '.out'))):
+					ma = re_i.match(fname)
+					if ma:
+						for ostr in ostrs:
+							oname = ma.group(1) + ostr + ma.group(2)
+							if os.path.exists(pjoin(path, oname)):
+								save(path, fname, oname)
+								flag = True
+								break
+						if flag:
+							break
+			else:
+				scan(fpath)
+	scan(bpath)
+	from . import gen
+	base.run_exc(gen.work_list['data'])
+
+def data_pack(suf, bpath = None):
+	import zipfile, tarfile, rarfile
+	packer = {
+		'zip' : zipfile.ZipFile,
+		'rar' : rarfile.RarFile,
+		'tar' : tarfile.TarFile
+	}.get(suf, None)
+	if suf == 'rar':
+		base.check_install('unrar')
+	if not packer:
+		log.error(u'暂时不支持的压缩包类型。')
+		return
+	if base.conf.folder != 'problem':
+		log.error(u'只能导入到一个problem的工程中。')
+		return
+	if bpath is None:
+		bpath = base.args[0]
+	with packer(bpath) as z:
+		z.extractall('tmp')
+	data_folder('tmp')
+	time.sleep(.1)
+	shutil.rmtree('tmp')
+
+def data(bpath = None):
+	if base.conf.folder != 'problem':
+		log.error(u'只能导入到一个problem的工程中。')
+		return
+	if bpath is None:
+		bpath = base.args[0]
+	suffix = [
+		('.rar', 'rar'),
+		('.zip', 'zip'),
+		('.tar.gz', 'tar'),
+		('.tar', 'tar')
+	]
+	if os.path.isfile(bpath):
+		for suf, tp in suffix:
+			if bpath.endswith(suf):
+				data_pack(tp, bpath)
+				break
+		else:
+			log.error(u'暂时不支持的压缩包类型。')
+	else:
+		data_folder(bpath)
+
 work_list = {
 	'tsinsen-oj' : tsinsen_oj,
-	'loj' : loj
+	'loj' : loj,
+	'data' : data,
+	'data-folder' : data_folder,
+	'data-zip' : lambda : data_pack('zip'),
+	'data-tar' : lambda : data_pack('tar'),
+	'data-rar' : lambda : data_pack('rar')
 }
 
 if __name__ == '__main__':
@@ -271,6 +360,11 @@ if __name__ == '__main__':
 			log.info(u'支持的工作：')
 			log.info(u'  tsinsen-oj  参数1是符合清澄OJ“我来出题”的上传下载格式的本地文件。')
 			log.info(u'  loj         参数1是SYZ系OJ的题目网站如“https://loj.ac/problem/1”。')
+			log.info(u'  data        参数1是一个装数据的文件夹或压缩包，只导入数据。')
+			log.info(u'  data-folder 在上述命令不好使的时候，强制指定是文件夹。')
+			log.info(u'  data-zip    在上述命令不好使的时候，强制指定是zip文件。')
+			log.info(u'  data-tar    在上述命令不好使的时候，强制指定是tar文件。')
+			log.info(u'  data-rar    在上述命令不好使的时候，强制指定是rar文件。')
 	except base.NoFileException as e:
 		log.error(e)
 		log.info(u'尝试使用`python -m tuack.gen -h`获取如何生成一个工程。')

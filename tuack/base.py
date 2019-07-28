@@ -882,6 +882,13 @@ def check_install(pack):
 		if ret != 0:
 			log.warning(u'format checker未安装，使用`python -m tuack.install format`安装。')
 			raise Exception('format not found')
+			
+	def check_unrar():
+		ret = os.system('unrar --version')
+		if ret != 0:
+			log.warning(u'unrar未安装，将无法解压rar文件，请安装unrar。')
+			log.warning(u'对于Windows用户，你可以将WinRar的安装目录添加到PATH。')
+			raise Exception('unrar not found')
 
 	if pack in {'g++', 'cpp'}:
 		pack = 'gpp'
