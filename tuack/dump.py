@@ -395,6 +395,33 @@ def tuoj_down(conf = None):
 
 def loj_prob(conf):
 	global save_flag
+	headers = {
+		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
+	}
+	tool_conf = base.tool_conf['loj']['default']
+	cookies = tool_conf['cookies']
+	pid = conf.get('pid', {}).get('loj-default', 0)
+	host = tool_conf['main']
+	data = {
+		'title' : conf.tr('title'),
+		'description' : 'place holder',
+		'input_format' : 'place holder',
+		'output_format' : 'place holder',
+		'example' : 'place holder',
+		'limit_and_hint' : 'place holder'
+	}
+	if pid == 0:
+		r = requests.post(
+			host + '/problem/%d/edit' % pid,
+			headers = headers,
+			stream = True,
+			cookies = cookies,
+			data = data
+		)
+		pid = int(r.url.split('/')[-1])
+		conf.setdefault('pid', {})
+		conf['pid']['loj-default'] = pid
+		save_flag = True
 	if base.do_render:
 		from . import ren
 		tmp = base.start_file
@@ -404,27 +431,14 @@ def loj_prob(conf):
 	else:
 		pass
 	path = pjoin('statements', 'loj', conf.route if conf.route != '' else conf['name']) + '.md'
-	data = {
-		'title' : conf.tr('title'),
-		'description' : open(path, 'rb').read(),
-		'input_format' : 'place holder',
-		'output_format' : 'place holder',
-		'example' : 'place holder',
-		'limit_and_hint' : 'place holder'
-	}
-	headers = {
-		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
-	}
-	tool_conf = base.tool_conf['loj']['default']
-	cookies = tool_conf['cookies']
-	pid = conf.get('pid', {}).get('loj-default', 0)
-	host = tool_conf['main']
-	r = requests.post(host + '/problem/%d/edit' % pid, headers = headers, stream = True, cookies = cookies, data = data)
-	if pid == 0:
-		pid = int(r.url.split('/')[-1])
-		conf.setdefault('pid', {})
-		conf['pid']['loj-default'] = pid
-		save_flag = True
+	data['description'] = open(path, 'rb').read()
+	r = requests.post(
+		host + '/problem/%d/edit' % pid,
+		headers = headers,
+		stream = True,
+		cookies = cookies,
+		data = data
+	)
 	import zipfile, uuid
 	def pack(z, path, fname):
 		id = str(uuid.uuid4()) + '.tmp'
@@ -442,6 +456,9 @@ def loj_prob(conf):
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
 		for name in os.listdir(pjoin(conf.path, 'down')):
 			pack(z, pjoin(conf.path, 'down'), name)
+	with zipfile.ZipFile(pjoin('loj', 'resources', conf.route + '.zip'), 'w') as z:
+		for name in os.listdir(pjoin(conf.path, 'resources')):
+			pack(z, pjoin(conf.path, 'resources'), name)
 	files = [
 		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
 		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
@@ -452,7 +469,24 @@ def loj_prob(conf):
 		'time_limit' : int(conf.get('time limit', 0) * 1000),
 		'memory_limit' : int(conf.ml().MB)
 	}
-	requests.post(host + '/problem/%d/manage' % pid, headers = headers, stream = True, cookies = cookies, data = data, files = files)
+	requests.post(
+		host + '/problem/%d/manage' % pid,
+		headers = headers,
+		stream = True,
+		cookies = cookies,
+		data = data,
+		files = files
+	)
+	files = [
+		('images', ("resources.zip", open(pjoin('loj', 'resources', conf.route + '.zip'), "rb")))
+	]
+	requests.post(
+		host + '/problem/%d/upload_resource' % pid,
+		headers = headers,
+		stream = True,
+		cookies = cookies,
+		files = files
+	)
 
 def loj():
 	global save_flag
@@ -470,6 +504,7 @@ def loj():
 		base.remkdir('loj')
 	base.remkdir(pjoin('loj', 'data'))
 	base.remkdir(pjoin('loj', 'down'))
+	base.remkdir(pjoin('loj', 'resources'))
 	if base.conf.folder == 'contest':
 		for day in base.days():
 			os.makedirs(base.pjoin(pjoin('loj', 'data'), day.route))
