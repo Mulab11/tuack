@@ -410,35 +410,30 @@ def loj_prob(conf):
 		'example' : 'place holder',
 		'limit_and_hint' : 'place holder'
 	}
-	if pid == 0:
+	def post(url, data = None, files = None):
 		r = requests.post(
-			host + '/problem/%d/edit' % pid,
+			host + url,
 			headers = headers,
 			stream = True,
 			cookies = cookies,
-			data = data
+			data = data,
+			files = files
 		)
+		if not r.ok:
+			log.error(u'网站连接失败，错误代码%s，错误信息见`error.log`。' % r.status_code)
+			with open('error.log', 'a') as f:
+				f.write(u'运行时间：' + str(datetime.datetime.now()) + '\n')
+				f.write(u'url：' + r.url + '\n')
+				f.write(r.text)
+	if pid == 0:
+		post('/problem/%d/edit' % pid, data)
 		pid = int(r.url.split('/')[-1])
 		conf.setdefault('pid', {})
 		conf['pid']['loj-default'] = pid
 		save_flag = True
-	if base.do_render:
-		from . import ren
-		tmp = base.start_file
-		base.start_file = False
-		ren.Markdown('loj').run()
-		base.start_file = tmp
-	else:
-		pass
 	path = pjoin('statements', 'loj', conf.route if conf.route != '' else conf['name']) + '.md'
 	data['description'] = open(path, 'rb').read()
-	r = requests.post(
-		host + '/problem/%d/edit' % pid,
-		headers = headers,
-		stream = True,
-		cookies = cookies,
-		data = data
-	)
+	post('/problem/%d/edit' % pid, data)
 	import zipfile, uuid
 	def pack(z, path, fname):
 		id = str(uuid.uuid4()) + '.tmp'
@@ -453,12 +448,17 @@ def loj_prob(conf):
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
+		if os.path.exists(pjoin(conf.path, 'data', 'data.yml')):
+			z.write(pjoin(conf.path, 'data', 'data.yml'), 'data.yml')
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
 		for name in os.listdir(pjoin(conf.path, 'down')):
 			pack(z, pjoin(conf.path, 'down'), name)
 	with zipfile.ZipFile(pjoin('loj', 'resources', conf.route + '.zip'), 'w') as z:
-		for name in os.listdir(pjoin(conf.path, 'resources')):
-			pack(z, pjoin(conf.path, 'resources'), name)
+		try:
+			for name in os.listdir(pjoin(conf.path, 'resources')):
+				pack(z, pjoin(conf.path, 'resources'), name)
+		except Exception as e:
+			log.warning(u'没有找到资源文件。')
 	files = [
 		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
 		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
@@ -469,24 +469,11 @@ def loj_prob(conf):
 		'time_limit' : int(conf.get('time limit', 0) * 1000),
 		'memory_limit' : int(conf.ml().MB)
 	}
-	requests.post(
-		host + '/problem/%d/manage' % pid,
-		headers = headers,
-		stream = True,
-		cookies = cookies,
-		data = data,
-		files = files
-	)
+	post('/problem/%d/manage' % pid, data, files)
 	files = [
 		('images', ("resources.zip", open(pjoin('loj', 'resources', conf.route + '.zip'), "rb")))
 	]
-	requests.post(
-		host + '/problem/%d/upload_resource' % pid,
-		headers = headers,
-		stream = True,
-		cookies = cookies,
-		files = files
-	)
+	post('/problem/%d/upload_resource' % pid, files = files)
 
 def loj():
 	global save_flag
@@ -509,6 +496,15 @@ def loj():
 		for day in base.days():
 			os.makedirs(base.pjoin(pjoin('loj', 'data'), day.route))
 			os.makedirs(base.pjoin(pjoin('loj', 'down'), day.route))
+			os.makedirs(base.pjoin(pjoin('loj', 'resources'), day.route))
+	if base.do_render:
+		from . import ren
+		tmp = base.start_file
+		base.start_file = False
+		ren.Markdown('loj').run()
+		base.start_file = tmp
+	else:
+		pass
 	for prob in base.probs():
 		loj_prob(prob)
 	if save_flag:
