@@ -435,6 +435,23 @@ def loj_prob(conf):
 	data['description'] = open(path, 'rb').read()
 	post('/problem/%d/edit' % pid, data)
 	import zipfile, uuid
+	data_yml = {
+		'inputFile' : '#.in',
+		'outputFile' : '#.ans',
+		'subtasks' : [{
+			'score' : int(datum.score),
+			'type' : 'min' if conf.packed else 'sum',
+			'cases' : [str(c) for c in datum['cases']]
+		} for datum in conf.data]
+	}
+	if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
+		data_yml['specialJudge'] = {
+			'language' : 'cpp',
+			'fileName' : 'spj_cpp.cpp'
+		}
+	if conf['type'] == 'output':
+		data_yml['userOutput'] = '#.out'
+	open(pjoin('loj', 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname):
 		id = str(uuid.uuid4()) + '.tmp'
 		shutil.copy(pjoin(path, fname), id)
@@ -448,8 +465,8 @@ def loj_prob(conf):
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
-		if os.path.exists(pjoin(conf.path, 'data', 'data.yml')):
-			z.write(pjoin(conf.path, 'data', 'data.yml'), 'data.yml')
+		if os.path.exists(pjoin('loj', 'data', conf.route + '.yml')):
+			z.write(pjoin('loj', 'data', conf.route + '.yml'), 'data.yml')
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
 		for name in os.listdir(pjoin(conf.path, 'down')):
 			pack(z, pjoin(conf.path, 'down'), name)
@@ -464,11 +481,12 @@ def loj_prob(conf):
 		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
 	]
 	data = {
-		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interactive'}[conf['type']],
+		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interactive'}[conf['type']]
 		# LOJ的交互叫什么名字我还没搞清楚
-		'time_limit' : int(conf.get('time limit', 0) * 1000),
-		'memory_limit' : int(conf.ml().MB)
 	}
+	if conf['type'] != 'output':
+		data['time_limit'] = int(conf.get('time limit', 0) * 1000)
+		data['memory_limit'] = int(conf.ml().MB)
 	post('/problem/%d/manage' % pid, data, files)
 	files = [
 		('images', ("resources.zip", open(pjoin('loj', 'resources', conf.route + '.zip'), "rb")))
