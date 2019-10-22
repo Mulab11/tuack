@@ -5,14 +5,9 @@
 {%- for i in range(table.__len__()) -%}
 	|
 	{%- for j in range(table[i].__len__()) -%}
-		{%- if table[i][j] or not last_line -%}
-			{{ table[i][j] }}|
-		{%- else -%}
-			{{ last_line[j] }}|
-		{%- endif -%}
+		{{ table[i][j] }}|
 	{%- endfor %}
-{% set last_line = table[i] -%}
-	{%- if loop.first and options['titled'] -%}
+{% if loop.first and options['titled'] -%}
 		|
 		{%- for j in range(table[0].__len__()) -%}
 		----|

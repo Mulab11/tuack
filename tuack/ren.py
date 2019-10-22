@@ -106,7 +106,7 @@ def get_template(fname, lang = None):
 			log.warning(u'没有%s这种语言的翻译表可用。' % lang)
 	return env['env'].get_template(fname)
 
-def table(path, name, temp, context, options):
+def table(path, name, temp, context, options, is_loj = False):
 	if options == None:
 		options = {}
 	for suf in ['.py', '.pyinc', '.json']:
@@ -163,6 +163,14 @@ def table(path, name, temp, context, options):
 			else:
 				raise e
 			raise e
+	if is_loj and len(table) > 0:
+		last_line = [None] * len(table[0])
+		for i in range(len(table)):
+			for j in range(len(table[i])):
+				if table[i][j] == None:
+					table[i][j] = last_line[j]
+				else:
+					last_line[j] = table[i][j]
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
 	for i in range(len(table) - 2, -1, -1):
@@ -546,7 +554,7 @@ class Markdown(Base):
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
-			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.'+ table_suf +'.jinja', self.context, options)
+			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.'+ table_suf +'.jinja', self.context, options, is_loj = (self.comp == 'loj'))
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
