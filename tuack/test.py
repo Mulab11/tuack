@@ -56,7 +56,6 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 			else:
 				ret = 'Runtime error %d.' % ret
 			break
-		log.debug('%f %f' % (t, timer() - t))
 		if (timer() - t) >= tl * base.time_multiplier:
 			pro.kill()
 			t = 0.0
@@ -101,7 +100,6 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 			try:
 				t = time2float(open('timer').readline())
 			except Exception as e:
-				log.debug(e)
 				log.warning('Timer broken.')
 				t = 0.
 			ret = None
