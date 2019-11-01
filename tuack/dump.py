@@ -425,8 +425,9 @@ def loj_prob(conf):
 				f.write(u'运行时间：' + str(datetime.datetime.now()) + '\n')
 				f.write(u'url：' + r.url + '\n')
 				f.write(r.text)
+		return r
 	if pid == 0:
-		post('/problem/%d/edit' % pid, data)
+		r = post('/problem/%d/edit' % pid, data)
 		pid = int(r.url.split('/')[-1])
 		conf.setdefault('pid', {})
 		conf['pid']['loj-default'] = pid
@@ -439,7 +440,7 @@ def loj_prob(conf):
 		'inputFile' : '#.in',
 		'outputFile' : '#.ans',
 		'subtasks' : [{
-			'score' : int(datum.score),
+			'score' : datum.score if conf.packed else 100 / len(conf.test_cases) * len(datum['cases']),
 			'type' : 'min' if conf.packed else 'sum',
 			'cases' : [str(c) for c in datum['cases']]
 		} for datum in conf.data]
