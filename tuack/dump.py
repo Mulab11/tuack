@@ -144,8 +144,8 @@ def arbiter_main(conf = None,daynum = 0):
 			arbiter(base.days())
 		else:
 			for idx, day in enumerate(base.days(), start = 1):
-				os.makedirs(base.pjoin('arbiter', 'main','players',day.route))
-				os.makedirs(base.pjoin('arbiter', 'main','result',day.route))
+				os.makedirs(base.pjoin('arbiter', 'main','players','day%d' % idx))
+				os.makedirs(base.pjoin('arbiter', 'main','result','day%d' % idx))
 				arbiter_main(day,idx)
 			log.info('dos2unix')
 			base.run_r(base.dos2unix, base.pjoin('arbiter', 'main', 'data'))
@@ -168,7 +168,7 @@ def arbiter_main(conf = None,daynum = 0):
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
-	arbiter_info(dayinfo,base.pjoin('arbiter', 'main', conf['name']+'.info'))
+	arbiter_info(dayinfo,base.pjoin('arbiter', 'main', 'day%d.info' % daynum))
 	for probnum, prob in enumerate(conf.sub, start = 1):
 		log.info(prob['name'])
 		probinfo = {}
