@@ -470,8 +470,9 @@ def loj_prob(conf):
 		if os.path.exists(pjoin('loj', 'data', conf.route + '.yml')):
 			z.write(pjoin('loj', 'data', conf.route + '.yml'), 'data.yml')
 	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
-		for name in os.listdir(pjoin(conf.path, 'down')):
-			pack(z, pjoin(conf.path, 'down'), name)
+		if os.path.exists(pjoin(conf.path, 'down')):
+			for name in os.listdir(pjoin(conf.path, 'down')):
+				pack(z, pjoin(conf.path, 'down'), name)
 	with zipfile.ZipFile(pjoin('loj', 'resources', conf.route + '.zip'), 'w') as z:
 		try:
 			for name in os.listdir(pjoin(conf.path, 'resources')):
