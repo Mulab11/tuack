@@ -408,7 +408,8 @@ def loj_prob(conf):
 		'input_format' : 'place holder',
 		'output_format' : 'place holder',
 		'example' : 'place holder',
-		'limit_and_hint' : 'place holder'
+		'limit_and_hint' : 'place holder',
+		'tags' : conf.get('tags', {}).get('loj-default', [])
 	}
 	def post(url, data = None, files = None):
 		r = requests.post(
@@ -447,7 +448,7 @@ def loj_prob(conf):
 	}
 	if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 		data_yml['specialJudge'] = {
-			'language' : 'cpp',
+			'language' : 'cpp17',
 			'fileName' : 'spj_cpp.cpp'
 		}
 	if conf['type'] == 'output':
