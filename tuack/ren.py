@@ -248,8 +248,8 @@ class Base(object):
 			return ' {{ ' + s + ' }} '
 
 	def resource(self, name):
-		if self.comp == 'loj' and self.conf.get('pid', {}).get('loj-default'):
-			return '/../problem/show_image/%d/' % self.conf.get('pid', {}).get('loj-default') + name
+		if self.comp == 'loj' and self.prob.get('pid', {}).get('loj-default'):
+			return '/../problem/show_image/%d/' % self.prob.get('pid', {}).get('loj-default') + name
 		return self.prob['name'] + '/' + name
 		
 	def down_file(self, name):
