@@ -445,6 +445,27 @@ class Latex(Base):
 		))
 		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
 
+	def ren_day_prec(self):
+		if not os.path.exists(base.pjoin(self.day.path, 'precautions', 'zh-cn.md')):
+			return
+		context = {
+			'io_style' : self.io_style,
+			'comp' : self.comp,
+			'tools' : tools,
+			'tl' : tools,
+			'base' : base,
+			'json' : json
+		}
+		base.copy(base.pjoin(self.day.path, 'precautions'), 'zh-cn.md', 'tmp')
+		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(get_template('zh-cn.md').render(context, conf = self.day).encode('utf-8'))
+		os.system('pandoc %s %s -o %s' % (
+			get_pandoc_option(),
+			pjoin('tmp', 'precautions.md'),
+			pjoin('tmp', 'precautions.tex')
+		))
+		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
+
 	def ren_prob_tex(self):
 		os.system('pandoc %s %s -o %s' % (
 			get_pandoc_option(),
@@ -546,6 +567,7 @@ class Latex(Base):
 		if self.conf.folder != 'problem':
 			for self.day in base.days():
 				self.result_path = pjoin('statements', self.comp, self.day.name_lang() + '.pdf')
+				self.ren_day_prec()
 				self.ren_day()
 		else:
 			self.result_path = pjoin('statements', self.comp, self.conf.name_lang() + '.pdf')
