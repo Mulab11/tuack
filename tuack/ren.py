@@ -36,11 +36,12 @@ work_class = {
 	'tuoj-oi' : {'tuoi', 'tuoj'},
 	'tuoj' : {'tuoj'},
 	'thuoj' : {'thuoj'},
+	'hand' : {'hand'},
 	'ccc' : {'ccc-tex', 'ccc-md'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-md' : {'ccc-md'},
 	'tsinsen-oj' : {'tsinsen-oj'},
-	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
+	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex', 'hand'},
 	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj'},
 	'html' : {'tsinsen-oj'},
 	'doku' : {'thuoj'}
@@ -55,14 +56,16 @@ io_styles = {
 	'tupc' : 'stdio',
 	'tsinsen-oj' : 'stdio',
 	'loj' : 'stdio',
-	'thuoj' : 'stdio'
+	'thuoj' : 'stdio',
+	'hand' : 'stdio'
 }
 base_templates = {
 	'noi' : 'tuoi',
 	'tuoi' : 'tuoi',
 	'tupc' : 'tupc',
 	'ccpc' : 'ccpc',
-	'ccc' : 'ccc'
+	'ccc' : 'ccc',
+	'hand' : 'hand'
 }
 
 secondary_dict = {}
@@ -409,7 +412,8 @@ class Latex(Base):
 		'tuoi' : 'tuoi',
 		'tupc' : 'tupc',
 		'ccpc' : 'ccpc',
-		'ccc' : 'ccc'
+		'ccc' : 'ccc',
+		'hand' : 'hand'
 	}
 
 	def resource(self, name):
@@ -631,7 +635,8 @@ class_list = {
 	'ccc-md' : Markdown,
 	'tsinsen-oj' : Html,
 	'loj' : Markdown,
-	'thuoj' : DoKuWiki
+	'thuoj' : DoKuWiki,
+	'hand' : Latex
 }
 
 comp_list = {
@@ -645,7 +650,8 @@ comp_list = {
 	'ccc-md' : 'ccc',
 	'tsinsen-oj' : 'tsinsen-oj',
 	'loj' : 'loj',
-	'thuoj' : 'thuoj'
+	'thuoj' : 'thuoj',
+	'hand' : 'hand'
 }
 
 if __name__ == '__main__':
