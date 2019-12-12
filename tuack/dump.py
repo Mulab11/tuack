@@ -484,8 +484,7 @@ def loj_prob(conf):
 		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
 	]
 	data = {
-		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interactive'}[conf['type']]
-		# LOJ的交互叫什么名字我还没搞清楚
+		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}[conf['type']]
 	}
 	if conf['type'] != 'output':
 		data['time_limit'] = int(conf.get('time limit', 0) * 1000)
