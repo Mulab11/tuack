@@ -264,3 +264,29 @@
 
 %\EndDefineVerbatimEnvironment{Highlighting}
 
+
+%\tcbuselibrary{listings}
+
+\newfontfamily\consolas{Consolas}
+
+\lstset{
+	frame=single,
+	frameround=tttt,
+	framesep=1pt,
+	framextopmargin=6pt,
+  framexbottommargin=6pt,
+  framexleftmargin=6pt,
+  framexrightmargin=6pt,
+	tabsize=4,
+	breaklines=true,
+	upquote=true,
+	captionpos=b,
+  basicstyle=\consolas\small,
+  numbers=left,
+	rulecolor=\color{blue},
+	identifierstyle=\color{blue},
+	commentstyle=\itshape\color{green},
+	stringstyle=\bfseries\color{amber},
+	keywordstyle=\bfseries\color{purple},
+  numberstyle=\bfseries\color{grey}
+}

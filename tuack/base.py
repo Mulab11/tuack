@@ -599,7 +599,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format, user_time
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format, user_time, water_mark
 	do_render = True
 	works = []
 	args = []
@@ -613,6 +613,7 @@ def deal_args():
 	git_lfs = False
 	user_time = False
 	dump_format = 'yaml'
+	water_mark = False
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -649,6 +650,9 @@ def deal_args():
 		elif sys.argv[i] == '-t':
 			i += 1
 			time_multiplier = float(sys.argv[i])
+		elif sys.argv[i] == '-w':
+			i += 1
+			water_mark = sys.argv[i]
 		elif sys.argv[i] == '-h' or sys.argv[i] == '--help':
 			log.info(u'详细用法见文档：https://git.thusaac.com/publish/tuack/wikis。')
 			log.info(u'python 脚本 [[[工作1],工作2],...] [[[选项1] 选项2] ...] [[[参数1] 参数2] ...]')
@@ -664,10 +668,12 @@ def deal_args():
 			log.info(u'  -t 6.0              对于test，设置掐断时间为6.0*时间限制，用于对比不同程序的时限。')
 			log.info(u'  -o SYSTEM           对于ren，输出指定操作系统的题面，可选Windows和Linux。')
 			log.info(u'  -l zh-cn,en         对于ren，指定输出语言，不指定默认为zh-cn。')
+			log.info(u'  -w logo.png         对于ren，给PDF添加水印，默认不添加。')
 			log.info(u'  -r                  对于dump，不先尝试渲染题面。')
 			log.info(u'  -g                  对于gen，使用git-lfs。')
 			log.info(u'  -d json             对于gen，规定配置文件格式，支持json、yaml，默认yaml。')
 			log.info(u'  -u                  对于test，在linux下使用user time做测试，默认real time。')
+			
 			return False
 		else:
 			if len(works) == 0:

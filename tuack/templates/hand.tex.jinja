@@ -8,9 +8,15 @@
 	\fi
 \end{center}
 
+{% endblock %}
+
+{% block statements %}
+
 \ifdefined\precautions
 	\precautions
 \fi
+
+
 
 {% for i in range(problems.__len__()) %}
 	
@@ -27,6 +33,6 @@
 
 {% endfor %}
 
+
 {% endblock %}
 
-\end{document}

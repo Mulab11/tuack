@@ -83,9 +83,9 @@ def detect_pandoc_version():
 def get_pandoc_option():
 	detect_pandoc_version()
 	if pandoc_version.startswith('2.'):
-		option = '-f markdown-smart -t latex-smart'
+		option = '--listings -f markdown-smart -t latex-smart'
 	else:
-		option = '--no-tex-ligatures -t latex'
+		option = '--no-tex-ligatures --listings -t latex'
 	return option
 
 def get_template(fname, lang = None):
@@ -522,6 +522,9 @@ class Latex(Base):
 		self.context['probs'] = self.probs
 		self.context['problems'] = self.tex_problems
 		self.context['compile'] = self.gen_compile()
+		self.context['water_mark'] = base.water_mark
+		if base.water_mark:
+			shutil.copy(base.water_mark, 'tmp/water_mark.' + base.water_mark.split('.')[-1])
 		all_problem_statement = get_template('%s.tex.jinja' % base_templates[self.comp]).render(self.context)
 		try:
 			open(pjoin('tmp', 'problems.tex'), 'wb') \
