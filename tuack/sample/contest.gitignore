@@ -22,3 +22,4 @@ arbiter*
 *.0
 *.tmp
 loj
+/output

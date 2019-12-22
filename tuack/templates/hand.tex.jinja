@@ -12,10 +12,9 @@
 
 {% block statements %}
 
-\ifdefined\precautions
-	\precautions
-\fi
-
+{% if precautions %}
+	{{ precautions }}
+{% endif %}
 
 
 {% for i in range(problems.__len__()) %}
