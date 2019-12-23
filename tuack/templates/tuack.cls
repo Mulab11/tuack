@@ -281,7 +281,7 @@
 	breaklines=true,
 	upquote=true,
 	captionpos=b,
-  basicstyle=\consolas\small,
+  basicstyle=\consolas\normalsize,
   numbers=left,
 	rulecolor=\color{blue},
 	identifierstyle=\color{blue},
@@ -289,4 +289,10 @@
 	stringstyle=\bfseries\color{amber},
 	keywordstyle=\bfseries\color{purple},
   numberstyle=\bfseries\color{grey}
+}
+
+
+\lstset{
+   language=plain,
+   numbers=none
 }
