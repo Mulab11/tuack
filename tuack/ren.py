@@ -31,6 +31,8 @@ work_class = {
 	'noi' : {'noi'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
+	'loj' : {'loj'},
+	'ipuoj' : {'ipuoj'},
 	'tupc' : {'tupc'},
 	'tuoj-pc' : {'tupc', 'tuoj'},
 	'tuoi' : {'tuoi'},
@@ -43,7 +45,7 @@ work_class = {
 	'ccc-md' : {'ccc-md'},
 	'tsinsen-oj' : {'tsinsen-oj'},
 	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex', 'hand'},
-	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj'},
+	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj', 'ipuoj'},
 	'html' : {'tsinsen-oj'},
 	'doku' : {'thuoj'}
 }
@@ -57,6 +59,7 @@ io_styles = {
 	'tupc' : 'stdio',
 	'tsinsen-oj' : 'stdio',
 	'loj' : 'stdio',
+	'ipuoj' : 'stdio',
 	'thuoj' : 'stdio',
 	'hand' : 'stdio'
 }
@@ -110,7 +113,7 @@ def get_template(fname, lang = None):
 			log.warning(u'没有%s这种语言的翻译表可用。' % lang)
 	return env['env'].get_template(fname)
 
-def table(path, name, temp, context, options, is_loj = False):
+def table(path, name, temp, context, options):
 	if options == None:
 		options = {}
 	for suf in ['.py', '.pyinc', '.json', '.yaml', '.yml']:
@@ -174,7 +177,7 @@ def table(path, name, temp, context, options, is_loj = False):
 			else:
 				raise e
 			raise e
-	if is_loj and len(table) > 0:
+	if context.get('comp') in {'loj', 'ipuoj'} and len(table) > 0:
 		last_line = [None] * len(table[0])
 		for i in range(len(table)):
 			for j in range(len(table[i])):
@@ -591,11 +594,11 @@ class Markdown(Base):
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
-			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.'+ table_suf +'.jinja', self.context, options, is_loj = (self.comp == 'loj'))
+			table = lambda name, options = None : table(pjoin(self.prob.path, 'tables'), name, 'table.'+ table_suf +'.jinja', self.context, options)
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
-		elif self.comp == 'loj':
+		elif self.comp in {'loj', 'ipuoj'}:
 			result_md = loj_bug(result_md)
 		open(self.result_path, 'wb').write(result_md)
 
@@ -668,6 +671,7 @@ class_list = {
 	'ccc-md' : Markdown,
 	'tsinsen-oj' : Html,
 	'loj' : Markdown,
+	'ipuoj' : Markdown,
 	'thuoj' : DoKuWiki,
 	'hand' : Latex
 }
@@ -683,6 +687,7 @@ comp_list = {
 	'ccc-md' : 'ccc',
 	'tsinsen-oj' : 'tsinsen-oj',
 	'loj' : 'loj',
+	'ipuoj' : 'ipuoj',
 	'thuoj' : 'thuoj',
 	'hand' : 'hand'
 }
