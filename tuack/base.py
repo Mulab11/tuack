@@ -113,7 +113,10 @@ rjoin = lambda *args : '/'.join(args).strip('/')
 
 natsort_warned = None
 
-tool_path = (path if system == 'Windows' else pjoin(os.path.expanduser("~"), '.tuack'))
+try:
+	tool_path = (path if system == 'Windows' and not os.path.expanduser("~") else pjoin(os.path.expanduser("~"), '.tuack'))
+except:
+	tool_path = path
 if not os.path.exists(tool_path):
 	os.makedirs(tool_path)
 
