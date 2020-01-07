@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import gettext
+import yaml
 from . import base
 from .base import log, pjoin
 try:
@@ -112,7 +113,7 @@ def get_template(fname, lang = None):
 def table(path, name, temp, context, options, is_loj = False):
 	if options == None:
 		options = {}
-	for suf in ['.py', '.pyinc', '.json']:
+	for suf in ['.py', '.pyinc', '.json', '.yaml', '.yml']:
 		try:
 			base.copy(path, name + suf, pjoin('tmp', 'table' + suf))
 			log.info(u'渲染表格`%s`，参数%s' % (base.pjoin(path, name + suf), str(options)))
@@ -130,6 +131,13 @@ def table(path, name, temp, context, options, is_loj = False):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 		os.remove(pjoin('tmp', 'table.json'))
+	elif suf == '.yaml' or suf == '.yml':
+		try:
+			table = yaml.full_load(open(base.pjoin('tmp', 'table' + suf), 'rb').read().decode('utf-8'))
+		except Exception as e:
+			open(pjoin('tmp', 'table.tmp.json'), 'w').write(res)
+			log.error(u'json文件错误`tmp/table.tmp.json`')
+			raise e
 	elif suf == '.py' or suf == '.pyinc':
 		def merge_ver(table):
 			ret = [row for row in table]
