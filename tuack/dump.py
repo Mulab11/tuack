@@ -398,9 +398,9 @@ def loj_prob(conf):
 	headers = {
 		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 	}
-	tool_conf = base.tool_conf['loj']['default']
+	tool_conf = base.tool_conf[base.work]['default']
 	cookies = tool_conf['cookies']
-	pid = conf.get('pid', {}).get('loj-default', 0)
+	pid = conf.get('pid', {}).get(base.work + '-default', 0)
 	host = tool_conf['main']
 	data = {
 		'title' : conf.tr('title'),
@@ -409,7 +409,7 @@ def loj_prob(conf):
 		'output_format' : 'place holder',
 		'example' : 'place holder',
 		'limit_and_hint' : 'place holder',
-		'tags' : conf.get('tags', {}).get('loj-default', [])
+		'tags' : conf.get('tags', {}).get(base.work + '-default', [])
 	}
 	def post(url, data = None, files = None):
 		r = requests.post(
@@ -431,9 +431,9 @@ def loj_prob(conf):
 		r = post('/problem/%d/edit' % pid, data)
 		pid = int(r.url.split('/')[-1])
 		conf.setdefault('pid', {})
-		conf['pid']['loj-default'] = pid
+		conf['pid'][base.work + '-default'] = pid
 		save_flag = True
-	path = pjoin('statements', 'loj', conf.route if conf.route != '' else conf['name']) + '.md'
+	path = pjoin('statements', base.work, conf.route if conf.route != '' else conf['name']) + '.md'
 	data['description'] = open(path, 'rb').read()
 	post('/problem/%d/edit' % pid, data)
 	import zipfile, uuid
@@ -453,7 +453,7 @@ def loj_prob(conf):
 		}
 	if conf['type'] == 'output':
 		data_yml['userOutput'] = '#.out'
-	open(pjoin('loj', 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
+	open(pjoin(base.work, 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname):
 		id = str(uuid.uuid4()) + '.tmp'
 		shutil.copy(pjoin(path, fname), id)
@@ -461,27 +461,27 @@ def loj_prob(conf):
 		base.dos2unix(id)
 		z.write(id, fname)
 		os.remove(id)
-	with zipfile.ZipFile(pjoin('loj', 'data', conf.route + '.zip'), 'w') as z:
+	with zipfile.ZipFile(pjoin(base.work, 'data', conf.route + '.zip'), 'w') as z:
 		for id in conf.test_cases:
 			pack(z, pjoin(conf.path, 'data'), id + '.in')
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
-		if os.path.exists(pjoin('loj', 'data', conf.route + '.yml')):
-			z.write(pjoin('loj', 'data', conf.route + '.yml'), 'data.yml')
-	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
+		if os.path.exists(pjoin(base.work, 'data', conf.route + '.yml')):
+			z.write(pjoin(base.work, 'data', conf.route + '.yml'), 'data.yml')
+	with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
 		if os.path.exists(pjoin(conf.path, 'down')):
 			for name in os.listdir(pjoin(conf.path, 'down')):
 				pack(z, pjoin(conf.path, 'down'), name)
-	with zipfile.ZipFile(pjoin('loj', 'resources', conf.route + '.zip'), 'w') as z:
+	with zipfile.ZipFile(pjoin(base.work, 'resources', conf.route + '.zip'), 'w') as z:
 		try:
 			for name in os.listdir(pjoin(conf.path, 'resources')):
 				pack(z, pjoin(conf.path, 'resources'), name)
 		except Exception as e:
 			log.warning(u'没有找到资源文件。')
 	files = [
-		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
-		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
+		('testdata', ("data.zip", open(pjoin(base.work, 'data', conf.route + '.zip'), "rb"))),
+		('additional_file', ("down.zip", open(pjoin(base.work, 'down', conf.route + '.zip'), "rb")))
 	]
 	data = {
 		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}[conf['type']]
@@ -491,37 +491,37 @@ def loj_prob(conf):
 		data['memory_limit'] = int(conf.ml().MB)
 	post('/problem/%d/manage' % pid, data, files)
 	files = [
-		('images', ("resources.zip", open(pjoin('loj', 'resources', conf.route + '.zip'), "rb")))
+		('images', ("resources.zip", open(pjoin(base.work, 'resources', conf.route + '.zip'), "rb")))
 	]
 	post('/problem/%d/upload_resource' % pid, files = files)
 
 def loj():
 	global save_flag
 	save_flag = False
-	syz_host = base.tool_conf.get('loj', {}).get('default')
+	syz_host = base.tool_conf.get(base.work, {}).get('default')
 	if not syz_host:
-		log.error(u'没有配置loj的地址。')
+		log.error(u'没有配置%s的地址。' % base.work)
 		if base.system == 'Windows':
 			log.info(u'在tuack的安装目录中找到conf.json。')
 		else:
 			log.info(u'在~/.tuack中找到conf.json。')
-		log.info(u'添加loj的相关字段，详见`https://git.thusaac.com/publish/tuack/wikis/导出题目`。')
+		log.info(u'添加%s的相关字段，详见`https://git.thusaac.com/publish/tuack/wikis/导出题目`。' % base.work)
 		return
-	if not os.path.exists('loj'):
-		base.remkdir('loj')
-	base.remkdir(pjoin('loj', 'data'))
-	base.remkdir(pjoin('loj', 'down'))
-	base.remkdir(pjoin('loj', 'resources'))
+	if not os.path.exists(base.work):
+		base.remkdir(base.work)
+	base.remkdir(pjoin(base.work, 'data'))
+	base.remkdir(pjoin(base.work, 'down'))
+	base.remkdir(pjoin(base.work, 'resources'))
 	if base.conf.folder == 'contest':
 		for day in base.days():
-			os.makedirs(base.pjoin(pjoin('loj', 'data'), day.route))
-			os.makedirs(base.pjoin(pjoin('loj', 'down'), day.route))
-			os.makedirs(base.pjoin(pjoin('loj', 'resources'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'data'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'down'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'resources'), day.route))
 	if base.do_render:
 		from . import ren
 		tmp = base.start_file
 		base.start_file = False
-		ren.Markdown('loj').run()
+		ren.Markdown(base.work).run()
 		base.start_file = tmp
 	else:
 		pass
@@ -537,7 +537,8 @@ work_list = {
 	'arbiter-down' : arbiter_down,
 	'tsinsen-oj' : tsinsen_oj,
 	'tuoj-down' : tuoj_down,
-	'loj' : loj
+	'loj' : loj,
+	'ipuoj' : loj
 }
 
 if __name__ == '__main__':
