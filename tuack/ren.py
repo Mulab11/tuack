@@ -262,8 +262,8 @@ class Base(object):
 			return ' {{ ' + s + ' }} '
 
 	def resource(self, name):
-		if self.comp == 'loj' and self.prob.get('pid', {}).get('loj-default'):
-			return '/../problem/show_image/%d/' % self.prob.get('pid', {}).get('loj-default') + name
+		if self.comp in {'loj', 'ipuoj'} and self.prob.get('pid', {}).get(self.comp + '-default'):
+			return '/../problem/show_image/%d/' % self.prob.get('pid', {}).get(self.comp + '-default') + name
 		return self.prob['name'] + '/' + name
 		
 	def down_file(self, name):
@@ -275,6 +275,22 @@ class Base(object):
 				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
 				length_warned = True
 			ret += line.decode('utf-8')
+		return ret
+
+	def hide_file(self, name):
+		ret = ''
+		fname = pjoin(self.prob.path, 'hide', name)
+		length_warned = False
+		for idx, line in enumerate(open(fname, 'rb')):
+			if len(line) > 60 and not length_warned:
+				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
+				length_warned = True
+			ret += line.decode('utf-8')
+		if self.comp not in work_class['tex']:
+			if ret < 20:
+				return u'隐藏内容'
+			c = len(ret) // 20
+			ret =  ret[:c] + u'……隐藏内容……' + ret[-c:]
 		return ret
 		
 	def titlize(self, title, args, lang = None):
