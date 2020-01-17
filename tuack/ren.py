@@ -606,7 +606,7 @@ class Latex(Base):
 class Markdown(Base):
 	work = 'md'
 	def ren_prob_rest(self):
-		table_suf = 'html' if self.comp != 'loj' else 'md'
+		table_suf = 'html' if self.comp not in {'loj', 'ipuoj'} else 'md'
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
