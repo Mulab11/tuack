@@ -29,10 +29,10 @@ def format():
 	shutil.copy(pjoin(install_path, fname), base.tool_path)
 	fpath = pjoin(base.tool_path, fname)
 	if base.system != 'Windows':
-		os.system('chmod +x %s' % fpath)
-		ret = os.system('%s -v' % fpath)
+		os.system('chmod +x "%s"' % fpath)
+		ret = os.system('"%s" -v' % fpath)
 	else:
-		ret = os.system('%s -v' % fpath)
+		ret = os.system('"%s" -v' % fpath)
 	if ret == 0:
 		log.info(u'`format`安装成功。')
 		return
