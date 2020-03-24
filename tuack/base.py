@@ -887,7 +887,7 @@ def check_install(pack):
 			raise Exception('bison not found')
 			
 	def check_format():
-		ret = os.system('%s -v' % pjoin(tool_path, format_checker_name))
+		ret = os.system('"%s" -v' % pjoin(tool_path, format_checker_name))
 		if ret != 0:
 			log.warning(u'format checker未安装，使用`python -m tuack.install format`安装。')
 			raise Exception('format not found')
