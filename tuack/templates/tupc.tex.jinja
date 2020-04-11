@@ -8,20 +8,20 @@
 		\ifdefined\longtitle\centerline\fi{\yihao \bf \thetitle} \par
 	\fi
 	\ifdefined\subtitle
-		{\hei \yihao \subtitle \par}
+		{\yihao \heiti \subtitle \par}
 	\fi
 	\ifdefined\subsubtitle
-		{\hei \yihao \subsubtitle \par}
+		{\yihao \heiti \subsubtitle \par}
 	\fi
 	\ifdefined\engtitle
-		{\xiaoyi \hei \engtitle \par}
+		{\xiaoyi \heiti \engtitle \par}
 	\fi
 	\vskip 1em 
 	\ifdefined\theday
-		{\kai \chuhao \theday \par} \vskip 1em 
+		{\chuhao \kaishu \theday \par} \vskip 1em 
 	\fi
 	\ifdefined\thetime
-		{\hei \sanhao \thetime \par}
+		{\sanhao \heiti \thetime \par}
 	\fi
 \end{center}
 
@@ -54,10 +54,10 @@
 	
 {% if probs[i].lang() == 'zh-cn' %}
 	\renewcommand{\sqbr}[1]{【#1】}
-	\titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
+	\titleformat{\subsection}{\heiti\banxiaosi}{}{1em}{\sqbr}
 {% else %}
 	\renewcommand{\sqbr}[1]{ \textbf{ #1 } }
-	\titleformat{\subsection}{\hei\sanhao}{}{0em}{\sqbr}
+	\titleformat{\subsection}{\heiti\sanhao}{}{0em}{\sqbr}
 {% endif %}
 
 	

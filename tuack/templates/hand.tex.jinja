@@ -4,7 +4,7 @@
 
 \begin{center}
 	\ifdefined\theday
-		{\kai \sanhao \theday \par} \vskip 1em 
+		{\kaishu \sanhao \theday \par} \vskip 1em 
 	\fi
 \end{center}
 
@@ -22,13 +22,13 @@
 
 {% if probs[i].lang() == 'zh-cn' %}
 	\renewcommand{\sqbr}[1]{【#1】}
-	\titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
+	\titleformat{\subsection}{\heiti\banxiaosi}{}{1em}{\sqbr}
 {% else %}
 	\renewcommand{\sqbr}[1]{ \textbf{ #1 } }
-	\titleformat{\subsection}{\hei\sanhao}{}{0em}{\sqbr}
+	\titleformat{\subsection}{\heiti\sanhao}{}{0em}{\sqbr}
 {% endif %}
 
-\praragraph{ {{ probs[i].name }} }. {{ problems[i] }}
+\paragraph{ {{ probs[i].name }} }. {{ problems[i] }}
 
 {% endfor %}
 
