@@ -4,7 +4,7 @@
 
 \thispagestyle{Cover}
 
-\ifdefined \precautions
+{% if precautions %}
 
 	\begin{center}
 		\ifdefined\longtitle\centerline\fi{\erhao \bf \thetitle} \par
@@ -22,7 +22,7 @@
 		\fi
 	\end{center}
 
-\else
+{% else %}
 
 	\null
 	\begin{center}
@@ -44,7 +44,7 @@
 	\end{center}
 	\vskip 1em
 
-\fi
+{% endif %}
 	
 \begin{center}
 \begin{tabularx}{\the \textwidth}{
@@ -321,9 +321,10 @@
 	\end{center}
 {% endif %}
 
-\ifdefined\precautions
-	\precautions
-\fi
+{% if precautions %}
+	{{ precautions }}
+{% endif %}
+
 
 {% endblock %}
 

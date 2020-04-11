@@ -35,7 +35,7 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
 	'''
-	timer = time.process_time if sys.version >= '3.3' else time.clock
+	timer = time.perf_counter if sys.version >= '3.3' else time.clock
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)
@@ -100,7 +100,6 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 			try:
 				t = time2float(open('timer').readline())
 			except Exception as e:
-				log.debug(e)
 				log.warning('Timer broken.')
 				t = 0.
 			ret = None

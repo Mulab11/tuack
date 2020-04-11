@@ -29,20 +29,20 @@ class PostInstallCommand(install):
 		install.run(self)
 
 requires = [
-	'jinja2 >= 2.8',
-	'natsort >= 5.0.3',
-	'pyyaml >= 3.11',
+	'jinja2 >= 2.10',
+	'natsort >= 6.0.0',
+	'pyyaml >= 5.1',
 	'rarfile >= 3.0'
 ]
 
 setup(
 	name = 'tuack',
-	version = '0.1.4.7',
+	version = '0.1.4.9.2',
 	packages = find_packages(),
 	author = 'Chen Xumin, Zhang Ruizhe, Liu Xiaoyi, Chen Junkun',
 	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com, 1261954105@qq.com',
 	url = '',
-	license = 'https://git.thusaac.org/publish/tuack/blob/master/LICENSE',
+	license = 'https://git.thusaac.com/publish/tuack/blob/master/LICENSE',
 	description = 'Tools for generating an Tsinghua/OI/ICPC-styled problem or contest for multiple judges.',
 	cmdclass={
 		'develop': PostDevelopCommand,

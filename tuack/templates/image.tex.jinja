@@ -4,7 +4,7 @@
 	\begin{figure}[ht]
 {%- endif -%}
 {%- if align -%}
-	{{ '\\centering' if align == 'middle' else '\\raggedright' if align == 'left' else '\\left' if align == 'right' else '\\' + align }}
+	{{ '\\centering' if align == 'middle' else '\\raggedright' if align == 'left' else '\\raggedleft' if align == 'right' else '\\' + align }}
 {%- endif -%}
 \includegraphics
 	{%- if size -%}

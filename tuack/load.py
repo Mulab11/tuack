@@ -188,14 +188,14 @@ def tsinsen_oj():
 		base.conf['data'].append({'cases' : new_tc})
 	base.save_json(base.conf)
 
-def loj():
+def syzoj(style = 'loj', cookies = None):
 	if base.conf.folder != 'problem':
 		log.error(u'只能导入到一个problem的工程中。')
 		return
 	import requests
 	try:
 		headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-		r = requests.get(base.args[0] + '/export', headers = headers)
+		r = requests.get(base.args[0] + '/export', headers = headers, cookies = cookies)
 		data = json.loads(r.content)
 		assert(data['success'])
 		data = data['obj']
@@ -211,19 +211,23 @@ def loj():
 	conf['title']['zh-cn'] = data.get('title', u'标题读取失败')
 	with open('statement/zh-cn.md', 'wb') as f:
 		f.write(b'{{ self.title() }}\n\n')
-		for key, name in [
-			('description', u'题目描述'),
-			('input_format', u'输入格式'),
-			('output_format', u'输出格式'),
-			('example', u'样例'),
-			('limit_and_hint', u'子任务')
-		]:
-			if key in data:
-				f.write(('## %s\n\n' % name).encode('utf-8'))
-				f.write(data[key].encode('utf-8'))
-				f.write(b'\n\n')
+		if style != 'ipuoj':
+			for key, name in [
+				('description', u'题目描述'),
+				('input_format', u'输入格式'),
+				('output_format', u'输出格式'),
+				('example', u'样例'),
+				('limit_and_hint', u'子任务')
+			]:
+				if key in data:
+					f.write(('## %s\n\n' % name).encode('utf-8'))
+					f.write(data[key].encode('utf-8'))
+					f.write(b'\n\n')
+		else:
+			f.write(data['description'].encode('utf-8'))
+			f.write(b'\n\n')
 	def download_file(url, local_filename):
-		with requests.get(url, headers = headers, stream = True) as r:
+		with requests.get(url, headers = headers, stream = True, cookies = cookies) as r:
 			r.raise_for_status()
 			with open(local_filename, 'wb') as f:
 				for chunk in r.iter_content(chunk_size = 8192): 
@@ -254,6 +258,14 @@ def loj():
 	base.save_json(base.conf)
 	from . import gen
 	base.run_exc(gen.work_list['auto'])
+
+def ipuoj():
+	tool_conf = base.tool_conf['ipuoj']['default']
+	cookies = tool_conf['cookies']
+	syzoj('ipuoj', cookies)
+
+def loj():
+	syzoj('loj')
 
 def data_folder(bpath = None):
 	if base.conf.folder != 'problem':
@@ -342,6 +354,7 @@ def data(bpath = None):
 work_list = {
 	'tsinsen-oj' : tsinsen_oj,
 	'loj' : loj,
+	'ipuoj' : ipuoj,
 	'data' : data,
 	'data-folder' : data_folder,
 	'data-zip' : lambda : data_pack('zip'),

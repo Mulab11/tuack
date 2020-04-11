@@ -100,10 +100,10 @@
 
 {% block title %}
 
-{% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc' or comp == 'ccpc') %}
+{% if prob['type'] != 'output' and prob['type'] != 'hand' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc' or comp == 'ccpc') %}
 **{{ _('Time limit:') }}** {{ prob['time limit'] }} {{ _('second(s)') }} 
 {% endif %}
-{% if prob['type'] != 'output' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc') %}
+{% if prob['type'] != 'output' and prob['type'] != 'hand' and (comp == 'tuoj' or comp == 'tupc' or comp == 'ccc') %}
 **{{ _('Memory limit:') }}** {{ prob.get('memory limit', '见各测试点') }}
 {% endif %}
 {% if comp == 'tuoj' -%}
@@ -111,6 +111,10 @@
 {% endif %}
 {% if prob['type'] == 'output' %}
 **{{ _('This is an output-only problem.') }}**
+{% elif prob['type'] == 'hand' %}
+{% if comp != 'hand' %}
+**这是一道纸面作业。**
+{% endif %}
 {% elif prob['type'] != 'program' %}
 **{{ _('This is an interactive problem.') }}**
 {% endif %}

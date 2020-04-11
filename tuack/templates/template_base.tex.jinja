@@ -6,6 +6,16 @@
 
 \def\thecontent { {{_('Content')}} }
 
+{% if water_mark %}
+
+\usepackage{draftwatermark}
+
+\SetWatermarkAngle{0}
+
+\SetWatermarkText{\includegraphics{water_mark.png} }
+
+{% endif %}
+
 {% block base %}{% endblock %}
 
 \begin{document}
@@ -46,12 +56,6 @@
 
 {% if contest and 'place' in contest %}
 	\def\place{ {{contest.place['en']}} }
-{% endif %}
-
-{% if precautions %}
-	\def \precautions{
-		{{ precautions }}
-	}
 {% endif %}
 
 {% block header %}

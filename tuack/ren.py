@@ -16,6 +16,7 @@ from functools import wraps
 from threading import Timer
 import platform
 import gettext
+import yaml
 from . import base
 from .base import log, pjoin
 try:
@@ -30,18 +31,21 @@ work_class = {
 	'noi' : {'noi'},
 	'ccpc' : {'ccpc'},
 	'uoj' : {'uoj'},
+	'loj' : {'loj'},
+	'ipuoj' : {'ipuoj'},
 	'tupc' : {'tupc'},
 	'tuoj-pc' : {'tupc', 'tuoj'},
 	'tuoi' : {'tuoi'},
 	'tuoj-oi' : {'tuoi', 'tuoj'},
 	'tuoj' : {'tuoj'},
 	'thuoj' : {'thuoj'},
+	'hand' : {'hand'},
 	'ccc' : {'ccc-tex', 'ccc-md'},
 	'ccc-tex' : {'ccc-tex'},
 	'ccc-md' : {'ccc-md'},
 	'tsinsen-oj' : {'tsinsen-oj'},
-	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex'},
-	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj'},
+	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex', 'hand'},
+	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj', 'ipuoj'},
 	'html' : {'tsinsen-oj'},
 	'doku' : {'thuoj'}
 }
@@ -55,14 +59,17 @@ io_styles = {
 	'tupc' : 'stdio',
 	'tsinsen-oj' : 'stdio',
 	'loj' : 'stdio',
-	'thuoj' : 'stdio'
+	'ipuoj' : 'stdio',
+	'thuoj' : 'stdio',
+	'hand' : 'stdio'
 }
 base_templates = {
 	'noi' : 'tuoi',
 	'tuoi' : 'tuoi',
 	'tupc' : 'tupc',
 	'ccpc' : 'ccpc',
-	'ccc' : 'ccc'
+	'ccc' : 'ccc',
+	'hand' : 'hand'
 }
 
 secondary_dict = {}
@@ -80,9 +87,9 @@ def detect_pandoc_version():
 def get_pandoc_option():
 	detect_pandoc_version()
 	if pandoc_version.startswith('2.'):
-		option = '-f markdown-smart -t latex-smart'
+		option = '--listings -f markdown-smart -t latex-smart'
 	else:
-		option = '--no-tex-ligatures -t latex'
+		option = '--no-tex-ligatures --listings -t latex'
 	return option
 
 def get_template(fname, lang = None):
@@ -109,7 +116,7 @@ def get_template(fname, lang = None):
 def table(path, name, temp, context, options):
 	if options == None:
 		options = {}
-	for suf in ['.py', '.pyinc', '.json']:
+	for suf in ['.py', '.pyinc', '.json', '.yaml', '.yml']:
 		try:
 			base.copy(path, name + suf, pjoin('tmp', 'table' + suf))
 			log.info(u'渲染表格`%s`，参数%s' % (base.pjoin(path, name + suf), str(options)))
@@ -127,6 +134,13 @@ def table(path, name, temp, context, options):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 		os.remove(pjoin('tmp', 'table.json'))
+	elif suf == '.yaml' or suf == '.yml':
+		try:
+			table = yaml.full_load(open(base.pjoin('tmp', 'table' + suf), 'rb').read().decode('utf-8'))
+		except Exception as e:
+			open(pjoin('tmp', 'table.tmp.json'), 'w').write(res)
+			log.error(u'json文件错误`tmp/table.tmp.json`')
+			raise e
 	elif suf == '.py' or suf == '.pyinc':
 		def merge_ver(table):
 			ret = [row for row in table]
@@ -163,6 +177,14 @@ def table(path, name, temp, context, options):
 			else:
 				raise e
 			raise e
+	if context.get('comp') in {'loj', 'ipuoj'} and len(table) > 0:
+		last_line = [None] * len(table[0])
+		for i in range(len(table)):
+			for j in range(len(table[i])):
+				if table[i][j] == None:
+					table[i][j] = last_line[j]
+				else:
+					last_line[j] = table[i][j]
 	cnt = [[1] * len(row) for row in table]
 	max_len = len(table[-1])
 	for i in range(len(table) - 2, -1, -1):
@@ -240,6 +262,8 @@ class Base(object):
 			return ' {{ ' + s + ' }} '
 
 	def resource(self, name):
+		if self.comp in {'loj', 'ipuoj'} and self.prob.get('pid', {}).get(self.comp + '-default'):
+			return '/../problem/show_image/%d/' % self.prob.get('pid', {}).get(self.comp + '-default') + name
 		return self.prob['name'] + '/' + name
 		
 	def down_file(self, name):
@@ -251,6 +275,22 @@ class Base(object):
 				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
 				length_warned = True
 			ret += line.decode('utf-8')
+		return ret
+
+	def hide_file(self, name):
+		ret = ''
+		fname = pjoin(self.prob.path, 'hide', name)
+		length_warned = False
+		for idx, line in enumerate(open(fname, 'rb')):
+			if len(line) > 60 and not length_warned:
+				log.warning(u'文件`%s`的第%d行太长，建议只提供下发而不渲染到题面。' % (fname, idx + 1))
+				length_warned = True
+			ret += line.decode('utf-8')
+		if self.comp not in work_class['tex']:
+			if ret < 20:
+				return u'隐藏内容'
+			c = len(ret) // 20
+			ret =  ret[:c] + u'……隐藏内容……' + ret[-c:]
 		return ret
 		
 	def titlize(self, title, args, lang = None):
@@ -399,7 +439,8 @@ class Latex(Base):
 		'tuoi' : 'tuoi',
 		'tupc' : 'tupc',
 		'ccpc' : 'ccpc',
-		'ccc' : 'ccc'
+		'ccc' : 'ccc',
+		'hand' : 'hand'
 	}
 
 	def resource(self, name):
@@ -424,6 +465,27 @@ class Latex(Base):
 		base.copy(base.pjoin(self.conf.path, 'precautions'), 'zh-cn.md', 'tmp')
 		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
 			.write(get_template('zh-cn.md').render(context, conf = self.conf).encode('utf-8'))
+		os.system('pandoc %s %s -o %s' % (
+			get_pandoc_option(),
+			pjoin('tmp', 'precautions.md'),
+			pjoin('tmp', 'precautions.tex')
+		))
+		self.prec = open(pjoin('tmp', 'precautions.tex'), 'rb').read().decode('utf-8')
+
+	def ren_day_prec(self):
+		if not os.path.exists(base.pjoin(self.day.path, 'precautions', 'zh-cn.md')):
+			return
+		context = {
+			'io_style' : self.io_style,
+			'comp' : self.comp,
+			'tools' : tools,
+			'tl' : tools,
+			'base' : base,
+			'json' : json
+		}
+		base.copy(base.pjoin(self.day.path, 'precautions'), 'zh-cn.md', 'tmp')
+		open(base.pjoin('tmp', 'precautions.md'), 'wb') \
+			.write(get_template('zh-cn.md').render(context, conf = self.day).encode('utf-8'))
 		os.system('pandoc %s %s -o %s' % (
 			get_pandoc_option(),
 			pjoin('tmp', 'precautions.md'),
@@ -487,6 +549,9 @@ class Latex(Base):
 		self.context['probs'] = self.probs
 		self.context['problems'] = self.tex_problems
 		self.context['compile'] = self.gen_compile()
+		self.context['water_mark'] = base.water_mark
+		if base.water_mark:
+			shutil.copy(base.water_mark, 'tmp/water_mark.' + base.water_mark.split('.')[-1])
 		all_problem_statement = get_template('%s.tex.jinja' % base_templates[self.comp]).render(self.context)
 		try:
 			open(pjoin('tmp', 'problems.tex'), 'wb') \
@@ -532,6 +597,7 @@ class Latex(Base):
 		if self.conf.folder != 'problem':
 			for self.day in base.days():
 				self.result_path = pjoin('statements', self.comp, self.day.name_lang() + '.pdf')
+				self.ren_day_prec()
 				self.ren_day()
 		else:
 			self.result_path = pjoin('statements', self.comp, self.conf.name_lang() + '.pdf')
@@ -548,7 +614,7 @@ class Markdown(Base):
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
-		elif self.comp == 'loj':
+		elif self.comp in {'loj', 'ipuoj'}:
 			result_md = loj_bug(result_md)
 		open(self.result_path, 'wb').write(result_md)
 
@@ -621,7 +687,9 @@ class_list = {
 	'ccc-md' : Markdown,
 	'tsinsen-oj' : Html,
 	'loj' : Markdown,
-	'thuoj' : DoKuWiki
+	'ipuoj' : Markdown,
+	'thuoj' : DoKuWiki,
+	'hand' : Latex
 }
 
 comp_list = {
@@ -635,7 +703,9 @@ comp_list = {
 	'ccc-md' : 'ccc',
 	'tsinsen-oj' : 'tsinsen-oj',
 	'loj' : 'loj',
-	'thuoj' : 'thuoj'
+	'ipuoj' : 'ipuoj',
+	'thuoj' : 'thuoj',
+	'hand' : 'hand'
 }
 
 if __name__ == '__main__':

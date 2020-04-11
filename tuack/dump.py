@@ -144,8 +144,8 @@ def arbiter_main(conf = None,daynum = 0):
 			arbiter(base.days())
 		else:
 			for idx, day in enumerate(base.days(), start = 1):
-				os.makedirs(base.pjoin('arbiter', 'main','players',day.route))
-				os.makedirs(base.pjoin('arbiter', 'main','result',day.route))
+				os.makedirs(base.pjoin('arbiter', 'main','players','day%d' % idx))
+				os.makedirs(base.pjoin('arbiter', 'main','result','day%d' % idx))
 				arbiter_main(day,idx)
 			log.info('dos2unix')
 			base.run_r(base.dos2unix, base.pjoin('arbiter', 'main', 'data'))
@@ -168,7 +168,7 @@ def arbiter_main(conf = None,daynum = 0):
 	dayinfo['CASEDIR='] = ''
 	dayinfo['BASESCORE='] = 0
 	dayinfo['TASKNUM='] = len(conf['subdir'])
-	arbiter_info(dayinfo,base.pjoin('arbiter', 'main', conf['name']+'.info'))
+	arbiter_info(dayinfo,base.pjoin('arbiter', 'main', 'day%d.info' % daynum))
 	for probnum, prob in enumerate(conf.sub, start = 1):
 		log.info(prob['name'])
 		probinfo = {}
@@ -395,37 +395,65 @@ def tuoj_down(conf = None):
 
 def loj_prob(conf):
 	global save_flag
-	if base.do_render:
-		from . import ren
-		tmp = base.start_file
-		base.start_file = False
-		ren.Markdown('loj').run()
-		base.start_file = tmp
-	else:
-		pass
-	path = pjoin('statements', 'loj', conf.route if conf.route != '' else conf['name']) + '.md'
-	data = {
-		'title' : conf.tr('title'),
-		'description' : open(path, 'rb').read(),
-		'input_format' : 'place holder',
-		'output_format' : 'place holder',
-		'example' : 'place holder',
-		'limit_and_hint' : 'place holder'
-	}
 	headers = {
 		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 	}
-	tool_conf = base.tool_conf['loj']['default']
+	tool_conf = base.tool_conf[base.work]['default']
 	cookies = tool_conf['cookies']
-	pid = conf.get('pid', {}).get('loj-default', 0)
+	pid = conf.get('pid', {}).get(base.work + '-default', 0)
 	host = tool_conf['main']
-	r = requests.post(host + '/problem/%d/edit' % pid, headers = headers, stream = True, cookies = cookies, data = data)
+	data = {
+		'title' : conf.tr('title'),
+		'description' : 'place holder',
+		'input_format' : 'place holder',
+		'output_format' : 'place holder',
+		'example' : 'place holder',
+		'limit_and_hint' : 'place holder',
+		'tags' : conf.get('tags', {}).get(base.work + '-default', [])
+	}
+	def post(url, data = None, files = None):
+		r = requests.post(
+			host + url,
+			headers = headers,
+			stream = True,
+			cookies = cookies,
+			data = data,
+			files = files
+		)
+		if not r.ok:
+			log.error(u'网站连接失败，错误代码%s，错误信息见`error.log`。' % r.status_code)
+			with open('error.log', 'a') as f:
+				f.write(u'运行时间：' + str(datetime.datetime.now()) + '\n')
+				f.write(u'url：' + r.url + '\n')
+				f.write(r.text)
+		return r
 	if pid == 0:
+		r = post('/problem/%d/edit' % pid, data)
 		pid = int(r.url.split('/')[-1])
 		conf.setdefault('pid', {})
-		conf['pid']['loj-default'] = pid
+		conf['pid'][base.work + '-default'] = pid
 		save_flag = True
+	path = pjoin('statements', base.work, conf.route if conf.route != '' else conf['name']) + '.md'
+	data['description'] = open(path, 'rb').read()
+	post('/problem/%d/edit' % pid, data)
 	import zipfile, uuid
+	data_yml = {
+		'inputFile' : '#.in',
+		'outputFile' : '#.ans',
+		'subtasks' : [{
+			'score' : datum.score if conf.packed else 100 / len(conf.test_cases) * len(datum['cases']),
+			'type' : 'min' if conf.packed else 'sum',
+			'cases' : [str(c) for c in datum['cases']]
+		} for datum in conf.data]
+	}
+	if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
+		data_yml['specialJudge'] = {
+			'language' : 'cpp17',
+			'fileName' : 'spj_cpp.cpp'
+		}
+	if conf['type'] == 'output':
+		data_yml['userOutput'] = '#.out'
+	open(pjoin(base.work, 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname):
 		id = str(uuid.uuid4()) + '.tmp'
 		shutil.copy(pjoin(path, fname), id)
@@ -433,47 +461,70 @@ def loj_prob(conf):
 		base.dos2unix(id)
 		z.write(id, fname)
 		os.remove(id)
-	with zipfile.ZipFile(pjoin('loj', 'data', conf.route + '.zip'), 'w') as z:
+	with zipfile.ZipFile(pjoin(base.work, 'data', conf.route + '.zip'), 'w') as z:
 		for id in conf.test_cases:
 			pack(z, pjoin(conf.path, 'data'), id + '.in')
 			pack(z, pjoin(conf.path, 'data'), id + '.ans')
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
-	with zipfile.ZipFile(pjoin('loj', 'down', conf.route + '.zip'), 'w') as z:
-		for name in os.listdir(pjoin(conf.path, 'down')):
-			pack(z, pjoin(conf.path, 'down'), name)
+		if os.path.exists(pjoin(base.work, 'data', conf.route + '.yml')):
+			z.write(pjoin(base.work, 'data', conf.route + '.yml'), 'data.yml')
+	with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
+		if os.path.exists(pjoin(conf.path, 'down')):
+			for name in os.listdir(pjoin(conf.path, 'down')):
+				pack(z, pjoin(conf.path, 'down'), name)
+	with zipfile.ZipFile(pjoin(base.work, 'resources', conf.route + '.zip'), 'w') as z:
+		try:
+			for name in os.listdir(pjoin(conf.path, 'resources')):
+				pack(z, pjoin(conf.path, 'resources'), name)
+		except Exception as e:
+			log.warning(u'没有找到资源文件。')
 	files = [
-		('testdata', ("data.zip", open(pjoin('loj', 'data', conf.route + '.zip'), "rb"))),
-		('additional_file', ("down.zip", open(pjoin('loj', 'down', conf.route + '.zip'), "rb")))
+		('testdata', ("data.zip", open(pjoin(base.work, 'data', conf.route + '.zip'), "rb"))),
+		('additional_file', ("down.zip", open(pjoin(base.work, 'down', conf.route + '.zip'), "rb")))
 	]
 	data = {
-		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interactive'}[conf['type']],
-		# LOJ的交互叫什么名字我还没搞清楚
-		'time_limit' : int(conf.get('time limit', 0) * 1000),
-		'memory_limit' : int(conf.ml().MB)
+		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}[conf['type']]
 	}
-	requests.post(host + '/problem/%d/manage' % pid, headers = headers, stream = True, cookies = cookies, data = data, files = files)
+	if conf['type'] != 'output':
+		data['time_limit'] = int(conf.get('time limit', 0) * 1000)
+		data['memory_limit'] = int(conf.ml().MB)
+	post('/problem/%d/manage' % pid, data, files)
+	files = [
+		('images', ("resources.zip", open(pjoin(base.work, 'resources', conf.route + '.zip'), "rb")))
+	]
+	post('/problem/%d/upload_resource' % pid, files = files)
 
 def loj():
 	global save_flag
 	save_flag = False
-	syz_host = base.tool_conf.get('loj', {}).get('default')
+	syz_host = base.tool_conf.get(base.work, {}).get('default')
 	if not syz_host:
-		log.error(u'没有配置loj的地址。')
+		log.error(u'没有配置%s的地址。' % base.work)
 		if base.system == 'Windows':
 			log.info(u'在tuack的安装目录中找到conf.json。')
 		else:
 			log.info(u'在~/.tuack中找到conf.json。')
-		log.info(u'添加loj的相关字段，详见`https://git.thusaac.com/publish/tuack/wikis/导出题目`。')
+		log.info(u'添加%s的相关字段，详见`https://git.thusaac.com/publish/tuack/wikis/导出题目`。' % base.work)
 		return
-	if not os.path.exists('loj'):
-		base.remkdir('loj')
-	base.remkdir(pjoin('loj', 'data'))
-	base.remkdir(pjoin('loj', 'down'))
+	if not os.path.exists(base.work):
+		base.remkdir(base.work)
+	base.remkdir(pjoin(base.work, 'data'))
+	base.remkdir(pjoin(base.work, 'down'))
+	base.remkdir(pjoin(base.work, 'resources'))
 	if base.conf.folder == 'contest':
 		for day in base.days():
-			os.makedirs(base.pjoin(pjoin('loj', 'data'), day.route))
-			os.makedirs(base.pjoin(pjoin('loj', 'down'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'data'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'down'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'resources'), day.route))
+	if base.do_render:
+		from . import ren
+		tmp = base.start_file
+		base.start_file = False
+		ren.Markdown(base.work).run()
+		base.start_file = tmp
+	else:
+		pass
 	for prob in base.probs():
 		loj_prob(prob)
 	if save_flag:
@@ -486,7 +537,8 @@ work_list = {
 	'arbiter-down' : arbiter_down,
 	'tsinsen-oj' : tsinsen_oj,
 	'tuoj-down' : tuoj_down,
-	'loj' : loj
+	'loj' : loj,
+	'ipuoj' : loj
 }
 
 if __name__ == '__main__':

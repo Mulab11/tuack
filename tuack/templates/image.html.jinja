@@ -1,8 +1,4 @@
 <img src="{{ resource }}" alt="img"
-	{%- if align -%}
-		align="{{ align }}"
-	{%- endif -%}
-	{%- if size -%}
-		width="{{ size * 100 }}%"
-	{%- endif -%}
+	{%- if align %} align="{{ align }}"{% endif -%}
+	{%- if size %} width="{{ size * 100 }}%"{% endif -%}
 />

@@ -1,0 +1,37 @@
+{% extends 'template_base.tex.jinja' %}
+
+{% block cover %}
+
+\begin{center}
+	\ifdefined\theday
+		{\kai \sanhao \theday \par} \vskip 1em 
+	\fi
+\end{center}
+
+{% endblock %}
+
+{% block statements %}
+
+{% if precautions %}
+	{{ precautions }}
+{% endif %}
+
+
+{% for i in range(problems.__len__()) %}
+	
+
+{% if probs[i].lang() == 'zh-cn' %}
+	\renewcommand{\sqbr}[1]{【#1】}
+	\titleformat{\subsection}{\hei\banxiaosi}{}{1em}{\sqbr}
+{% else %}
+	\renewcommand{\sqbr}[1]{ \textbf{ #1 } }
+	\titleformat{\subsection}{\hei\sanhao}{}{0em}{\sqbr}
+{% endif %}
+
+\praragraph{ {{ probs[i].name }} }. {{ problems[i] }}
+
+{% endfor %}
+
+
+{% endblock %}
+

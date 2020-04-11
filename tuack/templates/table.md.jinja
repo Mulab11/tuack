@@ -1,18 +1,13 @@
 {% if 'titled' not in options %}
 	{% do options.__setitem__('titled', True) %}
 {% endif %}
-
+{% set last_line = None -%}
 {%- for i in range(table.__len__()) -%}
 	|
 	{%- for j in range(table[i].__len__()) -%}
-		{%- if table[i][j] -%}
-			{{ table[i][j] }}|
-		{%- else -%}
-			{{ last_line[j] }}|
-		{%- endif -%}
+		{{ table[i][j] }}|
 	{%- endfor %}
-{% set last_line = table[i] -%}
-	{%- if loop.first and options['titled'] -%}
+{% if loop.first and options['titled'] -%}
 		|
 		{%- for j in range(table[0].__len__()) -%}
 		----|
