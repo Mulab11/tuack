@@ -489,6 +489,10 @@ def loj_prob(conf):
 	if conf['type'] != 'output':
 		data['time_limit'] = int(conf.get('time limit', 0) * 1000)
 		data['memory_limit'] = int(conf.ml().MB)
+	if conf.get('file io'):
+		data['io_method'] = 'file-io'
+		data['file_io_input_name'] = conf.get('input_table', {}).get('zh-cn', conf['name'] + '.in')
+		data['file_io_output_name'] = conf.get('output_table', {}).get('zh-cn', conf['name'] + '.out')
 	post('/problem/%d/manage' % pid, data, files)
 	files = [
 		('images', ("resources.zip", open(pjoin(base.work, 'resources', conf.route + '.zip'), "rb")))
