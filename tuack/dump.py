@@ -469,10 +469,6 @@ def loj_prob(conf):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
 		if os.path.exists(pjoin(base.work, 'data', conf.route + '.yml')):
 			z.write(pjoin(base.work, 'data', conf.route + '.yml'), 'data.yml')
-	with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
-		if os.path.exists(pjoin(conf.path, 'down')):
-			for name in os.listdir(pjoin(conf.path, 'down')):
-				pack(z, pjoin(conf.path, 'down'), name)
 	with zipfile.ZipFile(pjoin(base.work, 'resources', conf.route + '.zip'), 'w') as z:
 		try:
 			for name in os.listdir(pjoin(conf.path, 'resources')):
@@ -481,10 +477,14 @@ def loj_prob(conf):
 			log.warning(u'没有找到资源文件。')
 	files = [
 		('testdata', ("data.zip", open(pjoin(base.work, 'data', conf.route + '.zip'), "rb"))),
-		('additional_file', ("down.zip", open(pjoin(base.work, 'down', conf.route + '.zip'), "rb")))
 	]
+	if os.path.exists(pjoin(conf.path, 'down')) and len(list(os.listdir(pjoin(conf.path, 'down')))) > 0:
+		with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
+			for name in os.listdir(pjoin(conf.path, 'down')):
+				pack(z, pjoin(conf.path, 'down'), name)
+		files.append(('additional_file', ("down.zip", open(pjoin(base.work, 'down', conf.route + '.zip'), "rb"))))
 	data = {
-		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}[conf['type']]
+		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}.get(conf['type'], conf['type'])
 	}
 	if conf['type'] != 'output':
 		data['time_limit'] = int(conf.get('time limit', 0) * 1000)

@@ -115,7 +115,7 @@
 {% if comp != 'hand' %}
 **这是一道纸面作业。**
 {% endif %}
-{% elif prob['type'] != 'program' %}
+{% elif prob['type'] == 'interactive' %}
 **{{ _('This is an interactive problem.') }}**
 {% endif %}
 {% endblock %}
