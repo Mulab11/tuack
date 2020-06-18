@@ -223,10 +223,11 @@ def test(prob, name):
 		shutil.copy(case.full() + '.in', pjoin('tmp', 'in'))
 		shutil.copy(case.full() + '.ans', pjoin('tmp', 'ans'))
 		for fname in ('in', 'ans'):
-			if base.system == 'Windows':
-				base.unix2dos(pjoin('tmp', fname))
-			else:
-				base.dos2unix(pjoin('tmp', fname))
+			if not ('binary data' in prob and prob['binary data'] == True):
+				if base.system == 'Windows':
+					base.unix2dos(pjoin('tmp', fname))
+				else:
+					base.dos2unix(pjoin('tmp', fname))
 		if prob['type'] == 'program':
 			os.chdir('tmp')
 			ret, time = run(name, prob['time limit'], prob['memory limit'], 'in', 'out', base.runners[lang])
@@ -337,6 +338,8 @@ def test_problem(prob):
 		log.info(u'如果是一个包的CPC赛制，需要在这个元素中配置`score`项为100。')
 		log.info(u'如果是多点或多子任务的赛制，需要将每类数据分类配置或打包配置。')
 		log.info(u'详情请见%s。' % base.wiki(u'配置题目#数据'))
+	if 'binary data' in prob and prob['binary data'] == True:
+		log.info(u'本题数据为二进制文件，测试时不进行换行符转换')
 	log.info(u'共%d组样例，%d个预测试点，%d个测试点，%s打包评测%s。' % (
 		len(prob.sample_cases),
 		len(prob.pre_cases),
