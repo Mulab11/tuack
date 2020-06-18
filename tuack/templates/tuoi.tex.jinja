@@ -252,48 +252,6 @@
 			{%- endfor -%}
 			\tabularnewline
 		{% endif %}
-		{% if 'c' in compile %}
-		\hline
-			对于C {% if probs.__len__() < 5 %} \tabto{5.5em} {% endif %} 语言
-			{%- for prob in compile['c'] -%}
-				{% for i in range(prob['cnt'] if prob['cnt'] != probs.__len__() else 1) %}
-					&
-					{%- if prob['cnt'] == probs.__len__() -%}
-						\multicolumn{ {{- prob['cnt'] -}} }{@{}X|}{\parbox{ \hsize }{ \centering
-					{%- endif -%}
-					{%- if prob['use'] -%}
-						\ttfamily {{ prob['option'] }}
-					{%- else -%}
-						{ {{ prob['option'] }} }
-					{%- endif -%}
-					{%- if prob['cnt'] == probs.__len__() -%}
-						} }
-					{%- endif -%}
-				{% endfor %}
-			{%- endfor -%}
-			\tabularnewline
-		{% endif %}
-		{% if 'pas' in compile %}
-		\hline
-			对于Pascal {% if probs.__len__() < 5 %} \tabto{5.5em} {% endif %} 语言
-			{%- for prob in compile['pas'] -%}
-				{% for i in range(prob['cnt'] if prob['cnt'] != probs.__len__() else 1) %}
-					&
-					{%- if prob['cnt'] == probs.__len__() -%}
-						\multicolumn{ {{- prob['cnt'] -}} }{@{}X|}{\parbox{ \hsize }{ \centering
-					{%- endif -%}
-					{%- if prob['use'] -%}
-						\ttfamily {{ prob['option'] }}
-					{%- else -%}
-						{ {{ prob['option'] }} }
-					{%- endif -%}
-					{%- if prob['cnt'] == probs.__len__() -%}
-						} }
-					{%- endif -%}
-				{% endfor %}
-			{%- endfor -%}
-			\tabularnewline
-		{% endif %}
 		\hline
 	\end{tabularx}
 	\end{center}
