@@ -185,4 +185,4 @@
 
 
 % workaround for pandoc generated tex
-\newcommand{\passthrough}{}
+\newcommand{\passthrough}[1]{#1}
