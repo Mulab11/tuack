@@ -119,6 +119,8 @@
 
 % section titles
 \renewcommand{\sectionmark}[1]{\markright{#1}}
+\renewcommand{\subsectionmark}[1]{}
+\renewcommand{\subsubsectionmark}[1]{}
 
 \renewcommand\section{
 	\@startsection{section}{1}{\z@}
