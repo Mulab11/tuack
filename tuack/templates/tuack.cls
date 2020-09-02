@@ -165,6 +165,7 @@
 % listing
 \lstset{
   columns=fullflexible,
+  keepspaces=true,
   showspaces=false,
   showtabs=false,
   breaklines=true,
