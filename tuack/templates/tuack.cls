@@ -31,6 +31,7 @@
 \usepackage{caption}
 \usepackage{hyperref}
 \usepackage{geometry}
+\usepackage{xeCJKfntef}
 
 
 % default mono fonts
@@ -107,7 +108,7 @@
 %% \newcommand{\filename}[1]{\bfseries\textit{#1}}
 \renewcommand{\textbf}[1]{{\bfseries\CJKunderdot{#1}}}
 \renewcommand{\emph}[1]{{\bfseries\textit{#1}}}
-\renewcommand{\texttt}[1]{{\ttfamily\uline{#1}}}
+\renewcommand{\texttt}[1]{{\ttfamily\CJKunderline{#1}}}
 
 
 %% 枚举类型间距
@@ -116,24 +117,23 @@
 \setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=0pt,leftmargin=3em}
 
 
-% title stypes
+% section titles
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+
 \renewcommand\section{
 	\@startsection{section}{1}{\z@}
-	{-24bp \@plus -1ex \@minus -.2ex}
-	{6bp \@plus .2ex}
+	{-24bp plus -1ex minus -.2ex}
+	{6bp plus .2ex}
 	{\heiti \xiaoer[1.429]}
 }
 
-\renewcommand{\sectionmark}[1]{\markright{#1}}
-\renewcommand{\subsectionmark}[1]{ }
-\renewcommand{\subsubsectionmark}[1]{ }
 \newcommand{\sqbr}[1]{【#1】}
 \titleformat{\subsection}{\heiti\banxiaosi}{}{1em}{\sqbr}
 
 \renewcommand\subsubsection{
 	\@startsection{subsubsection}{3}{\z@}
-	{-16bp \@plus -1ex \@minus -.2ex}
-	{6bp \@plus .2ex}%
+	{0ex plus 1ex minus .2ex}
+	{1ex plus .2ex}
 	{\heiti \xiaosi[1.667]}
 }
 
@@ -162,25 +162,24 @@
 
 % listing
 \lstset{
-  frame=single,
-  frameround=tttt,
-  framesep=1pt,
-  framextopmargin=6pt,
-  framexbottommargin=6pt,
-  framexleftmargin=6pt,
-  framexrightmargin=6pt,
-  tabsize=4,
+  columns=fullflexible,
+  showspaces=false,
+  showtabs=false,
   breaklines=true,
-  upquote=true,
-  captionpos=b,
-  basicstyle=\ttfamily\normalsize,
-  numbers=left,
+  showstringspaces=false,
+  breakatwhitespace=true,
   rulecolor=\lst@ifdisplaystyle\color{blue}\fi,
-  identifierstyle=\lst@ifdisplaystyle\color{blue}\fi,
   commentstyle=\itshape\lst@ifdisplaystyle\color{green}\fi,
   stringstyle=\bfseries\lst@ifdisplaystyle\color{amber}\fi,
   keywordstyle=\bfseries\lst@ifdisplaystyle\color{purple}\fi,
   numberstyle=\footnotesize\ttfamily\lst@ifdisplaystyle\color{gray}\fi,
+  basicstyle=\ttfamily\normalsize,
+  frame=single,
+  framesep=3pt,
+  xleftmargin=12pt,
+  tabsize=4,
+  captionpos=b,
+  numbers=left
 }
 
 
