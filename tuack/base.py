@@ -349,6 +349,8 @@ class Problem(Configure):
 			num_unscored = 0
 			total_score = 0.0
 			data_objs = self.__getattribute__(key)
+			if data_objs is None:
+				continue
 			for datum in data_objs:
 				if 'score' in datum:
 					datum.score = datum['score']
