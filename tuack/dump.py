@@ -498,6 +498,7 @@ def loj_prob(conf, pre = False):
 		base.dos2unix(id, full_path)
 		z.write(id, fname)
 		os.remove(id)
+	data_path = 'data' if not pre else 'pre'
 	with zipfile.ZipFile(pjoin(base.work, data_path, conf.route + '.zip'), 'w') as z:
 		for id in (conf.test_cases if not pre else conf.pre_cases):
 			pack(z, pjoin(conf.path, data_path), id + '.in', force_file = True)
