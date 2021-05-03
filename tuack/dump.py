@@ -18,7 +18,7 @@ import platform
 from . import base
 from .base import log, pjoin
 import requests
-
+import traceback
 
 def lemon(conf = None):
 	base.check_install('pyside')
@@ -236,21 +236,21 @@ def arbiter_down(conf = None):
 		for idx, day in enumerate(base.days(), start = 1):
 			os.makedirs(base.pjoin(pjoin('arbiter', 'down'), day['name']))
 			arbiter_down(day)
-		log.info('dos2unix')
-		base.run_r(base.dos2unix, base.pjoin(pjoin('arbiter', 'down')))
 		return
 	for prob in conf.probs():
 		log.info(prob.route)
 		os.makedirs(base.pjoin(pjoin('arbiter', 'down'), prob.route))
 		for idx, case in enumerate(prob.sample_cases, start = 1):
-			shutil.copy(
+			for s_name, t_name in ((
 				base.pjoin(prob.path,'down',str(case)+'.in'),
 				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.in')
-			)
-			shutil.copy(
+			), (
 				base.pjoin(prob.path,'down',str(case)+'.ans'),
 				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.ans')
-			)
+			)):
+				base.shutil_copy(s_name, t_name)
+	log.info('dos2unix')
+	base.run_r(base.dos2unix, base.pjoin(pjoin('arbiter', 'down', conf.route)))
 
 def arbiter():
 	base.remkdir('arbiter')
@@ -393,17 +393,20 @@ def tuoj_down(conf = None):
 			)
 		base.run_r(base.dos2unix, base.pjoin(pjoin('tuoj', 'down', prob.route)))
 
-def loj_prob(conf):
+def loj_prob(conf, pre = False):
+	if not pre and len(conf.get('pre', [])) > 0:
+		loj_prob(conf, True)
 	global save_flag
 	headers = {
 		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 	}
 	tool_conf = base.tool_conf[base.work]['default']
 	cookies = tool_conf['cookies']
-	pid = conf.get('pid', {}).get(base.work + '-default', 0)
+	pid_key = 'pid' if not pre else 'pid-pre'
+	pid = conf.get(pid_key, {}).get(base.work + '-default', 0)
 	host = tool_conf['main']
 	data = {
-		'title' : conf.tr('title'),
+		'title' : conf.tr('title') + (u'（预测试）' if pre else ''),
 		'description' : 'place holder',
 		'input_format' : 'place holder',
 		'output_format' : 'place holder',
@@ -430,21 +433,24 @@ def loj_prob(conf):
 	if pid == 0:
 		r = post('/problem/%d/edit' % pid, data)
 		pid = int(r.url.split('/')[-1])
-		conf.setdefault('pid', {})
-		conf['pid'][base.work + '-default'] = pid
+		conf.setdefault(pid_key, {})
+		conf[pid_key][base.work + '-default'] = pid
 		save_flag = True
 	path = pjoin('statements', base.work, conf.route if conf.route != '' else conf['name']) + '.md'
 	data['description'] = open(path, 'rb').read()
 	post('/problem/%d/edit' % pid, data)
 	import zipfile, uuid
+	conf_data = conf.data if not pre else conf.pre
+	packed = conf.packed if not pre else conf.packed_pre
+	cases = conf.test_cases if not pre else conf.pre_cases
 	data_yml = {
 		'inputFile' : '#.in',
 		'outputFile' : '#.ans',
 		'subtasks' : [{
-			'score' : datum.score if conf.packed else 100 / len(conf.test_cases) * len(datum['cases']),
-			'type' : 'min' if conf.packed else 'sum',
+			'score' : datum.score if packed else 100 / len(cases) * len(datum['cases']),
+			'type' : 'min' if packed else 'sum',
 			'cases' : [str(c) for c in datum['cases']]
-		} for datum in conf.data]
+		} for datum in conf_data]
 	}
 	if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 		data_yml['specialJudge'] = {
@@ -454,34 +460,52 @@ def loj_prob(conf):
 	if conf['type'] == 'output':
 		data_yml['userOutput'] = '#.out'
 	open(pjoin(base.work, 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
-	def pack(z, path, fname):
-		id = str(uuid.uuid4()) + '.tmp'
-		shutil.copy(pjoin(path, fname), id)
+	def pack(z, path, fname, force_file = False):
+		full_path = pjoin(path, fname)
+		if os.path.isdir(full_path):
+			if not force_file:
+				for sub in os.listdir(full_path):
+					pack(z, path, pjoin(fname, sub))
+				return
+			else:
+				log.warning(u'支持版本的`%s`不能是文件夹，用空文件代替。' % pjoin)
+				id = str(uuid.uuid4()) + '.tmp'
+				open(id, 'w')
+		else:
+			id = str(uuid.uuid4()) + '.tmp'
+			base.shutil_copy(full_path, id)
 		time.sleep(0.1)
 		base.dos2unix(id)
 		z.write(id, fname)
 		os.remove(id)
-	with zipfile.ZipFile(pjoin(base.work, 'data', conf.route + '.zip'), 'w') as z:
-		for id in conf.test_cases:
-			pack(z, pjoin(conf.path, 'data'), id + '.in')
-			pack(z, pjoin(conf.path, 'data'), id + '.ans')
+	data_path = 'data' if not pre else 'pre'
+	with zipfile.ZipFile(pjoin(base.work, data_path, conf.route + '.zip'), 'w') as z:
+		for id in (conf.test_cases if not pre else conf.pre_cases):
+			pack(z, pjoin(conf.path, data_path), id + '.in', force_file = True)
+			pack(z, pjoin(conf.path, data_path), id + '.ans', force_file = True)
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
 		if os.path.exists(pjoin(base.work, 'data', conf.route + '.yml')):
 			z.write(pjoin(base.work, 'data', conf.route + '.yml'), 'data.yml')
+	files = [
+		('testdata', ("data.zip", open(pjoin(base.work, data_path, conf.route + '.zip'), "rb"))),
+	]
 	with zipfile.ZipFile(pjoin(base.work, 'resources', conf.route + '.zip'), 'w') as z:
 		try:
 			for name in os.listdir(pjoin(conf.path, 'resources')):
 				pack(z, pjoin(conf.path, 'resources'), name)
 		except Exception as e:
 			log.warning(u'没有找到资源文件。')
-	files = [
-		('testdata', ("data.zip", open(pjoin(base.work, 'data', conf.route + '.zip'), "rb"))),
-	]
 	if os.path.exists(pjoin(conf.path, 'down')) and len(list(os.listdir(pjoin(conf.path, 'down')))) > 0:
 		with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
-			for name in os.listdir(pjoin(conf.path, 'down')):
-				pack(z, pjoin(conf.path, 'down'), name)
+			if conf['type'] == 'output':
+				for id in conf.test_cases:
+					pack(z, conf.path, pjoin('data', id + '.in'))
+				for name in os.listdir(pjoin(conf.path, 'down')):
+					pack(z, conf.path, pjoin('down', name))
+			else:
+				for name in os.listdir(pjoin(conf.path, 'down')):
+					pack(z, pjoin(conf.path, 'down'), name)
 		files.append(('additional_file', ("down.zip", open(pjoin(base.work, 'down', conf.route + '.zip'), "rb"))))
 	data = {
 		'type' : {'program' : 'traditional', 'output' : 'submit-answer', 'interactive' : 'interaction', 'hand' : 'hand'}.get(conf['type'], conf['type'])
@@ -514,12 +538,14 @@ def loj():
 	if not os.path.exists(base.work):
 		base.remkdir(base.work)
 	base.remkdir(pjoin(base.work, 'data'))
+	base.remkdir(pjoin(base.work, 'pre'))
 	base.remkdir(pjoin(base.work, 'down'))
 	base.remkdir(pjoin(base.work, 'resources'))
 	if base.conf.folder == 'contest':
 		for day in base.days():
 			os.makedirs(base.pjoin(pjoin(base.work, 'data'), day.route))
 			os.makedirs(base.pjoin(pjoin(base.work, 'down'), day.route))
+			os.makedirs(base.pjoin(pjoin(base.work, 'pre'), day.route))
 			os.makedirs(base.pjoin(pjoin(base.work, 'resources'), day.route))
 	if base.do_render:
 		from . import ren
@@ -530,7 +556,11 @@ def loj():
 	else:
 		pass
 	for prob in base.probs():
-		loj_prob(prob)
+		try:
+			loj_prob(prob)
+		except Exception as e:
+			traceback.print_exc()
+			log.error(u'输出题目`%s`时发生错误`%s`，具体信息如上所示。' % (prob['name'], e))
 	if save_flag:
 		base.save_json(base.conf)
 		
