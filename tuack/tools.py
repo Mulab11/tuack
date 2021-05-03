@@ -9,6 +9,7 @@ else:
 	from __builtin__ import *
 import json
 from .num2chinese import *
+from .base import log
 
 def int_lg(num):
 	if num == 0:
@@ -111,7 +112,15 @@ class Args(object):
 	def __init__(self, *data):
 		self.data = data
 	def get(self, key, d = None, skip_none = False):
-		return (j['args'].get(key, d) for i in self.data for j in i if not skip_none or key in j['args'] != None)
+		ret = []
+		for i in self.data:
+			if i is None:
+				continue
+			for j in (i if type(i) == list else [i]):
+				v = j.get('args', {}).get(key)
+				if not skip_none or v is not None:
+					ret.append(v)
+		return ret
 	def keys(self):
 		ky = set()
 		for i in self.data:
