@@ -84,12 +84,20 @@ compilers = {
 	'java' : lambda name, args, macros = '', ml = Memory('512 MB'): 'javac %s.java %s -J-Xms%dm -J-Xmx%dm' % (name, args, int(Memory(ml).MB) // 16, int(Memory(ml).MB) // 4),
 	'py' : lambda name, args, macros = '', ml = Memory('512 MB'): ''
 }
+
+# 必须用函数，而不是lambda表达式才能并行
+def java_runner(name, ml = None):
+	return 'java -Xms%dm -Xmx%dm %s' % (int(Memory(ml).MB) // 16, int(Memory(ml).MB), name)
+
+def py_runner(name, ml = None):
+	return 'python3 %s.py' % name
+
 runners = {
 	'cpp' : None,
 	'c' : None,
 	'pas' : None,
-	'java' : lambda name, ml = None: 'java -Xms%dm -Xmx%dm %s' % (int(Memory(ml).MB) // 16, int(Memory(ml).MB), name),
-	'py' : lambda name, ml = None: 'python %s.py' % name
+	'java' : java_runner,
+	'py' : py_runner
 }
 macros = {
 	'uoj' : '-DONLINE_JUDGE',
