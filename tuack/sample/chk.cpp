@@ -12,8 +12,21 @@ double score;
 bool swap_flag;
 
 void ret(double result, const char* info){
-	if(swap_flag)
-		fprintf(infoFile, "%s\n", info);	//Arbiter only allow to read EXACTLY one line info, no less and no more, and must BEFORE score
+	const char esc[][5] = {
+		"\\0", "\\x01", "\\x02", "\\x03", "\\x04", "\\x05", "\\x06", "\\a",
+		"\\b", "\t", "\\n", "\v", "\\f", "\\r", "\\x0e", "\\x0f",
+		"\\x10", "\\x11", "\\x12", "\\x13", "\\x14", "\\x15", "\\x16", "\\x17",
+		"\\x18", "\\x19", "\\x1a", "\\x1b", "\\x1c", "\\x1d", "\\x1e", "\\x1f"
+	};
+	if(swap_flag){
+		//Arbiter only allow to read EXACTLY one line info, no less and no more, and must BEFORE score
+		for(const char* p = info; *p; p++)
+			if(*p < 0 || *p >= 32)
+				fputc(*p, infoFile);
+			else
+				fprintf(infoFile, esc[*p]);
+		fputc('\n', infoFile);
+	}
 	fprintf(scoreFile, "%.6f\n", result * score);
 	if(!swap_flag)
 		fprintf(infoFile, "%s\n", info);
