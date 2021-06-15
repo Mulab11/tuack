@@ -459,7 +459,7 @@ def loj_prob(conf, pre = False):
 		}
 	if conf['type'] == 'output':
 		data_yml['userOutput'] = '#.out'
-	open(pjoin(base.work, 'data', conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
+	open(pjoin(base.work, data_path, conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname, force_file = False):
 		full_path = pjoin(path, fname)
 		if os.path.isdir(full_path):
@@ -485,8 +485,8 @@ def loj_prob(conf, pre = False):
 			pack(z, pjoin(conf.path, data_path), id + '.ans', force_file = True)
 		if os.path.exists(pjoin(conf.path, 'data', 'chk', 'chk.cpp')):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
-		if os.path.exists(pjoin(base.work, 'data', conf.route + '.yml')):
-			z.write(pjoin(base.work, 'data', conf.route + '.yml'), 'data.yml')
+		if os.path.exists(pjoin(base.work, data_path, conf.route + '.yml')):
+			z.write(pjoin(base.work, data_path, conf.route + '.yml'), 'data.yml')
 	files = [
 		('testdata', ("data.zip", open(pjoin(base.work, data_path, conf.route + '.zip'), "rb"))),
 	]
