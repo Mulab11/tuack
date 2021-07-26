@@ -19,6 +19,7 @@ from . import base
 from .base import log, pjoin
 import requests
 import traceback
+from requests_toolbelt.multipart.encoder import MultipartEncoder, MultipartEncoderMonitor
 
 def lemon(conf = None):
 	base.check_install('pyside')
@@ -414,14 +415,30 @@ def loj_prob(conf, pre = False):
 		'limit_and_hint' : 'place holder',
 		'tags' : conf.get('tags', {}).get(base.work + '-default', [])
 	}
+	def file_callback(m):
+		p = (m.bytes_read / m.len) * 100
+		print('上传 %.1f%%（%.1f KiB/%.1f KiB）    ' % (p, m.bytes_read / 1024, m.len / 1024), end = '\r')
+		sys.stdout.flush()
 	def post(url, data = None, files = None):
+		if files:
+			d = dict(files)
+			if not data:
+				data = {}
+			for k, v in data.items():
+				d[k] = str(v)
+			d = MultipartEncoder(d)
+			d = MultipartEncoderMonitor(d, file_callback)
+			h = headers.copy()
+			h['Content-Type'] = d.content_type
+		else:
+			d = data
+			h = headers
 		r = requests.post(
 			host + url,
-			headers = headers,
+			headers = h,
 			stream = True,
 			cookies = cookies,
-			data = data,
-			files = files
+			data = d
 		)
 		if not r.ok:
 			log.error(u'网站连接失败，错误代码%s，错误信息见`error.log`。' % r.status_code)
@@ -459,9 +476,12 @@ def loj_prob(conf, pre = False):
 		}
 	if conf['type'] == 'output':
 		data_yml['userOutput'] = '#.out'
+	data_path = 'data' if not pre else 'pre'
 	open(pjoin(base.work, data_path, conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname, force_file = False):
 		full_path = pjoin(path, fname)
+		print(u"打包文件`%s`  " % full_path, end = '\r')
+		sys.stdout.flush()
 		if os.path.isdir(full_path):
 			if not force_file:
 				for sub in os.listdir(full_path):
@@ -478,7 +498,6 @@ def loj_prob(conf, pre = False):
 		base.dos2unix(id)
 		z.write(id, fname)
 		os.remove(id)
-	data_path = 'data' if not pre else 'pre'
 	with zipfile.ZipFile(pjoin(base.work, data_path, conf.route + '.zip'), 'w') as z:
 		for id in (conf.test_cases if not pre else conf.pre_cases):
 			pack(z, pjoin(conf.path, data_path), id + '.in', force_file = True)
