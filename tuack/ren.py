@@ -335,7 +335,7 @@ class Base(object):
 			'dargs' : tools.a(self.prob.get('data')),
 			'pargs' : tools.a(self.prob.get('pre')),
 			'sargs' : tools.a(self.prob.get('samples')),
-			'aargs' : tools.a(self.prob, self.prob.get('data'), self.prob.get('pre'), self.prob.get('samples')),
+			'aargs' : tools.a(self.prob, self.prob.get('data'), self.prob.get('pre'), self.prob.get('samples'), [self.prob]),
 			'day' : self.day,
 			'contest' : self.contest,
 			'io_style' : self.io_style,
