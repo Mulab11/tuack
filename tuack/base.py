@@ -935,7 +935,7 @@ def check_install(pack):
 	open(pjoin(tool_path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))
 	return True
 
-def change_eol(path, eol):
+def change_eol(path, eol, show_path = None):
 	import uuid
 	ufname = str(uuid.uuid4()) + '.tmp'
 	space_end = False
@@ -946,7 +946,7 @@ def change_eol(path, eol):
 				line = line.rstrip(b'\r\n')
 				f.write(line + eol)
 				if not space_end and (line.endswith(b' ') or line.endswith(b'\t')):
-					log.warning(u'换行符转换：文件`%s`第%d行末尾有空白符。' % (path, idx + 1))
+					log.warning(u'换行符转换：文件`%s`第%d行末尾有空白符。' % (show_path if show_path else path, idx + 1))
 					space_end = True
 				for code in ['utf-8', 'gbk']:
 					try:
@@ -957,7 +957,7 @@ def change_eol(path, eol):
 						pass
 				else:
 					is_text = False
-					log.info(u'换行符转换：文件`%s`不是文本文件。' % path)
+					log.info(u'换行符转换：文件`%s`不是文本文件。' % (show_path if show_path else path))
 					break
 		except:
 			is_text = False
@@ -968,8 +968,8 @@ def change_eol(path, eol):
 	else:
 		os.remove(ufname)
 
-unix2dos = lambda path : change_eol(path, b'\r\n')
-dos2unix = lambda path : change_eol(path, b'\n')
+unix2dos = lambda path, show_path = None : change_eol(path, b'\r\n', show_path)
+dos2unix = lambda path, show_path = None : change_eol(path, b'\n', show_path)
 
 wiki = lambda name : name
 

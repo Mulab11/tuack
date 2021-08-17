@@ -495,7 +495,7 @@ def loj_prob(conf, pre = False):
 			id = str(uuid.uuid4()) + '.tmp'
 			base.shutil_copy(full_path, id)
 		time.sleep(0.1)
-		base.dos2unix(id)
+		base.dos2unix(id, full_path)
 		z.write(id, fname)
 		os.remove(id)
 	with zipfile.ZipFile(pjoin(base.work, data_path, conf.route + '.zip'), 'w') as z:
