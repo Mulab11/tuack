@@ -21,4 +21,6 @@
 
 ## 文档
 
-[文档在这里](https://git.thusaac.com/publish/tuack/wikis/home)
+[文档在这里](https://gitee.com/mulab/oi_tools/wikis/home)
+
+这个文档有一些图是坏的，待修。
