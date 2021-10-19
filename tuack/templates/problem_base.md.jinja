@@ -4,7 +4,9 @@
 	{%- if prob['type'] == 'output' -%}
 		{{ _('This is an output-only problem. There are %d input files named *%s1.in* ~ *%s%d.in*.') % (prob.test_cases.__len__(), prob['name'] if io_style == 'fio' else '', prob['name'] if io_style == 'fio' else '', prob.test_cases.__len__()) }}
 	{%- elif prob['type'] == 'program' -%}
-		{%- if io_style == 'stdio' -%}
+		{%- if input_file_name -%}
+			{{ _('Read from the file *%s*.') % input_file_name }}
+		{%- elif io_style == 'stdio' -%}
 			{{ _('Read from the standard input.') }}
 		{%- elif io_style == 'fio' -%}
 			{{ _('Read from the file *%s.in*.') % prob['name'] }}
@@ -16,7 +18,9 @@
 	{%- if prob['type'] == 'output' -%}
 		{{ _('For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*.') % (prob['name'] if io_style == 'fio' else '', prob['name'] if io_style == 'fio' else '', prob.test_cases.__len__()) }}
 	{%- elif prob['type'] == 'program' -%}
-		{%- if io_style == 'stdio' -%}
+		{%- if output_file_name -%}
+			{{ _('Write to the file *%s*.') % output_file_name }}
+		{%- elif io_style == 'stdio' -%}
 			{{ _('Write to the standard output.') }}
 		{%- elif io_style == 'fio' -%}
 			{{ _('Write to the file *%s.out*.') % prob['name'] }}

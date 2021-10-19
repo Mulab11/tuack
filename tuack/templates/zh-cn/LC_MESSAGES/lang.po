@@ -119,11 +119,17 @@ msgstr "秒"
 msgid "Read from the file *%s.in*."
 msgstr "从文件 *%s.in* 中读入数据。"
 
+msgid "Read from the file *%s*."
+msgstr "从文件 *%s* 中读入数据。"
+
 msgid "Write to the standard output."
 msgstr "输出到标准输出。"
 
 msgid "Write to the file *%s.out*."
 msgstr "输出到文件 *%s.out* 中。"
+
+msgid "Write to the file *%s*."
+msgstr "输出到文件 *%s* 中。"
 
 msgid "download files"
 msgstr "下载目录"

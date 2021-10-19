@@ -335,7 +335,7 @@ class Base(object):
 			'dargs' : tools.a(self.prob.get('data')),
 			'pargs' : tools.a(self.prob.get('pre')),
 			'sargs' : tools.a(self.prob.get('samples')),
-			'aargs' : tools.a(self.prob, self.prob.get('data'), self.prob.get('pre'), self.prob.get('samples')),
+			'aargs' : tools.a(self.prob, self.prob.get('data'), self.prob.get('pre'), self.prob.get('samples'), [self.prob]),
 			'day' : self.day,
 			'contest' : self.contest,
 			'io_style' : self.io_style,
@@ -351,8 +351,13 @@ class Base(object):
 			'precautions' : self.prec,
 			'json' : json,
 			'vars' : {},
-			's' : lambda title, *args : self.titlize(title, args, self.prob.lang())
+			's' : lambda title, *args : self.titlize(title, args, self.prob.lang()),
+			'input_file_name': None,
+			'output_file_name': None
 		}
+		if self.prob.get('file io'):
+			self.context['input_file_name'] = self.prob.get('input_table', {}).get('zh-cn', self.prob['name'] + '.in')
+			self.context['output_file_name'] = self.prob.get('output_table', {}).get('zh-cn', self.prob['name'] + '.out')
 		self.context['img'] = lambda src, env = None, **argw : self.context['render'](
 			"template('image', resource = resource(%s), %s)" % (json.dumps(src), to_arg(argw)),
 			env
