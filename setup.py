@@ -32,7 +32,8 @@ requires = [
 	'jinja2 >= 2.10',
 	'natsort >= 6.0.0',
 	'pyyaml >= 5.1',
-	'rarfile >= 3.0'
+	'rarfile >= 3.0',
+	'requests_toolbelt >= 0.9.1'
 ]
 
 setup(
