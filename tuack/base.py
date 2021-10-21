@@ -622,7 +622,7 @@ def xopen_file(path):
 		log.info(e)
 
 def deal_args():
-	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format, user_time, water_mark
+	global do_copy_files, do_test_progs, do_release, works, start_file, do_pack, langs, lang, sub_set, out_system, args, do_zip, do_encript, do_render, time_multiplier, git_lfs, dump_format, user_time, water_mark, noi_pas_c
 	do_render = True
 	works = []
 	args = []
@@ -637,6 +637,7 @@ def deal_args():
 	user_time = False
 	dump_format = 'yaml'
 	water_mark = False
+	noi_pas_c = False
 	l = len(sys.argv)
 	i = 1
 	while i < l:
@@ -673,6 +674,8 @@ def deal_args():
 		elif sys.argv[i] == '-t':
 			i += 1
 			time_multiplier = float(sys.argv[i])
+		elif sys.argv[i] == '--noi-pas-c':
+			noi_pas_c = True
 		elif sys.argv[i] == '-w':
 			i += 1
 			water_mark = sys.argv[i]
@@ -692,6 +695,7 @@ def deal_args():
 			log.info(u'  -o SYSTEM           对于ren，输出指定操作系统的题面，可选Windows和Linux。')
 			log.info(u'  -l zh-cn,en         对于ren，指定输出语言，不指定默认为zh-cn。')
 			log.info(u'  -w logo.png         对于ren，给PDF添加水印，默认不添加。')
+			log.info(u'  --noi-pas-c         对于ren渲染noi格式，强制在封面添加pas和c。')
 			log.info(u'  -r                  对于dump，不先尝试渲染题面。')
 			log.info(u'  -g                  对于gen，使用git-lfs。')
 			log.info(u'  -d json             对于gen，规定配置文件格式，支持json、yaml，默认yaml。')

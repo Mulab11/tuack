@@ -353,7 +353,8 @@ class Base(object):
 			'vars' : {},
 			's' : lambda title, *args : self.titlize(title, args, self.prob.lang()),
 			'input_file_name': None,
-			'output_file_name': None
+			'output_file_name': None,
+			'noi_pas_c': base.noi_pas_c
 		}
 		if self.prob.get('file io'):
 			self.context['input_file_name'] = self.prob.get('input_table', {}).get('zh-cn', self.prob['name'] + '.in')
