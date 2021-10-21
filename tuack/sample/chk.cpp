@@ -28,8 +28,6 @@ struct Reader{
 	FILE *file;
 	char buff[CONTEXT_LEN * 3 + 11];
 	void fresh(){
-		if(!line)
-			ptr = -1;
 		if(!eof && len - ptr < CONTEXT_LEN + 1){
 			int lef = std::max(ptr - CONTEXT_LEN, 0);
 			int rig = std::min(len, ptr + CONTEXT_LEN * 2 + 1);
@@ -46,12 +44,12 @@ struct Reader{
 				buff[len++] = c;
 			}
 			buff[len] = 0;
-			//printf("lef = %d rig = %d buff = %s\n", lef, rig, buff);
 			first = false;
 		}
 		if(!line){
 			line = 1;
 			first = true;
+			col++;
 		}
 	}
 	char cur(){
@@ -115,7 +113,7 @@ void ret(double result, bool add_context = true){
 int main(int argc, char **argv){
 	//You'd better not change this swith block
 	switch(argc){
-		case 0:case 1:		//LOJ and debug
+		case 0: case 1:		//LOJ and debug
 			inFile = fopen("input", "r");
 			outFile = fopen("user_out", "r");
 			ansFile = fopen("answer", "r");
@@ -164,20 +162,24 @@ int main(int argc, char **argv){
 	outf.file = outFile;
 	ansf.file = ansFile;
 	while(ansf.next()){
-		if(ansf.cur() == '\n'){
-			while(outf.next() == ' ');
-			if(!outf.cur() && !ansf.next())
+		outf.next();
+		if(ansf.cur() == '\n')
+			for(; outf.cur() == ' '; outf.next());
+		if(outf.cur() == '\n' || !outf.cur())
+			for(; ansf.cur() == ' '; ansf.next());
+		if(!outf.cur())
+			if(ansf.cur() == '\n' || !ansf.cur())
 				break;
-		}else if(!outf.next()){
-			info << "The answer is longer than your output.\n";
-			ret(0);
-		}
+			else{
+				info << "The answer is longer than your output.\n";
+				ret(0);
+			}
 		if(ansf.cur() != outf.cur()){
 			info << "Your output is different from the answer.\n";
 			ret(0);
 		}
 	}
-	while(outf.next() == ' ');
+	for(outf.next(); outf.cur() == ' '; outf.next());
 	if(outf.cur()){
 		info << "Your output is longer than the answer. \n";
 		ret(0);
