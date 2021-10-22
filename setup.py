@@ -38,7 +38,7 @@ requires = [
 
 setup(
 	name = 'tuack',
-	version = '0.1.4.12',
+	version = '0.1.4.12.1',
 	packages = find_packages(),
 	author = 'Chenxu Min, Zhang Ruizhe, Liu Xiaoyi, Chen Junkun, Chen Shengqi, Luo Lingxiao',
 	author_email = 'chen.xm.mu@gmail.com, 657228726@qq.com, circuitcoder0@gmail.com, 1261954105@qq.com, i@harrychen.xyz',
