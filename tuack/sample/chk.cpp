@@ -68,6 +68,10 @@ struct Reader{
 		fresh();
 		return buff[ptr];
 	}
+	bool rest_empty(){
+		for(; cur() == ' ' || cur() == '\n'; next());
+		return !cur();
+	}
 }outf, ansf;
 
 std::ostream& operator<<(std::ostream& ost, const Reader& r){
@@ -76,14 +80,15 @@ std::ostream& operator<<(std::ostream& ost, const Reader& r){
 	if(!r.first || lef != 0)
 		ost << "...";
 	for(int i = lef; i < rig; i++){
+		//Arbiter cannot print {} in info
 		if(i == r.ptr)
-			ost << '{';
+			ost << (swap_flag ? '[' : '{');
 		if(r.buff[i] < 0 || r.buff[i] >= 32)
 			ost << r.buff[i];
 		else
 			ost << esc[r.buff[i]];
 		if(i == r.ptr)
-			ost << '}';
+			ost << (swap_flag ? ']' : '}');;
 	}
 	if(!r.eof || rig != r.len)
 		ost << "...";
@@ -91,13 +96,22 @@ std::ostream& operator<<(std::ostream& ost, const Reader& r){
 }
 
 void ret(double result, bool add_context = true){
-	if(add_context){
-		info << "out: [" << outf << "] at line " << outf.line << ", column " << outf.col <<".\n";
-		info << "ans: [" << ansf << "] at line " << ansf.line << ", column " << ansf.col <<".\n";
-	}
+	if(add_context)
+		if(swap_flag){
+			//info in arbiter must shorter than about 100
+			info.str("Wrong answer.");
+			info << "out:[" << outf << "]@r" << outf.line << "c" << outf.col <<",";
+			info << "ans:[" << ansf << "]@r" << ansf.line << "c" << ansf.col <<".";
+		}else{
+			info << "out: [" << outf << "] at line " << outf.line << ", column " << outf.col <<".\n";
+			info << "ans: [" << ansf << "] at line " << ansf.line << ", column " << ansf.col <<".\n";
+		}
 	if(swap_flag){
 		//Arbiter only allow to read EXACTLY one line info, no less and no more, and must BEFORE score
-		for(const char* p = info.str().data(); *p; p++)
+		std::string st = info.str();
+		const char* p = st.data();
+		//info in arbiter must shorter than about 100
+		for(int i = 0; *p && i < 100; p++, i++)
 			if(*p < 0 || *p >= 32)
 				fputc(*p, infoFile);
 			else
@@ -161,26 +175,25 @@ int main(int argc, char **argv){
 	}
 	outf.file = outFile;
 	ansf.file = ansFile;
-	while(ansf.next()){
+	while(true){
+		ansf.next();
 		outf.next();
 		if(ansf.cur() == '\n')
 			for(; outf.cur() == ' '; outf.next());
-		if(outf.cur() == '\n' || !outf.cur())
+		if(outf.cur() == '\n')
 			for(; ansf.cur() == ' '; ansf.next());
-		if(!outf.cur())
-			if(ansf.cur() == '\n' || !ansf.cur())
-				break;
-			else{
-				info << "The answer is longer than your output.\n";
-				ret(0);
-			}
+		if(!outf.cur() || !ansf.cur())
+			break;
 		if(ansf.cur() != outf.cur()){
 			info << "Your output is different from the answer.\n";
 			ret(0);
 		}
 	}
-	for(outf.next(); outf.cur() == ' '; outf.next());
-	if(outf.cur()){
+	if(!outf.cur() && !ansf.rest_empty()){
+		info << "The answer is longer than your output.\n";
+		ret(0);
+	}
+	if(!ansf.cur() && !outf.rest_empty()){
 		info << "Your output is longer than the answer. \n";
 		ret(0);
 	}
