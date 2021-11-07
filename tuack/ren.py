@@ -354,6 +354,7 @@ class Base(object):
 			's' : lambda title, *args : self.titlize(title, args, self.prob.lang()),
 			'input_file_name': None,
 			'output_file_name': None,
+			'work_class' : work_class,
 			'noi_pas_c': base.noi_pas_c
 		}
 		if self.prob.get('file io'):
