@@ -22,6 +22,10 @@ const char esc[][5] = {
 };
 const int CONTEXT_LEN = 10;
 
+bool blank(char c){
+	return c == ' ' || c == '\t' || c == '\r';
+}
+
 struct Reader{
 	int ptr, len, line, col;
 	bool eof, first;
@@ -69,7 +73,7 @@ struct Reader{
 		return buff[ptr];
 	}
 	bool rest_empty(){
-		for(; cur() == ' ' || cur() == '\n'; next());
+		for(; blank(cur()) || cur() == '\n'; next());
 		return !cur();
 	}
 }outf, ansf;
@@ -179,9 +183,9 @@ int main(int argc, char **argv){
 		ansf.next();
 		outf.next();
 		if(ansf.cur() == '\n')
-			for(; outf.cur() == ' '; outf.next());
+			for(; blank(outf.cur()); outf.next());
 		if(outf.cur() == '\n')
-			for(; ansf.cur() == ' '; ansf.next());
+			for(; blank(ansf.cur()); ansf.next());
 		if(!outf.cur() || !ansf.cur())
 			break;
 		if(ansf.cur() != outf.cur()){
