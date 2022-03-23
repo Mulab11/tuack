@@ -2,7 +2,7 @@
 	"version": 2,
 	"folder" : "problem",
 	"type" : "program",
-	"name" : "name for programers",
+	"name" : "name for programmers",
 	"title" : {
 		"zh-cn" : "用于试题标题的中文名称"
 	},
