@@ -164,7 +164,11 @@
 		{%- endfor -%}
 		\tabularnewline
 	\hline
+		{% if comp == 'noi' -%}
+		测试点数目
+		{%- else -%}
 		子任务数目
+		{%- endif -%}
 		{%- for prob in probs -%}
 			& {{ prob.test_cases.__len__() if not prob.packed else prob.data.__len__() }}
 		{%- endfor -%}
