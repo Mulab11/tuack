@@ -285,7 +285,7 @@ def data_folder(bpath = None):
 	re_inp = re.compile('(.*)input(.*)')
 	re_in = re.compile('(.*)\\.in(.*)')
 	def scan(path):
-		for fname in os.listdir(path):
+		for fname in base.sorter()(list(os.listdir(path))):
 			flag = False
 			fpath = pjoin(path, fname)
 			if os.path.isfile(fpath):
