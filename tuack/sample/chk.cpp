@@ -87,10 +87,14 @@ std::ostream& operator<<(std::ostream& ost, const Reader& r){
 		//Arbiter cannot print {} in info
 		if(i == r.ptr)
 			ost << (swap_flag ? '[' : '{');
-		if(r.buff[i] < 0 || r.buff[i] >= 32)
-			ost << r.buff[i];
-		else
+		if(r.buff[i] >= 0 && r.buff[i] < 32)
 			ost << esc[r.buff[i]];
+		else if(swap_flag && r.buff[i] == '{')
+			ost << "\\[";
+		else if(swap_flag && r.buff[i] == '}')
+			ost << "\\]";
+		else
+			ost << r.buff[i];
 		if(i == r.ptr)
 			ost << (swap_flag ? ']' : '}');;
 	}
