@@ -404,6 +404,7 @@ def loj_prob(conf, pre = False):
 	tool_conf = base.tool_conf[base.work]['default']
 	cookies = tool_conf['cookies']
 	pid_key = 'pid' if not pre else 'pid-pre'
+	tag_key = 'tags' if not pre else 'tags-pre'
 	pid = conf.get(pid_key, {}).get(base.work + '-default', 0)
 	host = tool_conf['main']
 	data = {
@@ -413,7 +414,7 @@ def loj_prob(conf, pre = False):
 		'output_format' : 'place holder',
 		'example' : 'place holder',
 		'limit_and_hint' : 'place holder',
-		'tags' : conf.get('tags', {}).get(base.work + '-default', [])
+		'tags' : conf.get(tag_key, {}).get(base.work + '-default', [])
 	}
 	def file_callback(m):
 		p = (m.bytes_read / m.len) * 100
