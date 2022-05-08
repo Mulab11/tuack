@@ -477,6 +477,12 @@ def loj_prob(conf, pre = False):
 		}
 	if conf['type'] == 'output':
 		data_yml['userOutput'] = '#.out'
+	if conf.get('extra'):
+		files = [{'name' : exname, 'dest' : exname} for exname in conf['extra']]
+		data_yml['extraSourceFiles'] = [
+			{'language' : lan, 'files' : files} \
+			for lan in ['cpp', 'c', 'cpp11', 'cpp17']
+		]
 	data_path = 'data' if not pre else 'pre'
 	open(pjoin(base.work, data_path, conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))
 	def pack(z, path, fname, force_file = False):
@@ -508,6 +514,9 @@ def loj_prob(conf, pre = False):
 			z.write(pjoin(conf.path, 'data', 'chk', 'chk.cpp'), 'spj_cpp.cpp')
 		if os.path.exists(pjoin(base.work, data_path, conf.route + '.yml')):
 			z.write(pjoin(base.work, data_path, conf.route + '.yml'), 'data.yml')
+		if conf.get('extra'):
+			for exname in conf['extra']:
+				z.write(pjoin(conf.path, 'extra', exname), exname)
 	files = [
 		('testdata', ("data.zip", open(pjoin(base.work, data_path, conf.route + '.zip'), "rb"))),
 	]
@@ -516,7 +525,7 @@ def loj_prob(conf, pre = False):
 			for name in os.listdir(pjoin(conf.path, 'resources')):
 				pack(z, pjoin(conf.path, 'resources'), name)
 		except Exception as e:
-			log.warning(u'没有找到资源文件。')
+			log.info(u'没有找到资源文件。')
 	if os.path.exists(pjoin(conf.path, 'down')) and len(list(os.listdir(pjoin(conf.path, 'down')))) > 0:
 		with zipfile.ZipFile(pjoin(base.work, 'down', conf.route + '.zip'), 'w') as z:
 			if conf['type'] == 'output':
