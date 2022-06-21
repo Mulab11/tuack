@@ -47,7 +47,8 @@ work_class = {
 	'tex' : {'noi', 'ccpc', 'tupc', 'tuoi', 'ccc-tex', 'hand'},
 	'md' : {'uoj', 'tuoj', 'ccc-md', 'loj', 'ipuoj'},
 	'html' : {'tsinsen-oj'},
-	'doku' : {'thuoj'}
+	'doku' : {'thuoj'},
+	'syzoj_like' : {'loj', 'ipuoj'}
 }
 io_styles = {
 	'noi' : 'fio',
@@ -147,11 +148,23 @@ def table(path, name, temp, context, options):
 			last = ret[-1]
 			for i in range(len(table) - 2, 0, -1):
 				for j in range(len(last)):
-					if last[j] == ret[i][j]:
+					cur = ret[i][j]
+					if type(cur) == tuple:
+						cur = cur[0]
+					las = last[j]
+					if type(las) == tuple:
+						las, opt = las
+					else:
+						opt = {}
+					if las == cur and not opt.get('no_merge'):
 						last[j] = None
+					if opt.get('no_merge') and context.get('comp') in work_class['syzoj_like']:
+						last[j] = las + f"<!--{ uuid.uuid4() }-->"
 				last = ret[i]
 			return ret
-		code = 'def render(context, options, merge_ver):\n'
+		def no_merge(item):
+			return (item, {'no_merge' : True})
+		code = 'def render(context, options, merge_ver, no_merge):\n'
 		code += '\tglobal val\n'
 		code += '\tfor key, val in context.items():\n'
 		code += '\t\texec(\'%s = val\' % key, globals())\n'
@@ -160,7 +173,12 @@ def table(path, name, temp, context, options):
 		namespace = {}
 		exec(code, namespace)
 		try:
-			table = json.loads(json.dumps(namespace['render'](context, options, merge_ver)))
+			table = namespace['render'](context, options, merge_ver, no_merge)
+			for i in range(len(table)):
+				for j in range(len(table[i])):
+					if type(table[i][j]) == tuple:
+						table[i][j] = table[i][j][0]
+			table = json.loads(json.dumps(table))
 		except Exception as e:
 			log.error(e)
 			lines = traceback.format_exc().splitlines()
@@ -177,7 +195,7 @@ def table(path, name, temp, context, options):
 			else:
 				raise e
 			raise e
-	if context.get('comp') in {'loj', 'ipuoj'} and len(table) > 0:
+	if context.get('comp') in work_class['syzoj_like'] and len(table) > 0:
 		last_line = [None] * len(table[0])
 		for i in range(len(table)):
 			for j in range(len(table[i])):
@@ -262,7 +280,7 @@ class Base(object):
 			return ' {{ ' + s + ' }} '
 
 	def resource(self, name):
-		if self.comp in {'loj', 'ipuoj'} and self.prob.get('pid', {}).get(self.comp + '-default'):
+		if self.comp in work_class['syzoj_like'] and self.prob.get('pid', {}).get(self.comp + '-default'):
 			return '/../problem/show_image/%d/' % self.prob.get('pid', {}).get(self.comp + '-default') + name
 		return self.prob['name'] + '/' + name
 		
@@ -613,7 +631,7 @@ class Latex(Base):
 class Markdown(Base):
 	work = 'md'
 	def ren_prob_rest(self):
-		table_suf = 'html' if self.comp not in {'loj', 'ipuoj'} else 'md'
+		table_suf = 'html' if self.comp not in work_class['syzoj_like'] else 'md'
 		result_md = get_template('problem.md', self.prob.lang()).render(
 			self.context,
 			template = lambda temp_name, **context : get_template(temp_name + '.html.jinja', self.prob.lang()).render(context),
@@ -621,7 +639,7 @@ class Markdown(Base):
 		).encode('utf-8')
 		if self.comp == 'uoj':
 			result_md = uoj_title(result_md)
-		elif self.comp in {'loj', 'ipuoj'}:
+		elif self.comp in work_class['syzoj_like']:
 			result_md = loj_bug(result_md)
 		open(self.result_path, 'wb').write(result_md)
 
