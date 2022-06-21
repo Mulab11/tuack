@@ -103,7 +103,7 @@ def get_template(fname, lang = None):
 		env = {
 			'env' : jinja2.Environment(
 				loader = jinja2.FileSystemLoader(pjoin(os.getcwd(), 'tmp')),
-				extensions = ['jinja2.ext.do', 'jinja2.ext.with_', 'jinja2.ext.i18n']
+				extensions = ['jinja2.ext.do', 'jinja2.ext.i18n']
 			),
 			'lang' : lang
 		}
