@@ -70,6 +70,13 @@ json_version = 2
 work = None
 system = platform.system()
 out_system = system
+def get_linux_version():
+	try:
+		return open('/etc/issue').read().split('')[0]
+	except:
+		return 'Unknown'
+if system == 'Linux':
+	linux_version = get_linux_version()
 windows_stack_size = 536870912
 diff_tool = 'diff' if system != 'Windows' else 'fc'
 time_multiplier = 3.
@@ -922,6 +929,13 @@ def check_install(pack):
 			log.warning(u'unrar未安装，将无法解压rar文件，请安装unrar。')
 			log.warning(u'对于Windows用户，你可以将WinRar的安装目录添加到PATH。')
 			raise Exception('unrar not found')
+
+	def check_time():
+		ret = os.system('time ls')
+		if ret != 0:
+			log.warning(u'time未安装，将无法测试运行时间。')
+			log.warning(u'类Ubuntu用户可以用apt install time安装。')
+			raise Exception('time not found')
 
 	if pack in {'g++', 'cpp'}:
 		pack = 'gpp'

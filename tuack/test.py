@@ -154,6 +154,7 @@ def run_mac(name, tl, ml, input = None, output = None, vm = None):
 	return ret, t
 
 if base.system == 'Linux':
+	base.check_time()
 	run = run_linux
 elif base.system == 'Windows':
 	run = run_windows
