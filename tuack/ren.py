@@ -143,10 +143,10 @@ def table(path, name, temp, context, options):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 	elif suf == '.py' or suf == '.pyinc':
-		def merge_ver(table):
+		def merge_ver(table, titled = True):
 			ret = [row for row in table]
 			last = ret[-1]
-			for i in range(len(table) - 2, 0, -1):
+			for i in range(len(table) - 2, -1, -1):
 				for j in range(len(last)):
 					cur = ret[i][j]
 					if type(cur) == tuple:
@@ -156,10 +156,10 @@ def table(path, name, temp, context, options):
 						las, opt = las
 					else:
 						opt = {}
-					if las == cur and not opt.get('no_merge'):
+					if (not titled or i != 0) and las == cur and not opt.get('no_merge'):
 						last[j] = None
 					if opt.get('no_merge') and context.get('comp') in work_class['syzoj_like']:
-						last[j] = las + f"<!--{ uuid.uuid4() }-->"
+						last[j] = str(las) + f"<!--{ uuid.uuid4() }-->"
 				last = ret[i]
 			return ret
 		def no_merge(item):
