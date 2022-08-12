@@ -35,7 +35,7 @@ def run_windows(name, tl, ml, input = None, output = None, vm = None):
 	'''
 	On windows, memory limit is not considered.
 	'''
-	timer = time.perf_counter if sys.version >= '3.3' else time.clock
+	timer = time.perf_counter if base.python_version >= (3, 3) else time.clock
 	try:
 		fin = (open(input) if input else None)
 		fout = (open(output, 'w') if output else None)

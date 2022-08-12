@@ -19,8 +19,8 @@ import logging
 import traceback
 import yaml
 
-python_version = sys.version_info.major
-if python_version == 2:
+python_version = (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
+if python_version[0] == 2:
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
 
@@ -757,7 +757,7 @@ def init():
 	if not deal_args():
 		return False
 	log.info(
-		('脚本%s，工程路径%s，参数%s，开始于%s。' if python_version == 2 else u'脚本%s，工程路径%s，参数%s，开始于%s。') % (
+		('脚本%s，工程路径%s，参数%s，开始于%s。' if python_version[0] == 2 else u'脚本%s，工程路径%s，参数%s，开始于%s。') % (
 			__main__.__file__, os.getcwd(), str(sys.argv[1:]), str(datetime.datetime.now())
 		)
 	)
