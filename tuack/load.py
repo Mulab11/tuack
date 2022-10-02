@@ -283,13 +283,13 @@ def data_folder(bpath = None):
 		shutil.copyfile(pjoin(path, oname), pjoin(base.conf.path, 'data', str(idx[0]) + '.ans'))
 		idx[0] += 1
 	re_inp = re.compile('(.*)input(.*)')
-	re_in = re.compile('(.*)\\.in(.*)')
+	re_in = re.compile('(.*)in(.*)')
 	def scan(path):
 		for fname in base.sorter()(list(os.listdir(path))):
 			flag = False
 			fpath = pjoin(path, fname)
 			if os.path.isfile(fpath):
-				for re_i, ostrs in ((re_inp, ('answer', 'output')), (re_in, ('.ans', '.out'))):
+				for re_i, ostrs in ((re_inp, ('answer', 'output')), (re_in, ('ans', 'out'))):
 					ma = re_i.match(fname)
 					if ma:
 						for ostr in ostrs:

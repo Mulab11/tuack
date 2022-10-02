@@ -442,12 +442,12 @@ class Problem(Configure):
 		algo_failed = False
 		if type(exp) == dict:
 			for symbol, value in exp.items():
-				algo_failed |= not eval('score %s %s' % (symbol, value))
+				algo_failed |= not eval('round(score, 8) %s %s' % (symbol, value))
 		elif type(exp) == list:
 			for pred in exp:
-				algo_failed |= not eval('score %s' % pred)
+				algo_failed |= not eval('round(score, 8) %s' % pred)
 		elif type(exp) == str:
-			algo_failed |= not eval('score %s' % exp)
+			algo_failed |= not eval('round(score, 8) %s' % exp)
 		elif exp is None:
 			pass
 		else:
