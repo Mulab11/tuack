@@ -74,6 +74,29 @@ def js_hn(num):
 	'''
 	return json.dumps(hn(num))[1:-1]
 
+def cases(cases):
+	ret = []
+	st = None
+	ed = None
+	def deal():
+		if st is None:
+			return
+		if type(st) == int and st + 1 < ed:
+			ret.append("%d \\sim %d" % (st, ed))
+		else:
+			ret.append(str(st))
+			if st != ed:
+				ret.append(str(ed))
+	for i in cases:
+		if type(st) == int and type(i) == int and ed + 1 == i:
+			ed = i
+		else:
+			deal()
+			st = i
+			ed = i
+	deal()
+	return '$' + ','.join(ret) + '$'
+
 def to_time(dttm):
 	try:
 		return datetime.strptime(dttm, '%Y-%m-%d %H:%M:%S')
