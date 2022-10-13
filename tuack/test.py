@@ -110,7 +110,7 @@ def run_linux(name, tl, ml, input = None, output = None, vm = None):
 
 def runner_mac(name, que, ml, input = None, output = None, vm = None):
 	pro = subprocess.Popen(
-		'ulimit -v %d; (time -p %s %s %s) 2> timer' % (
+		'ulimit -n %d; (time -p %s %s %s) 2> timer' % (
 			int(base.Memory(ml).KB),
 			vm(name, ml) if vm else './%s' % name,
 			'< %s' % input if input else '',
