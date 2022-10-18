@@ -241,15 +241,20 @@ def arbiter_down(conf = None):
 	for prob in conf.probs():
 		log.info(prob.route)
 		os.makedirs(base.pjoin(pjoin('arbiter', 'down'), prob.route))
+		vis = set()
 		for idx, case in enumerate(prob.sample_cases, start = 1):
-			for s_name, t_name in ((
-				base.pjoin(prob.path,'down',str(case)+'.in'),
-				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.in')
-			), (
-				base.pjoin(prob.path,'down',str(case)+'.ans'),
-				base.pjoin('arbiter', 'down', prob.route, prob['name']+str(idx)+'.ans')
-			)):
+			for suf in ('.in', '.ans'):
+				s_name = base.pjoin(prob.path, 'down', str(case) + suf)
+				t_name = base.pjoin('arbiter', 'down', prob.route, prob['name'] + str(idx) + suf)
 				base.shutil_copy(s_name, t_name)
+				vis.add(str(case) + suf)
+		for fname in os.listdir(base.pjoin(prob.path, 'down')):
+			if fname not in vis:
+				log.info(f"找到了不在down列表中的文件{fname}")
+				base.shutil_copy(
+					base.pjoin(prob.path, 'down', fname),
+					base.pjoin('arbiter', 'down', prob.route, fname)
+				)
 	log.info('dos2unix')
 	base.run_r(base.dos2unix, base.pjoin(pjoin('arbiter', 'down', conf.route)))
 
@@ -408,6 +413,7 @@ def loj_prob(conf, pre = False):
 	pid = conf.get(pid_key, {}).get(base.work + '-default', 0)
 	host = tool_conf['main']
 	data = {
+		'file_name' : conf['name'],
 		'title' : conf.tr('title') + (u'（预测试）' if pre else ''),
 		'description' : 'place holder',
 		'input_format' : 'place holder',
