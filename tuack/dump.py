@@ -127,7 +127,7 @@ def arbiter_main(conf = None,daynum = 0):
 	def arbiter_info(info, filename):
 		with open(filename,'wb') as ofile:
 			for key, val in info.items():
-				ofile.write(('%s%s\n' % (key, val)).encode('gbk'))
+				ofile.write(('%s%s\n' % (key, val)).encode('utf-8'))
 	if not conf:
 		log.info('makedirs')
 		if not os.path.exists('arbiter'):
