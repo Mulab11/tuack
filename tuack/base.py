@@ -248,10 +248,11 @@ class Configure(dict):
 			if pick or any_prefix(self.route):
 				self.all = pick
 				yield self
-		else:
+		elif type(self) == Contest:
 			for sub in self.sub:
-				for day in sub.days(pick, no_repeat = no_repeat):
-					yield day
+				if type(sub) == Day:
+					for day in sub.days(pick, no_repeat = no_repeat):
+						yield day
 
 	def name_lang(self):
 		return self['name'] + ('-' + globals()['lang'] if globals()['lang'] else '')
@@ -519,18 +520,21 @@ def load_json(path = '.', route = None):
 				if conf.folder == 'problem':
 					conf.set_score()
 				if 'subdir' in conf:
-					conf.sub = [
-						load_json(pjoin(path, sub), conf.route) \
-						for sub in conf['subdir']
-					]
+					conf.sub = []
+					for sub in conf['subdir']:
+						ret = load_json(pjoin(path, sub), conf.route)
+						if ret:
+							conf.sub.append(ret)
 				#mem_json[abs_path] = conf
 				return conf
 		except Exception as e:
-			log.error(u'文件`%s`错误或子目录下文件错误。' % pjoin(path, name))
+			log.warning(u'文件`%s`错误。' % pjoin(path, name))
 			log.info(e)
-			raise e
+			log.info('可能会导致运行到该目录下出现问题。')
 	else:
-		raise NoFileException(u'路径`%s`下找不到conf.*。' % path)
+		#raise NoFileException(u'路径`%s`下找不到conf.*。' % path)
+		log.warning(u'路径`%s`下找不到conf.*。' % path)
+		log.info('可能会导致运行到该目录下出现问题。')
 
 def del_redundance(conf, red):
 	for key in red:

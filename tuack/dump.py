@@ -183,15 +183,15 @@ def arbiter_main(conf = None,daynum = 0):
 			probinfo['TYPE='] = 'SOURCE'
 		else:
 			log.warning(u'暂时只支持非交互式程序题。')
-		probinfo['LIMIT='] = int(prob['time limit'])
+		probinfo['LIMIT='] = prob['time limit']
 		probinfo['MEMLIMITS='] = int(prob.memory_limit().MB)
 		probinfo['SAMPLES='] = len(prob.test_cases)
 		score_per_case = 100 // len(prob.test_cases)
 		if not prob.packed and score_per_case * len(prob.test_cases) != 100:
 			log.warning(u'测试点数量不是100的约数，分数无法均分为整数。')
-		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile']['c']
-		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile']['cpp']
-		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile']['pas']
+		probinfo['CCL=c@gcc'] = ' -o %o %i ' + prob['compile'].get('c', '')
+		probinfo['CCL=cpp@g++'] = ' -o %o %i ' + prob['compile'].get('cpp', '')
+		probinfo['CCL=pas@fpc'] = ' %i ' + prob['compile'].get('pas', '')
 		idx = 0
 		for datum in prob.data:
 			if prob.packed and len(datum['cases']) > 1:
