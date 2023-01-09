@@ -272,6 +272,9 @@ def test(prob, name):
 					except Exception as e:
 						report = ''
 					score = float(open('tmp/score').readline()) * .01
+				if time > prob['time limit']:
+					score = 0.0
+					report += '(but time out)'
 			else:
 				ret = os.system('%s %s %s > log' % (
 					base.diff_tool,
