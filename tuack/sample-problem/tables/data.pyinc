@@ -6,8 +6,10 @@ for datum in prob['data']:	#引用conf.json/yaml中的变量
 		"$= %s$" % tl.hn(args['n']),		#tl.hn函数用于把10000输出成10^{4}这样好看的样子
 											#python的字符串可以直接用百分号格式化成新的字符串
 		r"$\le %s$" % tl.hn(args['m']),		#Python可以用前面加r的禁止转义字符串解决右斜杠需要两次转义的问题
-		"是" if args['bin'] != 0 else "否"
+		no_merge("是" if args['bin'] != 0 else "否")
+											#no_merge函数可以强制本行在任何时候都不参与合并
+											#相反直接留None可以强制本行在任何时候都合并到上一行
 	]
 	ret.append(row)	#这是python数组的push_back
 base.log.debug(u'输出调试信息')	#渲染题面时会在控制台输出需要调试的信息，不需要可以删除
-return merge_ver(ret)	#这个函数可以把竖直方向上相同的格子合并
+return ret	#现在不用merge_ver函数也会自动合并了

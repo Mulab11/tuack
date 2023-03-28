@@ -121,9 +121,11 @@ int main(int argc, char** argv);
 
 {{ tbl('data') }}
 
-{{ tbl('table', width = [1, 6]) }}
+{{ tbl('table', width = [1, 6], merge = False) }}
 
-原理上用一个二维的 json 表格或 python 表格存储，`null` 表示和上一行合并，不支持横向合并。建议用 python 的格式写，如例子中的 `data.pyinc`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
+原理上用一个二维的 json 表格或 python 表格存储。会自动纵向合并相同的格子，如果添加了 `merge = False` 则不会合并。不支持横向合并。建议用 python 的格式写，如例子中的 `data.pyinc`，这样可以根据数据生成；跟数据无关的表格则可以像 `table.json` 那样存储。
+
+如果自己手动造表格，可以用 `null` 表示和上一行合并，可以用 `no_merge` 函数表示强制不合并特定的格子。
 
 {{ s('scoring') }}
 

@@ -126,6 +126,25 @@ def table(path, name, temp, context, options):
 			pass
 	else:
 		raise base.NoFileException(u'找不到表格`%s.*`' % base.pjoin(path, name))
+	def merge_ver(table, titled = True):
+		ret = [row for row in table]
+		last = ret[-1]
+		for i in range(len(table) - 2, -1, -1):
+			for j in range(len(last)):
+				cur = ret[i][j]
+				if type(cur) == tuple:
+					cur = cur[0]
+				las = last[j]
+				if type(las) == tuple:
+					las, opt = las
+				else:
+					opt = {}
+				if (not titled or i != 0) and las == cur and not opt.get('no_merge') and options.get('merge') != False:
+					last[j] = None
+				if (opt.get('no_merge') or options.get('merge') == False) and context.get('comp') in work_class['syzoj_like']:
+					last[j] = str(las) + f"<!--{ uuid.uuid4() }-->"
+			last = ret[i]
+		return ret
 	if suf == '.json':
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
 		try:
@@ -143,25 +162,6 @@ def table(path, name, temp, context, options):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 	elif suf == '.py' or suf == '.pyinc':
-		def merge_ver(table, titled = True):
-			ret = [row for row in table]
-			last = ret[-1]
-			for i in range(len(table) - 2, -1, -1):
-				for j in range(len(last)):
-					cur = ret[i][j]
-					if type(cur) == tuple:
-						cur = cur[0]
-					las = last[j]
-					if type(las) == tuple:
-						las, opt = las
-					else:
-						opt = {}
-					if (not titled or i != 0) and las == cur and not opt.get('no_merge'):
-						last[j] = None
-					if opt.get('no_merge') and context.get('comp') in work_class['syzoj_like']:
-						last[j] = str(las) + f"<!--{ uuid.uuid4() }-->"
-				last = ret[i]
-			return ret
 		def no_merge(item):
 			return (item, {'no_merge' : True})
 		code = 'def render(context, options, merge_ver, no_merge):\n'
@@ -195,6 +195,8 @@ def table(path, name, temp, context, options):
 			else:
 				raise e
 			raise e
+	if options.get('merge') != None:
+		table = merge_ver(table)
 	if context.get('comp') in work_class['syzoj_like'] and len(table) > 0:
 		last_line = [None] * len(table[0])
 		for i in range(len(table)):
