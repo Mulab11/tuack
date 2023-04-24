@@ -126,7 +126,12 @@ def table(path, name, temp, context, options):
 			pass
 	else:
 		raise base.NoFileException(u'找不到表格`%s.*`' % base.pjoin(path, name))
-	def merge_ver(table, titled = True):
+	def merge_ver(table, titled = None):
+		if titled is not None:
+			options['titled'] = titled
+		return table
+	def merge(table):
+		titled = options.get('titled', True)
 		ret = [row for row in table]
 		last = ret[-1]
 		for i in range(len(table) - 2, -1, -1):
@@ -162,8 +167,7 @@ def table(path, name, temp, context, options):
 			log.error(u'json文件错误`tmp/table.tmp.json`')
 			raise e
 	elif suf == '.py' or suf == '.pyinc':
-		def no_merge(item):
-			return (item, {'no_merge' : True})
+		no_merge = lambda item : (item, {'no_merge' : True})
 		code = 'def render(context, options, merge_ver, no_merge):\n'
 		code += '\tglobal val\n'
 		code += '\tfor key, val in context.items():\n'
@@ -174,11 +178,6 @@ def table(path, name, temp, context, options):
 		exec(code, namespace)
 		try:
 			table = namespace['render'](context, options, merge_ver, no_merge)
-			for i in range(len(table)):
-				for j in range(len(table[i])):
-					if type(table[i][j]) == tuple:
-						table[i][j] = table[i][j][0]
-			table = json.loads(json.dumps(table))
 		except Exception as e:
 			log.error(e)
 			lines = traceback.format_exc().splitlines()
@@ -195,8 +194,8 @@ def table(path, name, temp, context, options):
 			else:
 				raise e
 			raise e
-	if options.get('merge') != None:
-		table = merge_ver(table)
+	table = merge(table)
+	table = json.loads(json.dumps(table))
 	if context.get('comp') in work_class['syzoj_like'] and len(table) > 0:
 		last_line = [None] * len(table[0])
 		for i in range(len(table)):
