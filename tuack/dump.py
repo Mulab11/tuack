@@ -482,7 +482,7 @@ def loj_prob(conf, pre = False):
 			'fileName' : 'spj_cpp.cpp'
 		}
 	if conf['type'] == 'output':
-		data_yml['userOutput'] = '#.out'
+		data_yml['userOutput'] = (conf['name'] if conf.get('file io') else '') + '#.out'
 	if conf.get('extra'):
 		files = [{'name' : exname, 'dest' : exname} for exname in conf['extra']]
 		data_yml['extraSourceFiles'] = [

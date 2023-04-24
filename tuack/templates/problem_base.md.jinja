@@ -16,7 +16,7 @@
 
 {% block output_file %}
 	{%- if prob['type'] == 'output' -%}
-		{{ _('For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*.') % (prob['name'] if io_style == 'fio' else '', prob['name'] if io_style == 'fio' else '', prob.test_cases.__len__()) }}
+		{{ _('For each input file, you should accomplish an output file named *%s1.out* ~ *%s%d.out*.') % (prob['name'] if io_style == 'fio' or prob.get('file io') else '', prob['name'] if io_style == 'fio' or prob.get('file io') else '', prob.test_cases.__len__()) }}
 	{%- elif prob['type'] == 'program' -%}
 		{%- if output_file_name -%}
 			{{ _('Write to the file *%s*.') % output_file_name }}
