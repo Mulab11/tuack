@@ -157,16 +157,16 @@ def lemon(conf = None):
 						]
 					} for c in prob.test_cases
 				]
-			tasks.append({
+			task = {
 				'answerFileExtension' : 'out',
-				"comparisonMode": 1,	#TODO: What if there is spj (code = 4)
+				"comparisonMode": 1,
 				"diffArguments": "--ignore-space-change --text --brief",
 				"inputFileName": prob['name'] + '.in',
 				"outputFileName": prob['name'] + '.out',
 				"problemTitle": base.tr(prob['title']),
 				"realPrecision": 3,		#float number error bound
 				"sourceFileName": prob['name'],
-				"specialJudge": "",		#TODO: What if there is spj
+				"specialJudge": "",
 				"standardInputCheck": False,
 				"standardOutputCheck": False,
 				"subFolderCheck": False,
@@ -181,10 +181,19 @@ def lemon(conf = None):
 					}[i] : 'default' for i in prob.get('compile', {}) if i in {'cpp', 'c', 'pas', 'py', 'java'}
 				},
 				"testCases" : cases
-			})
+			}
 			sp = list(prob.route.split('/'))
 			target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
 			shutil.copytree(base.pjoin(prob.path, 'data'), base.pjoin(*target))
+			if os.path.isdir(base.pjoin(prob.path, 'data', 'chk')) and os.path.isfile(base.pjoin(prob.path, 'data', 'chk', 'chk.cpp')):
+				log.info('发现chk，尝试编译。')
+				os.system("g++ %s -o %s -O2 -std=c++17" % (
+					base.pjoin(prob.path, 'data', 'chk', 'chk.cpp'),
+					base.pjoin(*(target + ['chk.exe']))
+				))
+				task['comparisonMode'] = 4
+				task['specialJudge'] = base.pjoin(prob['name'], 'chk.exe')
+			tasks.append(task)
 		open(base.pjoin('lemon', conf.route, conf['name'] + '.cdf'), 'wb').write(json.dumps({
 			"contestTitle" : conf['name'],
 			"contestants" : [],
@@ -197,7 +206,6 @@ def lemon(conf = None):
 		import zipfile
 		with zipfile.ZipFile(base.pjoin('lemon', conf.route) + '.zip', 'w') as z:
 			base.run_r(lambda path : z.write(path), base.pjoin('lemon', conf.route))
-	log.warning(u'目前SPJ的支持暂时还没有实现，有需要请手工配置。')
 	log.warning(u'目前lemon的编译选项是写在注册表里的，暂时没有实现该功能，请手工配置。')
 
 def arbiter_main(conf = None,daynum = 0):
