@@ -18,6 +18,7 @@ import platform
 import logging
 import traceback
 import yaml
+from inspect import isfunction
 
 python_version = (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
 if python_version[0] == 2:
@@ -822,9 +823,7 @@ def check_install(pack):
 				log.info(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
 			raise e
 	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
-	check_jinja2 = lambda : check_import('jinja2')
 	check_natsort = lambda : check_import('natsort', level = logging.WARNING)
-	check_gettext = lambda : check_import('gettext')
 	def check_pandoc():
 		ret = os.system('pandoc -v')
 		if ret != 0:
@@ -951,7 +950,10 @@ def check_install(pack):
 		env_conf['installed'] = {}
 	if pack in env_conf['installed'] and env_conf['installed'][pack]:
 		return True
-	eval('check_' + pack)()
+	if isfunction('check_' + pack):
+		eval('check_' + pack)()
+	else:
+		check_import(pack)
 	env_conf['installed'][pack] = True
 
 	open(pjoin(tool_path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))

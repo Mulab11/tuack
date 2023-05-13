@@ -22,7 +22,10 @@ import traceback
 from requests_toolbelt.multipart.encoder import MultipartEncoder, MultipartEncoderMonitor
 
 def lemon(conf = None):
-	base.check_install('pyside')
+	py_version = base.python_version[0]
+	if py_version == 2:
+		base.check_install('pyside')
+		from PySide import QtCore
 	if not conf:
 		if base.conf.folder == 'problem':
 			raise Exception('Can\'t dump a single problem to lemon, try to dump a day or a contest.')
@@ -37,82 +40,156 @@ def lemon(conf = None):
 	log.info(u'导出lemon工程：%s' % conf.route)
 	os.makedirs(base.pjoin('lemon', conf.route, 'data'))
 	os.makedirs(base.pjoin('lemon', conf.route, 'source'))
-	jzp_magic = 0x20111127
-	zlib_magic = 0x185E
-	import zlib
-	from PySide import QtCore
-	obuff = QtCore.QByteArray()
-	ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
-	ost.writeQString(conf['name'])
-	probs = list(conf.probs())
-	ost.writeInt32(len(probs))
-	for prob in probs:
-		log.info(u'导出lemon题目：%s' % prob.route)
-		ost.writeQString(base.tr(prob['title']))
-		ost.writeQString(prob['name'])
-		ost.writeQString(prob['name'] + '.in')
-		ost.writeQString(prob['name'] + '.out')
-		ost.writeBool(False)
-		ost.writeBool(False)
-		ost.writeInt32(1 if prob['type'] == 'output' else 0)
-		ost.writeInt32(1)		# Judge Type TODO: What if there is spj (code = 4)
-		ost.writeQString('--ignore-space-change --text --brief')
-		ost.writeInt32(3)		# real precision (float number error bound)
-		ost.writeQString('')	# spj route TODO: What if there is spj
-		ost.writeInt32(len([i for i in prob.get('compile', {}) if i in {'cpp', 'c', 'pas'}]))
-		for key, val in prob.get('compile', {}).items():
-			try:
-				ost.writeQString({
-					'cpp' : 'g++',
-					'c' : 'gcc',
-					'pas' : 'fpc'
-				}[key])
-				ost.writeQString(val)
-			except:
-				pass
-		ost.writeQString('out')
-		if prob.packed:
-			ost.writeInt32(len(prob['data']))
-			for datum in prob['data']:
-				ost.writeInt32(datum['score'])
-				ost.writeInt32(datum.get('time limit', prob.get('time limit', 0)) * 1000)
-				ost.writeInt32(base.Memory(datum.get('memory limit', prob.get('memory limit', '0 B'))).MB)
-				tc = datum['cases']
-				ost.writeInt32(len(tc))
-				for c in tc:
+	if py_version == 2:
+		jzp_magic = 0x20111127
+		zlib_magic = 0x185E
+		import zlib
+		obuff = QtCore.QByteArray()
+		ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
+		ost.writeQString(conf['name'])
+		probs = list(conf.probs())
+		ost.writeInt32(len(probs))
+		for prob in probs:
+			log.info(u'导出lemon题目：%s' % prob.route)
+			ost.writeQString(base.tr(prob['title']))
+			ost.writeQString(prob['name'])
+			ost.writeQString(prob['name'] + '.in')
+			ost.writeQString(prob['name'] + '.out')
+			ost.writeBool(False)
+			ost.writeBool(False)
+			ost.writeInt32(1 if prob['type'] == 'output' else 0)
+			ost.writeInt32(1)		# Judge Type TODO: What if there is spj (code = 4)
+			ost.writeQString('--ignore-space-change --text --brief')
+			ost.writeInt32(3)		# real precision (float number error bound)
+			ost.writeQString('')	# spj route TODO: What if there is spj
+			ost.writeInt32(len([i for i in prob.get('compile', {}) if i in {'cpp', 'c', 'pas'}]))
+			for key, val in prob.get('compile', {}).items():
+				try:
+					ost.writeQString({
+						'cpp' : 'g++',
+						'c' : 'gcc',
+						'pas' : 'fpc'
+					}[key])
+					ost.writeQString(val)
+				except:
+					pass
+			ost.writeQString('out')
+			if prob.packed:
+				ost.writeInt32(len(prob['data']))
+				for datum in prob['data']:
+					ost.writeInt32(datum['score'])
+					ost.writeInt32(datum.get('time limit', prob.get('time limit', 0)) * 1000)
+					ost.writeInt32(base.Memory(datum.get('memory limit', prob.get('memory limit', '0 B'))).MB)
+					tc = datum['cases']
+					ost.writeInt32(len(tc))
+					for c in tc:
+						ost.writeQString(base.pjoin(prob['name'], str(c) + '.in'))
+					ost.writeInt32(len(tc))
+					for c in tc:
+						ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
+			else:
+				score = (100. / len(prob.test_cases) if len(prob.test_cases) > 0 else 0.)
+				if 100 % len(prob.test_cases) != 0:
+					log.warning('测试点个数不是100的约数，总分将不是整百。')
+				ost.writeInt32(len(prob.test_cases))
+				for c in prob.test_cases:
+					ost.writeInt32(int(score + .5))
+					ost.writeInt32(int(prob['time limit'] * 1000 + .5))
+					ost.writeInt32(int(prob.memory_limit().MB + .5))
+					ost.writeInt32(1)
 					ost.writeQString(base.pjoin(prob['name'], str(c) + '.in'))
-				ost.writeInt32(len(tc))
-				for c in tc:
+					ost.writeInt32(1)
 					ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
-		else:
-			score = (100. / len(prob.test_cases) if len(prob.test_cases) > 0 else 0.)
-			ost.writeInt32(len(prob.test_cases))
-			for c in prob.test_cases:
-				ost.writeInt32(score)
-				ost.writeInt32(prob['time limit'] * 1000)
-				ost.writeInt32(prob.memory_limit().MB)
-				ost.writeInt32(1)
-				ost.writeQString(base.pjoin(prob['name'], str(c) + '.in'))
-				ost.writeInt32(1)
-				ost.writeQString(base.pjoin(prob['name'], str(c) + '.ans'))
-		
-		sp = list(prob.route.split('/'))
-		target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
-		shutil.copytree(base.pjoin(prob.path, 'data'), base.pjoin(*target))
-	
-	compressed = QtCore.QByteArray(zlib.compress(str(obuff)))
-	obuff = QtCore.QByteArray()
-	ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
-	ost.writeUInt32(zlib_magic)
-	ost.writeRawData(str(compressed))
-	file_ = QtCore.QFile(base.pjoin('lemon', conf.route, conf['name'] + '.cdf'))
-	file_.open(QtCore.QIODevice.WriteOnly)
-	ofs = QtCore.QDataStream(file_)
-	ofs.writeUInt32(jzp_magic)
-	ofs.writeUInt16(QtCore.qChecksum(str(obuff), len(obuff)))
-	ofs.writeUInt32(len(obuff))
-	ofs.writeRawData(str(obuff))
-	file_.close()
+			
+			sp = list(prob.route.split('/'))
+			target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
+			shutil.copytree(base.pjoin(prob.path, 'data'), base.pjoin(*target))
+
+		ss = lambda s : str(s) if py_version == 2 else s
+		compressed = QtCore.QByteArray(zlib.compress(ss(obuff)))
+		obuff = QtCore.QByteArray()
+		ost = QtCore.QDataStream(obuff, QtCore.QIODevice.WriteOnly)
+		ost.writeUInt32(zlib_magic)
+		ost.writeRawData(ss(compressed))
+		file_ = QtCore.QFile(base.pjoin('lemon', conf.route, conf['name'] + '.cdf'))
+		file_.open(QtCore.QIODevice.WriteOnly)
+		ofs = QtCore.QDataStream(file_)
+		ofs.writeUInt32(jzp_magic)
+		ofs.writeUInt16(QtCore.qChecksum(ss(obuff), len(obuff)))
+		ofs.writeUInt32(len(obuff))
+		ofs.writeRawData(ss(obuff))
+		file_.close()
+	else:
+		probs = list(conf.probs())
+		tasks = []
+		for prob in probs:
+			log.info(u'导出lemon题目：%s' % prob.route)
+			if prob.packed:
+				cases = [
+					{
+						"fullScore": int(datum['score'] + .5),
+						"timeLimit": int(datum.get('time limit', prob.get('time limit', 0)) * 1000 + .5),
+						"memoryLimit": int(base.Memory(datum.get('memory limit', prob.get('memory limit', '0 B'))).MB + .5),
+						"inputFiles": [
+							base.pjoin(prob['name'], str(c) + '.in') \
+							for c in datum['cases']
+						],
+						"outputFiles": [
+							base.pjoin(prob['name'], str(c) + '.ans') \
+							for c in datum['cases']
+						]
+					} for datum in prob['data']
+				]
+			else:
+				score = (100. / len(prob.test_cases) if len(prob.test_cases) > 0 else 0.)
+				if 100 % len(prob.test_cases) != 0:
+					log.warning('测试点个数不是100的约数，总分将不是整百。')
+				cases = [
+					{
+						"fullScore": int(score + .5),
+						"timeLimit": int(prob['time limit'] * 1000 + .5),
+						"memoryLimit": int(prob.memory_limit().MB + .5),
+						"inputFiles": [
+							base.pjoin(prob['name'], str(c) + '.in')
+						],
+						"outputFiles": [
+							base.pjoin(prob['name'], str(c) + '.ans')
+						]
+					} for c in prob.test_cases
+				]
+			tasks.append({
+				'answerFileExtension' : 'out',
+				"comparisonMode": 1,	#TODO: What if there is spj (code = 4)
+				"diffArguments": "--ignore-space-change --text --brief",
+				"inputFileName": prob['name'] + '.in',
+				"outputFileName": prob['name'] + '.out',
+				"problemTitle": base.tr(prob['title']),
+				"realPrecision": 3,		#float number error bound
+				"sourceFileName": prob['name'],
+				"specialJudge": "",		#TODO: What if there is spj
+				"standardInputCheck": False,
+				"standardOutputCheck": False,
+				"subFolderCheck": False,
+				"taskType": 1 if prob['type'] == 'output' else 0,
+				"compilerConfiguration": {
+					{
+						'cpp' : 'g++',
+						'c' : 'gcc',
+						'pas' : 'fpc',
+						'py' : 'python',
+						'java' : 'javac'
+					}[i] : 'default' for i in prob.get('compile', {}) if i in {'cpp', 'c', 'pas', 'py', 'java'}
+				},
+				"testCases" : cases
+			})
+			sp = list(prob.route.split('/'))
+			target = ['lemon'] + sp[:-1] + ['data', sp[-1]]
+			shutil.copytree(base.pjoin(prob.path, 'data'), base.pjoin(*target))
+		open(base.pjoin('lemon', conf.route, conf['name'] + '.cdf'), 'wb').write(json.dumps({
+			"contestTitle" : conf['name'],
+			"contestants" : [],
+			"tasks" : tasks
+		}).encode('utf-8'))
 	
 	base.run_r(base.unix2dos, base.pjoin('lemon', conf.route, 'data'))
 	
