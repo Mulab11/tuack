@@ -811,6 +811,12 @@ def get_tool_conf():
 	env_conf = tool_conf[sys_env]
 	return tool_conf
 
+class NoInstalledException(Exception):
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
+
 def check_install(pack):
 	def check_import(pack, extra_info = '', pack_name = None, level = logging.ERROR):
 		try:
@@ -821,7 +827,7 @@ def check_install(pack):
 				log.info(u'如果pip没有安装，Windows下推荐用Anaconda等集成环境。')
 			if system == 'Linux':
 				log.info(u'如果pip没有安装，Ubuntu下用 sudo apt install python-pip 安装。')
-			raise e
+			raise NoInstalledException(str(e))
 	check_pyside = lambda : check_import('PySide', u'注意这个包只能在 python2 下使用。', 'pyside')
 	check_natsort = lambda : check_import('natsort', level = logging.WARNING)
 	def check_pandoc():
@@ -832,7 +838,7 @@ def check_install(pack):
 				log.info(u'Windows用户去官方网站下载安装，安装好后把pandoc.exe所在路径添加到环境变量PATH中。')
 			if system == 'Linux':
 				log.info(u'Ubuntu下用 sudo apt install pandoc 安装。')
-			raise Exception('pandoc not found')
+			raise NoInstalledException('pandoc not found')
 	def check_xelatex():
 		ret = os.system('xelatex --version')
 		if ret != 0:
@@ -844,7 +850,7 @@ def check_install(pack):
 				log.info(u'然后一般会因为缺少有些字体而报错（Windows有使用权，但Ubuntu没有，所以没有预装这些字体）。')
 				log.info(u'可以使用下列页面上的方法安装缺少的字体或是把win下的字体复制过来。')
 				log.info(u'http://linux-wiki.cn/wiki/zh-hans/LaTeX%E4%B8%AD%E6%96%87%E6%8E%92%E7%89%88%EF%BC%88%E4%BD%BF%E7%94%A8XeTeX%EF%BC%89')
-			raise Exception('xelatex not found')
+			raise NoInstalledException('xelatex not found')
 	def check_git():
 		ret = os.system('git --version')
 		if ret != 0:
@@ -856,7 +862,7 @@ def check_install(pack):
 			log.info(u'git入门可以参看这里：')
 			log.info(u'http://rogerdudler.github.io/git-guide/index.zh.html')
 			log.info(u'一般推荐用ssh方式克隆仓库，并用公私钥保证安全，添加密钥的方式一般仓库的git网页上能找到。')
-			raise Exception('git not found')
+			raise NoInstalledException('git not found')
 	def check_git_lfs():
 		ret = os.system('git lfs')
 		if ret != 0:
@@ -866,79 +872,79 @@ def check_install(pack):
 			log.info(u'https://git-lfs.github.com/')
 			log.info(u'如果你用本工具的generator生成题目工程，那么你装好lfs以后一般可以不用再手工指定in和ans文件用lfs管理。')
 			log.info(u'如果你的多人合作工程用到了lfs，请务必不要在没有安装lfs前把数据添加到工程中！')
-			raise Exception('git lfs not found')
+			raise NoInstalledException('git lfs not found')
 
 	def check_gpp():
 		ret = os.system('g++ -v')
 		if ret != 0:
 			log.warning(u'g++未安装，将可能无法测试C++代码。')
-			raise Exception('g++ not found')
+			raise NoInstalledException('g++ not found')
 	
 	def check_gcc():
 		ret = os.system('gcc -v')
 		if ret != 0:
 			log.warning(u'gcc未安装，将可能无法测试C代码。')
-			raise Exception('gcc not found')
+			raise NoInstalledException('gcc not found')
 			
 	def check_java():
 		ret = os.system('javac -version')
 		if ret != 0:
 			log.warning(u'javac未安装，将可能无法测试Java代码。')
-			raise Exception('javac not found')
+			raise NoInstalledException('javac not found')
 		ret = os.system('java -version')
 		if ret != 0:
 			log.warning(u'java未安装，将可能无法测试Java代码。')
-			raise Exception('java not found')
+			raise NoInstalledException('java not found')
 
 	def check_py2():
 		ret = os.system('python2 --version')
 		if ret != 0:
 			log.warning(u'python2未安装，将可能无法测试Python2代码。')
-			raise Exception('python2 not found')
+			raise NoInstalledException('python2 not found')
 
 	def check_py3():
 		ret = os.system('python3 --version')
 		if ret != 0:
 			log.warning(u'python3未安装，将可能无法测试Python3代码。')
-			raise Exception('python3 not found')
+			raise NoInstalledException('python3 not found')
 
 	def check_py():
 		ret = os.system('python --version')
 		if ret != 0:
 			log.warning(u'python未安装，将可能无法测试Python代码。')
-			raise Exception('python not found')
+			raise NoInstalledException('python not found')
 			
 	def check_flex():
 		ret = os.system('flex --version')
 		if ret != 0:
 			log.warning(u'flex未安装，将可能无法检查题面格式。')
-			raise Exception('flex not found')
+			raise NoInstalledException('flex not found')
 
 	def check_bison():
 		ret = os.system('bison --version')
 		if ret != 0:
 			log.warning(u'bison未安装，将可能无法检查题面格式。')
-			raise Exception('bison not found')
+			raise NoInstalledException('bison not found')
 			
 	def check_format():
 		ret = os.system('"%s" -v' % pjoin(tool_path, format_checker_name))
 		if ret != 0:
 			log.warning(u'format checker未安装，使用`python -m tuack.install format`安装。')
-			raise Exception('format not found')
+			raise NoInstalledException('format not found')
 			
 	def check_unrar():
 		ret = os.system('unrar --version')
 		if ret != 0:
 			log.warning(u'unrar未安装，将无法解压rar文件，请安装unrar。')
 			log.warning(u'对于Windows用户，你可以将WinRar的安装目录添加到PATH。')
-			raise Exception('unrar not found')
+			raise NoInstalledException('unrar not found')
 
 	def check_time():
 		ret = os.system('time ls')
 		if ret != 0:
 			log.warning(u'time未安装，将无法测试运行时间。')
 			log.warning(u'类Ubuntu用户可以用apt install time安装。')
-			raise Exception('time not found')
+			raise NoInstalledException('time not found')
 
 	if pack in {'g++', 'cpp'}:
 		pack = 'gpp'
@@ -950,10 +956,12 @@ def check_install(pack):
 		env_conf['installed'] = {}
 	if pack in env_conf['installed'] and env_conf['installed'][pack]:
 		return True
-	if isfunction('check_' + pack):
-		eval('check_' + pack)()
-	else:
+	try:
+		eval('check_' + pack)
+	except:
 		check_import(pack)
+	else:
+		eval('check_' + pack)()
 	env_conf['installed'][pack] = True
 
 	open(pjoin(tool_path, 'conf.json'), 'wb').write(json.dumps(tool_conf, indent = 2, sort_keys = True).encode('utf-8'))

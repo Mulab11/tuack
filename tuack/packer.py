@@ -34,6 +34,8 @@ def test_copy_problem_files(prob):
 	try:
 		copy(data_path, 'chk', base.pjoin(output_folder, prob.route))
 		prob.chk = True
+	except base.NoInstalledException as e:
+		raise(e)
 	except Exception as e:
 		prob.chk = False
 	
