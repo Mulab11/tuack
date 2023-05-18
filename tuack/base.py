@@ -18,7 +18,7 @@ import platform
 import logging
 import traceback
 import yaml
-from inspect import isfunction
+from inspect import isfunction, getsource
 
 python_version = (sys.version_info.major, sys.version_info.minor, sys.version_info.micro)
 if python_version[0] == 2:
@@ -1012,3 +1012,25 @@ def run_exc(func):
 		log.error(e)
 		log.info(traceback.format_exc())
 		return (False, None)
+
+def rmtree(path):
+	if os.path.exists(path):
+		if system == 'Windows':
+			os.system(f'rmdir /s /q "{path}"')
+		else:
+			shutil.rmtree(path)
+
+def repeat(func):
+	las = None
+	for i in range(10):
+		try:
+			func()
+		except Exception as e:
+			las = e
+			time.sleep(1e-2)
+			log.warning(f'执行该函数第{i + 1}次：' + func.__qualname__)
+		else:
+			return
+	log.error('重复执行该函数多次失败：' + func.__qualname__)
+	log.info(getsource(func))
+	raise las

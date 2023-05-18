@@ -380,19 +380,9 @@ def test_problem(prob):
 					log.info(u'如果该程序是其他功能程序，例如数据生成器，请将该程序从配置文件中移除。')
 				if (not prob.all and match != 1 and not base.any_prefix(rjoin(prob.route, user, algo))):
 					continue
-				while os.path.exists('tmp'):
-					try:
-						shutil.rmtree('tmp')
-					except:
-						time.sleep(1e-2)
+				base.repeat(lambda : base.rmtree('tmp'))
 				if prob['type'] == 'program':
-					while True:
-						try:
-							os.makedirs('tmp')
-						except:
-							time.sleep(1e-2)
-						else:
-							break
+					base.repeat(lambda : os.makedirs('tmp'))
 					try:
 						shutil.copy(path, pjoin('tmp', path.split('/')[-1]))
 					except Exception as e:
@@ -415,11 +405,7 @@ def test_problem(prob):
 						log.info(u'如果该文件包是测试输出，请确保该文件包存在；如果不是，请将其从`conf.*`中移除。')
 				log.info(u'测试程序 %s:%s:%s' % (prob['name'], user, algo))
 				scores, times, reports = test(prob, path.split('/')[-1].split('.')[0])
-				while os.path.exists('tmp'):
-					try:
-						shutil.rmtree('tmp')
-					except:
-						pass
+				base.repeat(lambda : base.rmtree('tmp'))
 				tc = len(prob.test_cases)
 				score_map = {}
 				for i in range(tc):
