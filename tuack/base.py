@@ -575,18 +575,6 @@ def mkdir(name):
 	if not os.path.exists(name):
 		os.makedirs(name)
 
-def remkdir(name):
-	while True:
-		try:
-			shutil.rmtree(name, ignore_errors = True)
-			time.sleep(0.1)
-			if not os.path.exists(name):
-				os.makedirs(name)
-			break
-		except Exception as e:
-			log.warning('Can\'t delete %s' % name)
-			log.warning(e)
-
 def copy(source, name, target):
 	full_source = pjoin(source, name)
 	if not os.path.exists(full_source):
@@ -1013,12 +1001,12 @@ def run_exc(func):
 		log.info(traceback.format_exc())
 		return (False, None)
 
-def rmtree(path):
+def rmtree(path, ignore_errors = True):
 	if os.path.exists(path):
 		if system == 'Windows':
 			os.system(f'rmdir /s /q "{path}"')
 		else:
-			shutil.rmtree(path)
+			shutil.rmtree(path, ignore_errors = ignore_errors)
 
 def repeat(func):
 	las = None
@@ -1034,3 +1022,11 @@ def repeat(func):
 	log.error('重复执行该函数多次失败：' + func.__qualname__)
 	log.info(getsource(func))
 	raise las
+
+def remkdir(name):
+	try:
+		repeat(lambda : rmtree(name))
+		os.makedirs(name)
+	except Exception as e:
+		log.warning('Can\'t delete %s' % name)
+		log.warning(e)

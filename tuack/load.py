@@ -147,7 +147,7 @@ def tsinsen_oj():
 		def close(self):
 			super(Checkers, self).close()
 			if os.path.getsize(base.pjoin(*Checkers.fname)) < 10:
-				shutil.rmtree(base.pjoin(*Checkers.fname[:2]), ignore_errors = True)
+				base.rmtree(base.pjoin(*Checkers.fname[:2]), ignore_errors = True)
 	import re
 	key_re = re.compile('(\w*)\((\w*)\)')
 
@@ -249,10 +249,10 @@ def syzoj(style = 'loj', cookies = None):
 		with zipfile.ZipFile('down.zip', 'r') as z:
 			z.extractall('down')
 	else:
-		shutil.rmtree('down')
+		base.rmtree('down')
 		time.sleep(.1)
 		os.makedirs('down')
-	shutil.rmtree('pre')
+	base.rmtree('pre')
 	time.sleep(.1)
 	os.makedirs('pre')
 	base.save_json(base.conf)
@@ -327,7 +327,7 @@ def data_pack(suf, bpath = None):
 		z.extractall('tmp')
 	data_folder('tmp')
 	time.sleep(.1)
-	shutil.rmtree('tmp')
+	base.rmtree('tmp')
 
 def data(bpath = None):
 	if base.conf.folder != 'problem':

@@ -405,7 +405,7 @@ class Base(object):
 
 	def before(self):
 		base.mkdir('statements')
-		shutil.rmtree('tmp', ignore_errors = True)
+		base.rmtree('tmp', ignore_errors = True)
 		time.sleep(0.1)
 		shutil.copytree(pjoin(base.path, 'templates'), 'tmp')
 		base.mkdir(pjoin('statements', self.comp))
@@ -418,7 +418,7 @@ class Base(object):
 
 	def move_resource(self):
 		if os.path.exists(pjoin(self.prob.path, 'resources')):
-			shutil.rmtree(self.path, ignore_errors = True)
+			base.rmtree(self.path, ignore_errors = True)
 			time.sleep(0.1)
 			shutil.copytree(pjoin(self.prob.path, 'resources'), (self.path if self.prob.route != '' else pjoin(self.path, self.prob['name'])))
 
@@ -446,7 +446,7 @@ class Base(object):
 			self.start_file()
 
 	def final(self):
-		shutil.rmtree('tmp', ignore_errors = True)
+		base.rmtree('tmp', ignore_errors = True)
 
 	def run(self):
 		self.check_install()
