@@ -356,7 +356,7 @@ def test_problem(prob):
 
 	case_features = [[] for i in range(len(prob.data))]
 
-	with open(pjoin('result', prob.route) + '.csv', 'w') as fres:
+	with open(pjoin('result', prob.route) + '.csv', 'w', encoding = 'gbk' if base.system == 'Windows' else 'utf-8') as fres:
 		fres.write('%s,%s%s,summary,sample%s,pre%s\n' % (
 			prob['name'],
 			','.join(prob.test_cases),

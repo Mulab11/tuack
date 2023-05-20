@@ -82,12 +82,12 @@ def detect_pandoc_version():
 	if pandoc_version is not None:
 		return
 	cp = subprocess.Popen(['pandoc', '-v'], stdout = subprocess.PIPE)
-	line = cp.stdout.read().decode().splitlines()[0]
-	pandoc_version = line.split()[-1]
+	line = cp.stdout.read().decode("utf-8", "ignore").splitlines()[0]
+	pandoc_version = tuple(map(int, line.split()[-1].split('.')))
 
 def get_pandoc_option():
 	detect_pandoc_version()
-	if pandoc_version.startswith('2.'):
+	if pandoc_version >= (2, ):
 		option = '--listings -f markdown-smart -t latex-smart'
 	else:
 		option = '--no-tex-ligatures --listings -t latex'
