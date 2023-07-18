@@ -144,11 +144,20 @@ def table(path, name, temp, context, options):
 					las, opt = las
 				else:
 					opt = {}
+				last[j] = las
 				if (not titled or i != 0) and las == cur and not opt.get('no_merge') and options.get('merge') != False:
 					last[j] = None
 				if (opt.get('no_merge') or options.get('merge') == False) and context.get('comp') in work_class['syzoj_like']:
 					last[j] = str(las) + f"<!--{ uuid.uuid4() }-->"
 			last = ret[i]
+		if len(table) > 0:
+			for j in range(len(table[0])):
+				if type(table[0][j]) == tuple:
+					table[0][j] = table[0][j][0]
+		if titled and len(table) > 1:
+			for j in range(len(table[1])):
+				if type(table[1][j]) == tuple:
+					table[1][j] = table[1][j][0]
 		return ret
 	if suf == '.json':
 		res = get_template('table.json', context['prob'].lang()).render(context, options = options)
