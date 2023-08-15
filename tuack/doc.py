@@ -22,22 +22,22 @@ vars_re = r"\{%-? *do *vars\.__setitem__\( *'sample_id' *, *(\d+) *\) -%\}"
 
 title_choices = {
 	'sample' : {
-		u'样例(\\d+)?',
-		u'输入输出样例(\\d+)?',
-		u'样例输入输出(\\d+)?',
-		u'测试用例(\\d+)?',
-		r'sample\s*(\d+)?',
+		u'样例 *#?(\\d+)?',
+		u'输入输出样例 *#?(\\d+)?',
+		u'样例输入输出 *#?(\\d+)?',
+		u'测试用例 *#?(\\d+)?',
+		r'sample\s* *#?(\d+)?',
 		vars_re
 	},
 	'sample input' : {
-		u'样例(\\d+)?输入(\\d+)?',
-		u'输入(\\d+)?样例(\\d+)?',
+		u'样例 *(\\d+)? *输入 *#?(\\d+)?',
+		u'输入 *(\\d+)? *样例 *#?(\\d+)?',
 		r'sample\s*input\s*(\d+)?',
 		r'input\s*sample\s*(\d+)?'
 	},
 	'sample output' : {
-		u'样例(\\d+)?输出(\\d+)?',
-		u'输出(\\d+)?样例(\\d+)?',
+		u'样例 *(\\d+)? *输出 *#?(\\d+)?',
+		u'输出 *(\\d+)? *样例 *#?(\\d+)?',
 		r'sample\s*output\s*(\d+)?',
 		r'output\s*sample\s*(\d+)?'
 	},
@@ -115,7 +115,7 @@ text_patterns = {
 
 title_re = re.compile('^(' + '|'.join(['|'.join(value) for value in title_choices.values()]) + ')$')
 std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)\) *\}\} *$')
-doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *$'
+doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *\\d*$'
 html_equation_re = re.compile(r'\\\[(.*)\\\]\{\.math \.inline\}')
 format_log_re = re.compile(r'^(\w) (\d+) (.*)$')
 
@@ -350,7 +350,7 @@ def to_sections(lines):
 			cur.lines.append(line)
 		elif in_equation:
 			if line == '$$':
-				in_quote = False
+				in_equation = False
 			cur.lines.append(line)
 		else:
 			last_title = last_title - 1 if last_title >= 1 else 0
