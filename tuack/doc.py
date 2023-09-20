@@ -405,7 +405,10 @@ def to_sections(lines):
 				if not cur.is_empty():
 					sections.append(cur)
 				cur = Section(title, args)
-			elif line == '' or itemize_re.match(line.lstrip()):
+			elif itemize_re.match(line.lstrip()):
+				buff = clear(buff)
+				cur.lines.append(line)
+			elif line == '':
 				buff = clear(buff)
 			elif img_match:
 				img_url = img_match.group(1)
