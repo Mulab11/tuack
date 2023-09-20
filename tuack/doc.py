@@ -1,20 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import os
-import re
-import sys
-import json
-import datetime
-import shutil
-import subprocess
-import time
-import signal
-import zipfile
-from multiprocessing import Process, Queue
+import os, re, sys, json, requests
 from functools import wraps
-from threading import Timer
-import platform
 from . import base
 from .base import log, pjoin
 
@@ -118,6 +106,9 @@ std_title_re = re.compile('^\{\{ *s\( *\'(.*)\' *(( *, *[-+.\'\"a-zA-Z0-9_ ]+)*)
 doc_title_re = u'^#* *( *【|\{\{ *_ *\( *\')?(%s)(\' *\) *\}\}|】)?( *\{#.*\})? *#* *\\d*$'
 html_equation_re = re.compile(r'\\\[(.*)\\\]\{\.math \.inline\}')
 format_log_re = re.compile(r'^(\w) (\d+) (.*)$')
+itemize_re = re.compile(r'^\d+\.|\*|\-|\+ ')
+md_img_re = re.compile(r'^\!\[.*\]\((.*)\)$')
+html_img_re = re.compile(r'^<img.*src="(.*)".*/?>$')
 
 math_trans = {
 	'*' : '',
@@ -301,8 +292,8 @@ def get_title(line):
 							for s in m.groups():
 								if s and s != '':
 									args = [json.loads(s)]
-									log.debug(args)
 									break
+						log.info(f"标题：{name} {args}")
 						return name, args
 		return title, []
 	return line, []
@@ -323,6 +314,9 @@ def to_sections(lines):
 	in_equation = False
 	in_table = False
 	last_title = 0
+	tbl_lino = 0
+	tbl_no = 0
+	img_no = 0
 	for line in lines:
 		if in_quote_space:
 			if line.startswith('    '):
@@ -354,6 +348,24 @@ def to_sections(lines):
 			cur.lines.append(line)
 		else:
 			last_title = last_title - 1 if last_title >= 1 else 0
+			if line.startswith('|') and line.endswith('|'):
+				if tbl_lino == 0:
+					tbl_no += 1
+					log.info(f"表格：{tbl_no}")
+					buff = clear(buff)
+					cur.lines.append("{{ tbl('%d') }}\n" % tbl_no)
+					base.mkdir('tables')
+					ftbl = open(f"tables/{tbl_no}.pyinc", 'w')
+					ftbl.write('return [\n')
+				tbl_lino += 1
+				if tbl_lino != 2:
+					ftbl.write("\t[r'" + "', r'".join(map(lambda x : x.strip(), line.strip('|').split('|'))) + "'],\n")
+				continue
+			elif tbl_lino != 0:
+				ftbl.write(']\n')
+				ftbl.close()
+				tbl_lino = 0
+			img_match = md_img_re.match(line.strip()) or html_img_re.match(line.strip())
 			if line.startswith('```'):
 				in_quote = True
 				buff = clear(buff)
@@ -393,12 +405,30 @@ def to_sections(lines):
 				if not cur.is_empty():
 					sections.append(cur)
 				cur = Section(title, args)
-			elif line == '':
+			elif line == '' or itemize_re.match(line.lstrip()):
 				buff = clear(buff)
+			elif img_match:
+				img_url = img_match.group(1)
+				img_suf = img_url.split('.')[-1]
+				img_no += 1
+				buff = clear(buff)
+				cur.lines.append("{{ img('%s.%s') }}\n" % (img_no, img_suf))
+				log.info(f"图片：{img_no}.{img_suf} {img_url}")
+				try:
+					r = requests.get(img_url)
+					base.mkdir('resources')
+					open(f"resources/{img_no}.{img_suf}", 'wb').write(r.content)
+				except Exception as e:
+					log.warning(f'从网站上下载图片失败，请手动下载并添加到resources/{img_no}.{img_suf}')
+					log.info(e)
 			else:
 				buff.append(line)
 		last = line
 	buff = clear(buff)
+	if tbl_lino != 0:
+		ftbl.write(']\n')
+		ftbl.close()
+		tbl_lino = 0
 	if not cur.is_empty():
 		sections.append(cur)
 	return sections
