@@ -17,7 +17,7 @@ def int_lg(num):
 	if num < 0:
 		return float('nan')
 	if num >= 10:
-		if type(num) == int:
+		if issubclass(type(num), int):
 			return int_lg(num // 10) + 1
 		else:
 			return int_lg(num / 10) + 1
@@ -26,7 +26,7 @@ def int_lg(num):
 	return 0
 
 def comma(num):
-	if type(num) != int:
+	if not issubclass(type(num), int):
 		return str(num)
 	if num < 0:
 		return '-' + comma(-num)
@@ -68,11 +68,11 @@ def hn(num, style = None):
 		ret = (comma(num) if l >= len(str(num)) * 4 // 3 else ret)
 	return neg + ret
 	
-def js_hn(num):
+def js_hn(num, style = None):
 	'''
 	适合阅读的数，json版本
 	'''
-	return json.dumps(hn(num))[1:-1]
+	return json.dumps(hn(num, style))[1:-1]
 
 def cases(cases):
 	ret = []
@@ -81,14 +81,14 @@ def cases(cases):
 	def deal():
 		if st is None:
 			return
-		if type(st) == int and st + 1 < ed:
+		if issubclass(type(st), int) and st + 1 < ed:
 			ret.append("%d \\sim %d" % (st, ed))
 		else:
 			ret.append(str(st))
 			if st != ed:
 				ret.append(str(ed))
 	for i in cases:
-		if type(st) == int and type(i) == int and ed + 1 == i:
+		if issubclass(type(st), int) and issubclass(type(i), int) and ed + 1 == i:
 			ed = i
 		else:
 			deal()
@@ -131,6 +131,24 @@ def time_range(start, end, year = '-', month = '-', day = ''):
 def json_dumps_twice(s):
 	return json.dumps(json.dumps(s))
 
+class Int(int):
+	def __new__(self, a):
+		return super(Int, self).__new__(self, a)
+	hn = lambda self, style = None: globals()['hn'](self, style)
+	js_hn = lambda self, style = None: globals()['js_hn'](self, style)
+	comma = lambda self: globals()['comma'](self)
+	int_lg = lambda self: globals()['int_lg'](self)
+	to_chinese = lambda self, big=False, simp=True, o=False, twoalt=False: num2chinese(self, big, simp, o, twoalt)
+
+class Float(float):
+	def __new__(self, a):
+		return super(Float, self).__new__(self, a)
+	hn = lambda self, style = None: globals()['hn'](self, style)
+	js_hn = lambda self, style = None: globals()['js_hn'](self, style)
+	comma = lambda self: globals()['comma'](self)
+	int_lg = lambda self: globals()['int_lg'](self)
+	to_chinese = lambda self, big=False, simp=True, o=False, twoalt=False: num2chinese(self, big, simp, o, twoalt)
+
 class Args(object):
 	def __init__(self, *data):
 		self.data = data
@@ -157,5 +175,7 @@ class Args(object):
 		return min(self.get(key, d, True))
 	def max(self, key, d = None):
 		return max(self.get(key, d, True))
+	def prod(self, key, d = None):
+		return prod(self.get(key, d, True))
 
 a = Args

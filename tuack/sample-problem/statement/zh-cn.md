@@ -68,7 +68,7 @@ int main(int argc, char** argv);
 
 ```python
 {{ render(json.dumps('\\clearpage'), 'tuoi') }}
-{{ render(json.dumps('<a href="http://oj.thusaac.org">TUOJ</a>'), 'html') }}
+{{ render(json.dumps('<a href="https://oj.cs.tsinghua.edu.cn">TUOJ</a>'), 'html') }}
 ```
 
 上述第一个例子是为了排版好看强行加入一个分页符的意思，其中 `tuoi` 表示只在生成 TUOI 风格题面的时候使用这个；第二个例子是在生成任何 html 格式题目的时候加入一个广告（雾）。
@@ -83,7 +83,7 @@ int main(int argc, char** argv);
 
 上面会根据具体的评测环境说明输入是文件还是标准输入等。
 
-输入的第一行包含一个正整数 $n$，保证 $n \le {{ tl.hn(args['n']) }}$。←这是引用 *conf.yaml* 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `10^9`，`1,000,000,007`。
+输入的第一行包含一个正整数 $n$，保证 $n \le {{ args['n'].hn() }}$。←这是引用 *conf.yaml* 中的 `args` 的 `n` 项，然后用“好看”的格式输出。“好看”的格式如 `10^9`，`1,000,000,007`。
 
 引用 *conf.yaml* 的方法是使用变量 `prob`，例如可以写成 `prob.args['n']`，还可以写成 `prob['args']['n']`。引用 `args` 项、`data` 项、`samples` 项和 `pre` 项可以简写成例如 `args['n']` 或 `args.n`。在下文的表格中也一样。
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv);
 
 ↑`aargs.min` 是取出 `data` 项、`samples` 项和 `pre` 项中的所有同名变量的最小值，类似的函数还有 `max` 和 `sum`。形如 `aargs['m']` 可以取出所有同名变量的迭代器。和 python 的 `dict` 类似，还可以用形如 `aargs.get('m', 0)` 指定“如果没有某项用什么对象补空”，`sum`、`min` 和 `max` 类似。如果只取出 `data` 项、`samples` 项或 `pre` 项中的同名函数，使用 `dargs`、`sargs` 或 `pargs`。
 
-`tl` 是 `tools` 的简写，是一组工具。除 `hn` 外，还包括内建函数如 `tl.int`，`math` 中的对象或函数如 `tl.sin`，`datetime` 中的对象或函数如 `tl.time` 类，`num2chinese` 函数（可以把数字转化成中文）。
+`tl` 是 `tools` 的简写，是一组工具。除 `hn` 外，还包括内建函数如 `tl.int`，`math` 中的对象或函数如 `tl.sin`，`datetime` 中的对象或函数如 `tl.time` 类，`num2chinese` 函数（可以把数字转化成中文）。其中一部分针对 `int` 类型的常用函数也可以用形如 `sargs.max('n').hn()` 的形式调用。
 
 {{ s('output format') }}
 
