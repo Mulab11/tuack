@@ -354,14 +354,16 @@ class Base(object):
 		except base.NoFileException as e:
 			log.error(u'找不到题面文件，建议使用`python -m tuack.gen problem`生成题目工程。')
 			return
-		def to_i(x):
+		def to_I(x):
 			if not issubclass(type(x), dict) and not issubclass(type(x), list): return
 			for key in (x if issubclass(type(x), dict) else range(len(x))):
 				if type(x[key]) == int:
 					x[key] = tools.Int(x[key])
+				elif type(x[key]) == float:
+					x[key] = tools.Float(x[key])
 				else:
-					to_i(x[key])
-		to_i(self.prob)
+					to_I(x[key])
+		to_I(self.prob)
 		self.context = {
 			'prob' : self.prob,
 			'args' : self.prob.get('args'),

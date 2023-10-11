@@ -547,9 +547,18 @@ def del_redundance(conf, red):
 		conf.pop('name')
 	return conf
 
+def to_ori(x):
+	if type(x) != dict and type(x) != list: return
+	for key in (x if issubclass(type(x), dict) else range(len(x))):
+		for tp in [int, float, str, dict, list]:
+			if issubclass(type(x[key]), tp):
+				x[key] = tp(x[key])
+		to_ori(x[key])
+	return x
+
 dump_formats = {
 	'json' : lambda conf : json.dumps(conf, indent = 2, sort_keys = True, ensure_ascii = False).encode('utf-8'),
-	'yaml' : lambda conf : yaml.safe_dump(dict(conf), encoding = 'utf-8', allow_unicode = True)
+	'yaml' : lambda conf : yaml.safe_dump(to_ori(dict(conf)), encoding = 'utf-8', allow_unicode = True)
 }
 
 def save_json(conf):
