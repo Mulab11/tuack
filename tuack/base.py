@@ -551,7 +551,7 @@ def to_ori(x):
 	if type(x) != dict and type(x) != list: return
 	for key in (x if issubclass(type(x), dict) else range(len(x))):
 		for tp in [int, float, str, dict, list]:
-			if issubclass(type(x[key]), tp):
+			if issubclass(type(x[key]), tp) and type(x[key]) != bool:
 				x[key] = tp(x[key])
 		to_ori(x[key])
 	return x
