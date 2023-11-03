@@ -338,6 +338,11 @@ class Base(object):
 				ret = ret % args
 			except Exception as e:
 				ret = ret + ''.join(map(str, args))
+		elif title == 'sample explanation':
+			try:
+				ret = ret % (self.context['vars']['sample_id'], )
+			except Exception as e:
+				pass
 		else:
 			try:
 				ret = ret % ('',)

@@ -319,6 +319,25 @@ def copy_prec():
 		for f in os.listdir(pjoin(base.path, 'sample', ff)):
 			copy(pjoin(ff, f), pjoin(ff, f))
 
+def set_conf(params, folders, tp = str):
+	if base.conf['folder'] not in folders:
+		log.error(f"只能在{folders}类型目录下运行当前命令")
+		return
+	for sub, val in zip(base.conf.sub, sys.argv[2:]):
+		t = sub
+		for i in params[:-1]:
+			t = t[i]
+		t[params[-1]] = tp(val)
+		base.save_json(sub)
+
+def set_length():
+	if base.conf['folder'] not in {'day', 'contest'}:
+		log.error(f"只能在{'day', 'contest'}类型目录下运行当前命令")
+		return
+	for sub, val in zip(base.conf.sub if base.conf['folder'] == 'contest' else [base.conf], sys.argv[2:]):
+		sub['end time'] = (datetime.datetime.strptime(sub['start time'].split('+')[0], '%Y-%m-%d %H:%M:%S') + datetime.timedelta(hours = float(val))).strftime('%Y-%m-%d %H:%M:%S') + '+0800'
+		base.save_json(sub)
+
 work_list = {
 	'data' : lambda conf = None: find_all_data('data', 'data', 'test_cases', conf),
 	'samples' : lambda conf = None: find_all_data('samples', 'down', 'sample_cases', conf),
@@ -331,7 +350,11 @@ work_list = {
 	'upgrade' : upgrade,
 	'lfs' : copy_lfs,
 	'chk' : copy_chk,
-	'prec' : copy_prec
+	'prec' : copy_prec,
+	'title' : lambda : set_conf(('title', 'zh-cn'), {'contest', 'day'}),
+	'time' : lambda : set_conf(('time limit', ), {'day'}, float),
+	'memory' : lambda : set_conf(('memory limit', ), {'day'}, float),
+	'length' : set_length
 }
 work_list['auto'] = lambda : [work_list[key]() for key in ['data', 'samples', 'pre', 'code']]
 work_list['n'] = work_list['contest']
@@ -342,6 +365,10 @@ work_list['t'] = work_list['data']
 work_list['s'] = work_list['samples']
 work_list['u'] = work_list['upgrade']
 work_list['a'] = work_list['auto']
+work_list['l'] = work_list['title']
+work_list['i'] = work_list['time']
+work_list['m'] = work_list['memory']
+work_list['g'] = work_list['length']
 
 if __name__ == '__main__':
 	try:
@@ -384,3 +411,11 @@ if __name__ == '__main__':
 		log.info(u'  prec     对于比赛工程，添加考生须知文件。')
 		log.info(u'  upgrade  升级老版本工程到现在版本的工程。')
 		log.info(u'  u        同upgrade。')
+		log.info(u'  title    设置每道题或每个比赛日的标题，依次传入标题名字。')
+		log.info(u'  l        同title。')
+		log.info(u'  time     设置每道题的时间限制，依次传入每道题的时间限制。')
+		log.info(u'  i        同time。')
+		log.info(u'  memory   设置每道题的空间限制，依次传入每道题的时间限制。')
+		log.info(u'  m        同memory。')
+		log.info(u'  length   设置每个比赛日或当前比赛日的时长，依次用浮点数以小时为单位传入。')
+		log.info(u'  g        同length。')
