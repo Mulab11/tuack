@@ -307,7 +307,15 @@ def arbiter_main(conf = None,daynum = 0):
 				os.makedirs(base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				shutil.copy(codedir,base.pjoin('arbiter','players',conf['name'],dirname,prob['name']))
 				userlist[dirname + '@'] =  codename'''
-		shutil.copy(base.pjoin(base.path,'sample','arbiter_e.sample'),base.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
+		
+		if os.path.isdir(base.pjoin(prob.path, 'data', 'chk')) and os.path.isfile(base.pjoin(prob.path, 'data', 'chk', 'chk.cpp')):
+			log.info('发现chk，尝试编译。')
+			os.system("g++ %s -o %s -O2 -std=c++17" % (
+				base.pjoin(prob.path, 'data', 'chk', 'chk.cpp'),
+				base.pjoin('arbiter', 'main','filter',prob['name']+'_e')
+			))
+		else:
+			shutil.copy(base.pjoin(base.path,'sample','arbiter_e.sample'),base.pjoin('arbiter', 'main','filter',prob['name']+'_e'))
 		arbiter_info(probinfo,base.pjoin('arbiter', 'main','task'+str(daynum)+'_'+str(probnum)+'.info'))
 
 def arbiter_down(conf = None):
