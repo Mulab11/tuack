@@ -1,4 +1,5 @@
 ret = [["测试点","$n$","$m$","是否为完全二叉树"]]	#注意右斜杠经常需要两次转义
+	#表格中的竖线（绝对值符号）一般用\lvert\rvert，否则会和某些环境下的表格分隔符号冲突
 for datum in prob['data']:	#引用conf.json/yaml中的变量
 	args = datum['args']
 	row = [

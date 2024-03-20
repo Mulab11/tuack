@@ -580,7 +580,7 @@ def loj_prob(conf, pre = False):
 		files = [{'name' : exname, 'dest' : exname} for exname in conf['extra']]
 		data_yml['extraSourceFiles'] = [
 			{'language' : lan, 'files' : files} \
-			for lan in ['cpp', 'c', 'cpp11', 'cpp17']
+			for lan in ['cpp', 'c', 'cpp11', 'cpp17', 'cpp14']
 		]
 	data_path = 'data' if not pre else 'pre'
 	open(pjoin(base.work, data_path, conf.route + '.yml'), 'wb').write(base.dump_formats['yaml'](data_yml))

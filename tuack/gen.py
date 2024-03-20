@@ -320,10 +320,12 @@ def copy_prec():
 			copy(pjoin(ff, f), pjoin(ff, f))
 
 def set_conf(params, folders, tp = str):
+	if type(params) != tuple and type(params) != list:
+		params = (params,)
 	if base.conf['folder'] not in folders:
 		log.error(f"只能在{folders}类型目录下运行当前命令")
 		return
-	for sub, val in zip(base.conf.sub, sys.argv[2:]):
+	for sub, val in zip(base.conf.sub, sys.argv[2+int(tp == json.loads):]):
 		t = sub
 		for i in params[:-1]:
 			t = t[i]
@@ -354,6 +356,7 @@ work_list = {
 	'title' : lambda : set_conf(('title', 'zh-cn'), {'contest', 'day'}),
 	'time' : lambda : set_conf(('time limit', ), {'day'}, float),
 	'memory' : lambda : set_conf(('memory limit', ), {'day'}, float),
+	'conf' : lambda : set_conf(json.loads(sys.argv[2]), {'contest', 'day', 'problem'}, json.loads),
 	'length' : set_length
 }
 work_list['auto'] = lambda : [work_list[key]() for key in ['data', 'samples', 'pre', 'code']]
@@ -369,6 +372,7 @@ work_list['l'] = work_list['title']
 work_list['i'] = work_list['time']
 work_list['m'] = work_list['memory']
 work_list['g'] = work_list['length']
+work_list['f'] = work_list['conf']
 
 if __name__ == '__main__':
 	try:
@@ -419,3 +423,8 @@ if __name__ == '__main__':
 		log.info(u'  m        同memory。')
 		log.info(u'  length   设置每个比赛日或当前比赛日的时长，依次用浮点数以小时为单位传入。')
 		log.info(u'  g        同length。')
+		log.info(u'  conf     批量设置字段，先传入字段名（可用数组表示层次），然后依次用json格式传入要改的内容。例如：')
+		log.info(u'           tuack.gen conf \'"file io"\' true true true true')
+		log.info(u'           tuack.gen conf \'"compile"\' \'{"cpp" : "-O2 -std=c++14"}\' \'{"cpp" : "-O2 -std=c++14"}\'')
+		log.info(u'           tuack.gen conf \'["compile","cpp"]\' \'"-O2 -std=c++14"\' \'"-O2 -std=c++14"\'')
+		log.info(u'  f        同conf。')
