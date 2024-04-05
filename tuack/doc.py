@@ -357,7 +357,7 @@ def to_sections(lines):
 					buff = clear(buff)
 					cur.lines.append("{{ tbl('%d') }}\n" % tbl_no)
 					base.mkdir('tables')
-					ftbl = open(f"tables/{tbl_no}.pyinc", 'w')
+					ftbl = open(f"tables/{tbl_no}.pyinc", 'w', encoding = 'utf-8')
 					ftbl.write('return [\n')
 				tbl_lino += 1
 				if tbl_lino != 2:
